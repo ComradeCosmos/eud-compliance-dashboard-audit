@@ -95,7 +95,7 @@
                 <ul class="sidebar-menu">
                     <li class="menu-item active" id="menu-analytics" onclick="switchNavSection('analytics')">Analytics</li>
                     <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">Compliance</li>
-                    <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Risk Management</li>
+                    <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Scoring & Controls</li>
                     <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
                 </ul>
             </nav>
@@ -186,7 +186,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1rem;">
                             <h3 style="margin: 0; border: none; padding: 0;">Fleet Distribution Profile</h3>
                             <select id="analysis-risk-dimension" onchange="renderActiveRiskChart()" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); cursor: pointer; border-radius: 4px; font-weight: 700; color: var(--text-primary);">
-                                <option value="risk">Risk Tiers (Donut)</option>
+                                <option value="risk">Compliance Status (Donut)</option>
                                 <option value="condition">Physical Conditions (Donut)</option>
                             </select>
                         </div>
@@ -601,11 +601,9 @@
 
                         <select id="fleet-filter-risk" onchange="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-                            <option value="ALL">All Risk Levels</option>
-                            <option value="LOW">Low Risk</option>
-                            <option value="MEDIUM">Medium Risk</option>
-                            <option value="HIGH">High Risk</option>
-                            <option value="CRITICAL">Critical Risk</option>
+                            <option value="ALL">All Compliance States</option>
+                            <option value="COMPLIANT">Compliant</option>
+                            <option value="NON_COMPLIANT">Non-Compliant</option>
                         </select>
 
                         <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
@@ -634,10 +632,9 @@
 
                         <select id="fleet-filter-score-range" onchange="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-                            <option value="ALL">All Score Ranges</option>
-                            <option value="COMPLIANT">Compliant (90-100)</option>
-                            <option value="WARNING">Warning (60-89)</option>
-                            <option value="CRITICAL">Critical (<60)< /option>
+                            <option value="ALL">All Scores</option>
+                            <option value="COMPLIANT">Perfect Compliant (100.00)</option>
+                            <option value="NON_COMPLIANT">Non-Compliant (0.00)</option>
                         </select>
                     </div>
 
@@ -1056,33 +1053,21 @@
                 else if (i % 50 === 0) condition = "BROKEN";
                 else if (i % 47 === 0) condition = "DECOMMISSIONED";
 
-                // Corporate standard: ~85% low risk compliant, ~10% medium risk warnings, ~5% high/critical incidents
                 let score = 100.00;
-                if (condition === "BROKEN") {
-                    score = 12.50;
-                } else if (condition === "IN_REPAIR") {
-                    score = 54.20;
+                if (condition === "BROKEN" || condition === "IN_REPAIR" || condition === "DECOMMISSIONED") {
+                    score = 0.00;
                 } else if (i % 10 === 0) {
-                    score = parseFloat((Math.random() * (84 - 65) + 65).toFixed(2));
-                } else if (i % 20 === 0) {
-                    score = parseFloat((Math.random() * (64 - 40) + 40).toFixed(2));
-                } else if (i % 33 === 0) {
-                    score = parseFloat((Math.random() * (39 - 10) + 10).toFixed(2));
+                    score = 0.00;
                 } else {
-                    score = parseFloat((Math.random() * (100 - 92) + 92).toFixed(2));
+                    score = 100.00;
                 }
-
-                let level = "LOW";
-                if (score < 40) level = "CRITICAL";
-                else if (score < 65) level = "HIGH";
-                else if (score < 85) level = "MEDIUM";
 
                 // Generate software audits (Base Compliance Checks)
                 let hasMissing = false;
                 const software = sampleSoftwareCatalog.map((sw, swIdx) => {
                     let status = "COMPLIANT";
                     let installed = "INSTALLED";
-                    if (score < 85 && (swIdx + i) % 3 === 0) {
+                    if (score === 0.00 && (swIdx + i) % 3 === 0) {
                         status = "NON_COMPLIANT";
                         installed = "MISSING";
                         hasMissing = true;
@@ -1091,16 +1076,12 @@
                 });
 
                 // Apply strict binary compliance: 1 non-compliance drops the score to 0.00!
-                if (hasMissing || condition === "BROKEN" || condition === "DECOMMISSIONED") {
+                if (hasMissing || condition === "BROKEN" || condition === "DECOMMISSIONED" || condition === "IN_REPAIR") {
                     score = 0.00;
-                    level = "CRITICAL";
-                } else if (condition === "IN_REPAIR") {
-                    score = 54.20;
-                    level = "HIGH";
                 } else {
                     score = 100.00;
-                    level = "LOW";
                 }
+                let level = (score === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
 
                 // Generate new corporate metadata fields
                 const user = userAssignedCatalog[i % userAssignedCatalog.length];
@@ -1146,7 +1127,7 @@
         }
 
         // Global variables for dynamic table headers and keys
-        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Risk Level"];
+        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
         let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
 
         // Initialize with exactly 16,742 corporate assets
@@ -1228,7 +1209,7 @@
                         titleEl.innerText = "Fleet Compliance Ledger";
                         break;
                     case "risk":
-                        titleEl.innerText = "Compliance & Risk Management Engine";
+                        titleEl.innerText = "Compliance & Scoring Controls Engine";
                         break;
                     case "reporting":
                         titleEl.innerText = "Compliance Telemetry Reporting Center";
@@ -1264,7 +1245,7 @@
         function triggerCsvExport() {
             logToTerminal(`[Export] Extracting active query records for export...`);
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Device ID,Device Name,OS,Serial And Manufacturer,User Assigned,Last Login,Location,Location Group,Condition,Compliance Score,Risk Level\n";
+            csvContent += "Device ID,Device Name,OS,Serial And Manufacturer,User Assigned,Last Login,Location,Location Group,Condition,Compliance Score,Compliance Status\n";
 
             filteredDataset.forEach(row => {
                 const idSanitized = sanitizeCSVCell(row.id);
@@ -1510,10 +1491,7 @@
                         if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
                     }
                     
-                    let level = "LOW";
-                    if (finalScore < 40) level = "CRITICAL";
-                    else if (finalScore < 65) level = "HIGH";
-                    else if (finalScore < 85) level = "MEDIUM";
+                    let level = (finalScore === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
 
                     if (!name || !serial) continue;
 
@@ -1602,7 +1580,7 @@
             selectedDevice = null;
 
             // Reset headers
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Risk Level"];
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
             activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
 
             // Clear selected device details panel
@@ -1647,11 +1625,9 @@
                 // Score range match
                 let matchesScore = true;
                 if (scoreRangeFilter === "COMPLIANT") {
-                    matchesScore = (item.score >= 90);
-                } else if (scoreRangeFilter === "WARNING") {
-                    matchesScore = (item.score >= 60 && item.score < 90);
-                } else if (scoreRangeFilter === "CRITICAL") {
-                    matchesScore = (item.score < 60);
+                    matchesScore = (item.score === 100);
+                } else if (scoreRangeFilter === "NON_COMPLIANT") {
+                    matchesScore = (item.score < 100);
                 }
 
                 return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS && matchesScore;
@@ -1679,12 +1655,7 @@
         }
 
         function getRiskBadgeClass(level) {
-            switch (level) {
-                case "LOW": return "risk-low";
-                case "MEDIUM": return "risk-medium";
-                case "HIGH": return "risk-high";
-                default: return "risk-critical";
-            }
+            return level === "COMPLIANT" ? "risk-low" : "risk-critical";
         }
 
         function showDeviceAuditDetails(devId) {
@@ -1706,7 +1677,7 @@
             condBadge.className = `badge ${getConditionBadgeClass(dev.condition)}`;
 
             const levelBadge = document.getElementById("det-level-badge");
-            levelBadge.innerText = dev.level + " RISK";
+            levelBadge.innerText = dev.level.replace("_", "-");
             levelBadge.className = `badge ${getRiskBadgeClass(dev.level)}`;
 
             // Toggle isolation alert banner
@@ -1818,14 +1789,9 @@
                 dev.level = "CRITICAL";
                 return;
             }
-            if (dev.condition === "BROKEN") {
-                dev.score = 12.50;
-                dev.level = "CRITICAL";
-                return;
-            }
-            if (dev.condition === "IN_REPAIR") {
-                dev.score = 54.20;
-                dev.level = "HIGH";
+            if (dev.condition === "BROKEN" || dev.condition === "IN_REPAIR" || dev.condition === "DECOMMISSIONED") {
+                dev.score = 0.00;
+                dev.level = "NON_COMPLIANT";
                 return;
             }
 
@@ -1836,11 +1802,7 @@
             }
 
             dev.score = parseFloat(score.toFixed(2));
-
-            if (dev.score < 40) dev.level = "CRITICAL";
-            else if (dev.score < 65) dev.level = "HIGH";
-            else if (dev.score < 85) dev.level = "MEDIUM";
-            else dev.level = "LOW";
+            dev.level = (dev.score === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
         }
 
         // Remediation trigger handler simulation
@@ -2178,11 +2140,9 @@
             const displayLevel = document.getElementById("out-calc-level");
             displayScore.innerText = finalScore.toFixed(2);
 
-            let riskTier = "LOW RISK";
-            let color = "#16a34a";
-            if (finalScore < 40) { riskTier = "CRITICAL RISK"; color = "#b91c1c"; }
-            else if (finalScore < 65) { riskTier = "HIGH RISK"; color = "#c2410c"; }
-            else if (finalScore < 85) { riskTier = "MEDIUM RISK"; color = "#a16207"; }
+            let riskTier = "COMPLIANT";
+            let color = "#15803d";
+            if (finalScore < 100) { riskTier = "NON-COMPLIANT"; color = "#b91c1c"; }
 
             displayScore.style.color = color;
             displayLevel.innerText = riskTier;
@@ -2270,10 +2230,8 @@
             scoreDisplay.style.color = getScoreColor(avg);
 
             const riskLabel = document.getElementById("fleet-risk-label");
-            if (avg < 40) { riskLabel.innerText = "CRITICAL FLEET RISK"; riskLabel.style.color = "#b91c1c"; }
-            else if (avg < 65) { riskLabel.innerText = "HIGH FLEET RISK"; riskLabel.style.color = "#c2410c"; }
-            else if (avg < 85) { riskLabel.innerText = "MEDIUM FLEET RISK"; riskLabel.style.color = "#a16207"; }
-            else { riskLabel.innerText = "LOW FLEET RISK (COMPLIANT)"; riskLabel.style.color = "#15803d"; }
+            if (avg < 100) { riskLabel.innerText = "NON-COMPLIANT FLEET"; riskLabel.style.color = "#b91c1c"; }
+            else { riskLabel.innerText = "FULLY COMPLIANT FLEET"; riskLabel.style.color = "#15803d"; }
 
             // Recalculate and update charts in real-time
             renderActiveTrendChart();
@@ -2582,21 +2540,17 @@
             container.innerHTML = "";
 
             if (dimension === "risk") {
-                // Count risk tiers dynamically
-                let low = 0, med = 0, high = 0, crit = 0;
+                // Count compliance status dynamically
+                let compliant = 0, nonCompliant = 0;
                 fleetDataset.forEach(d => {
-                    if (d.level === "LOW") low++;
-                    else if (d.level === "MEDIUM") med++;
-                    else if (d.level === "HIGH") high++;
-                    else if (d.level === "CRITICAL") crit++;
+                    if (d.level === "COMPLIANT") compliant++;
+                    else nonCompliant++;
                 });
 
                 const total = fleetDataset.length;
                 const data = [
-                    { name: "Low Risk", count: low, pct: total > 0 ? (low / total) * 100 : 0, color: "var(--status-low)" },
-                    { name: "Medium Risk", count: med, pct: total > 0 ? (med / total) * 100 : 0, color: "var(--status-medium)" },
-                    { name: "High Risk", count: high, pct: total > 0 ? (high / total) * 100 : 0, color: "var(--status-high)" },
-                    { name: "Critical Risk", count: crit, pct: total > 0 ? (crit / total) * 100 : 0, color: "var(--status-critical)" }
+                    { name: "Compliant", count: compliant, pct: total > 0 ? (compliant / total) * 100 : 0, color: "var(--status-low)" },
+                    { name: "Non-Compliant", count: nonCompliant, pct: total > 0 ? (nonCompliant / total) * 100 : 0, color: "var(--status-critical)" }
                 ];
 
                 // Circumference is exactly 440 (2 * pi * 70 = 439.82)
