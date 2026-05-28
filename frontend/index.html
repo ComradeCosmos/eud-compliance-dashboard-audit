@@ -643,7 +643,7 @@
 
                     <div class="fleet-table-container">
                         <table class="fleet-table">
-                            <thead>
+                            <thead id="fleet-table-head">
                                 <tr>
                                     <th>Device ID</th>
                                     <th>Canonical Name</th>
@@ -1131,6 +1131,10 @@
             return list;
         }
 
+        // Global variables for dynamic table headers and keys
+        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Risk Level"];
+        let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
+
         // Initialize with exactly 16,742 corporate assets
         let fleetDataset = generateStructuredAssets(16742);
         let filteredDataset = [...fleetDataset];
@@ -1337,6 +1341,31 @@
                 const sentinelOneColIdx = findIndex(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
                 const sccmColIdx = findIndex(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
 
+                // Fuzzy match column for pre-calculated score if it exists in the imported sheet
+                const scoreColIdx = findIndex(["score", "compliance score", "compliance_score", "risk score", "risk_score", "device score", "device_score"]);
+
+                // Map the spreadsheet headers dynamically in original order
+                activeTableHeaders = rows[0].map(h => String(h).trim());
+                activeTableKeys = headers.map((header, idx) => {
+                    if (idx === deviceNameIdx) return "canonical_name";
+                    if (idx === serialIdx) return "serial";
+                    if (idx === macIdx) return "mac";
+                    if (idx === manufacturerIdx) return "manufacturer";
+                    if (idx === conditionIdx) return "condition";
+                    if (idx === userIdx) return "user_assigned";
+                    if (idx === lastLoginIdx) return "last_login";
+                    if (idx === locationIdx) return "location";
+                    if (idx === locationGroupIdx) return "location_group";
+                    if (idx === scoreColIdx) return "score";
+                    if (idx === adColIdx) return "ad";
+                    if (idx === bitlockerColIdx) return "bitlocker";
+                    if (idx === zscalerColIdx) return "zscaler";
+                    if (idx === nessusColIdx) return "nessus";
+                    if (idx === sentinelOneColIdx) return "sentinelone";
+                    if (idx === sccmColIdx) return "sccm";
+                    return `custom:${rows[0][idx].trim()}`;
+                });
+
                 let newItems = 0;
                 let mergedItems = 0;
 
@@ -1408,8 +1437,15 @@
                         { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControl(sccmColIdx, true) }
                     ];
 
-                    const compliantCount = software.filter(sw => sw.status === "COMPLIANT").length;
-                    const finalScore = parseFloat(((compliantCount / 6) * 100).toFixed(2));
+                    let finalScore = 100.00;
+                    if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
+                        const parsed = parseFloat(row[scoreColIdx]);
+                        if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
+                    } else {
+                        // Recalculate score based on agents
+                        const compliantCount = software.filter(sw => sw.status === "COMPLIANT").length;
+                        finalScore = parseFloat(((compliantCount / 6) * 100).toFixed(2));
+                    }
                     
                     let level = "LOW";
                     if (finalScore < 40) level = "CRITICAL";
@@ -1501,6 +1537,10 @@
             fleetDataset = [];
             filteredDataset = [];
             selectedDevice = null;
+
+            // Reset headers
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Risk Level"];
+            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
 
             // Clear selected device details panel
             document.getElementById("details-default-msg").style.display = "block";
@@ -1856,7 +1896,20 @@
             updateFleetWideMetrics();
         }
 
+        function renderTableHeaders() {
+            const head = document.getElementById("fleet-table-head");
+            if (!head) return;
+            let html = "<tr>";
+            activeTableHeaders.forEach(h => {
+                html += `<th>${escapeHTML(h)}</th>`;
+            });
+            html += "</tr>";
+            head.innerHTML = html;
+        }
+
         function populateFleetTable() {
+            renderTableHeaders(); // Ensure dynamic headers are populated in original order
+
             const body = document.getElementById("fleet-table-body");
             body.innerHTML = "";
 
@@ -1867,7 +1920,8 @@
             const displaySlice = filteredDataset.slice(startIdx, endIdx);
 
             if (displaySlice.length === 0) {
-                body.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets found.</td></tr>`;
+                const colSpan = activeTableHeaders.length;
+                body.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets found.</td></tr>`;
             } else {
                 displaySlice.forEach(dev => {
                     const isSelected = (dev.id === selectedDevice) ? "selected-row" : "";
@@ -1875,25 +1929,52 @@
                     tr.className = isSelected;
                     tr.setAttribute("onclick", `showDeviceAuditDetails('${dev.id}')`);
 
-                    const escapedName = escapeHTML(dev.canonical_name);
-                    let deviceNameMarkup = escapedName;
-                    if (dev.is_isolated) {
-                        deviceNameMarkup = `<span style="text-decoration: line-through; color: var(--status-critical); font-weight:700;">${escapedName}</span> <span class="badge risk-critical" style="font-size:0.6rem; padding: 0.1rem 0.25rem;">CONTAINED</span>`;
-                    } else {
-                        deviceNameMarkup = `<strong>${escapedName}</strong>`;
-                    }
+                    let rowHtml = "";
+                    activeTableKeys.forEach((key, headerIdx) => {
+                        let val = "";
+                        let isCustom = key.startsWith("custom:");
+                        let actualKey = isCustom ? key.substring(7) : key;
+                        
+                        if (isCustom) {
+                            val = (dev.custom_properties && dev.custom_properties[actualKey] !== undefined) ? dev.custom_properties[actualKey] : "-";
+                        } else {
+                            if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
+                                const swAgent = dev.software.find(sw => sw.key === actualKey);
+                                val = swAgent ? swAgent.installed : "MISSING";
+                            } else {
+                                val = dev[actualKey] !== undefined ? dev[actualKey] : "-";
+                            }
+                        }
 
-                    tr.innerHTML = `
-                        <td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem;">${escapeHTML(dev.id)}</td>
-                        <td>${deviceNameMarkup}</td>
-                        <td style="font-size: 0.85rem; font-weight: 600;">${escapeHTML(dev.user_assigned)}</td>
-                        <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary);">${escapeHTML(dev.last_login)}</td>
-                        <td style="font-size: 0.85rem; color: var(--text-secondary);">${escapeHTML(dev.location)}</td>
-                        <td><span class="badge ${dev.location_group === 'Sift' ? 'group-sift' : 'group-non-sift'}">${escapeHTML(dev.location_group)}</span></td>
-                        <td><span class="badge ${getConditionBadgeClass(dev.condition)}">${escapeHTML(dev.condition.replace("_", " "))}</span></td>
-                        <td style="font-weight: 700; font-family: var(--font-mono); color: ${getScoreColor(dev.score)};">${dev.score.toFixed(2)}</td>
-                        <td><span class="badge ${getRiskBadgeClass(dev.level)}">${escapeHTML(dev.level)}</span></td>
-                    `;
+                        // Rich formatting for key columns:
+                        if (actualKey === "canonical_name") {
+                            const escapedName = escapeHTML(val);
+                            let deviceNameMarkup = escapedName;
+                            if (dev.is_isolated) {
+                                deviceNameMarkup = `<span style="text-decoration: line-through; color: var(--status-critical); font-weight:700;">${escapedName}</span> <span class="badge risk-critical" style="font-size:0.6rem; padding: 0.1rem 0.25rem;">CONTAINED</span>`;
+                            } else {
+                                deviceNameMarkup = `<strong>${escapedName}</strong>`;
+                            }
+                            rowHtml += `<td>${deviceNameMarkup}</td>`;
+                        } else if (actualKey === "id" || actualKey === "mac" || actualKey === "serial") {
+                            rowHtml += `<td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem;">${escapeHTML(String(val))}</td>`;
+                        } else if (actualKey === "score") {
+                            const numScore = parseFloat(val) || 0;
+                            rowHtml += `<td style="font-weight: 700; font-family: var(--font-mono); color: ${getScoreColor(numScore)};">${numScore.toFixed(2)}</td>`;
+                        } else if (actualKey === "level") {
+                            rowHtml += `<td><span class="badge ${getRiskBadgeClass(val)}">${escapeHTML(String(val))}</span></td>`;
+                        } else if (actualKey === "condition") {
+                            rowHtml += `<td><span class="badge ${getConditionBadgeClass(val)}">${escapeHTML(String(val).replace("_", " "))}</span></td>`;
+                        } else if (actualKey === "location_group") {
+                            rowHtml += `<td><span class="badge ${val === 'Sift' ? 'group-sift' : 'group-non-sift'}">${escapeHTML(String(val))}</span></td>`;
+                        } else if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
+                            rowHtml += `<td><span class="badge ${val === 'INSTALLED' ? 'risk-low' : 'risk-critical'}">${escapeHTML(String(val))}</span></td>`;
+                        } else {
+                            rowHtml += `<td>${escapeHTML(String(val))}</td>`;
+                        }
+                    });
+
+                    tr.innerHTML = rowHtml;
                     body.appendChild(tr);
                 });
             }
