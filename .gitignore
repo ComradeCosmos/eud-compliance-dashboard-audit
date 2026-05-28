@@ -1,0 +1,33 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Environments and Secrets
+.env
+.env.*
+!.env.example
+*.local
+
+# Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+env/
+.pytest_cache/
+
+# Go files
+/backend/bin/
+/backend/pkg/evaluator/*.exe
+/backend/pkg/evaluator/*.test
+/backend/pkg/evaluator/*.prof
+
+# Node/Frontend files (if any)
+node_modules/
+dist/
+.svelte-kit/
+.next/
+.nuxt/

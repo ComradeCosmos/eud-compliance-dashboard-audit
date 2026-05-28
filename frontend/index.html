@@ -1,0 +1,2642 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EUD Compliance Dashboard - Executive Console</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <!-- Full-Screen Dedicated portal login gateway -->
+    <div id="login-screen-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); display: flex; align-items: center; justify-content: center; z-index: 99999;">
+        <div class="card"
+            style="width: 460px; padding: 2.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-radius: 4px;">
+            <div style="text-align: center; margin-bottom: 0.5rem;">
+                <div
+                    style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
+                    Thrawn <span style="color: var(--color-accent);">EUD.</span></div>
+                <p
+                    style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
+                    Security & Ingest Portal Gateway</p>
+            </div>
+
+            <div id="portal-login-error-msg"
+                style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); color: var(--status-critical); padding: 0.75rem; font-size: 0.85rem; font-weight: 700; text-align: center; border-radius: 4px;">
+            </div>
+
+            <div class="input-group" style="margin-bottom: 0.25rem;">
+                <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
+                <input type="text" id="portal-login-user" placeholder="e.g. analyst.fleet"
+                    style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+            </div>
+            <div class="input-group" style="margin-bottom: 0.5rem;">
+                <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
+                <input type="password" id="portal-login-passcode" placeholder="••••••••"
+                    style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+            </div>
+
+            <button class="btn"
+                style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;"
+                onclick="simulateLogin()">Authenticate Session Lease</button>
+
+            <div
+                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.1rem; font-size: 0.72rem; color: var(--text-secondary); border-radius: 4px; line-height: 1.45;">
+                <strong
+                    style="text-transform: uppercase; font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">Admin-Assigned
+                    Active Directory Challenges:</strong>
+                <ul
+                    style="margin-left: 1rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: square; color: var(--text-muted);">
+                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Global
+                            Admin</strong>: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">admin.security</code>
+                        (PIN: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-admin-2026</code>)<br><span
+                            style="color: var(--text-muted);"> Clearance: Full system controls & Settings
+                            dispatch.</span></li>
+                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Security
+                            Analyst</strong>: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">analyst.fleet</code>
+                        (PIN: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-analyst-2026</code>)<br><span
+                            style="color: var(--text-muted);"> Clearance: Fleet ledger writes, CSV bulk uploader.</span>
+                    </li>
+                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Operations
+                            Operator</strong>: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">operator.contain</code>
+                        (PIN: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-operator-2026</code>)<br><span
+                            style="color: var(--text-muted);"> Clearance: Port containments & WSUS patching.</span></li>
+                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Compliance
+                            Auditor</strong>: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">auditor.compliance</code>
+                        (PIN: <code
+                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-auditor-2026</code>)<br><span
+                            style="color: var(--text-muted);"> Clearance: Strict Read-Only ledger metrics views.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="main-app-container" style="display: none;">
+        <!-- Sidebar Navigation matching Aethelred Corp style -->
+        <aside class="sidebar">
+            <div class="brand-section">
+                <div class="brand-logo">Thrawn <span>EUD.</span></div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Security & Compliance</p>
+            </div>
+
+            <!-- Top navigation menu -->
+            <nav>
+                <ul class="sidebar-menu">
+                    <li class="menu-item active" id="menu-analytics" onclick="switchNavSection('analytics')">Analytics</li>
+                    <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">Compliance</li>
+                    <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Risk Management</li>
+                    <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
+                </ul>
+            </nav>
+
+            <!-- Spacer to push bottom section all the way down -->
+            <div style="flex-grow: 1;"></div>
+
+            <!-- Bottom navigation footer container for balanced alignment -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="border-top: 1px solid var(--border-clean); margin: 0 0.5rem;"></div>
+                <nav>
+                    <ul class="sidebar-menu">
+                        <li class="menu-item" id="menu-profile" onclick="switchNavSection('profile')">User Profile</li>
+                        <li class="menu-item" id="menu-login" onclick="switchNavSection('login')">User Login</li>
+                        <li class="menu-item" id="menu-settings" onclick="switchNavSection('settings')">Settings</li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="main-content">
+            <!-- Executive Header -->
+            <header>
+                <div>
+                    <h1 id="main-section-title">Executive Overview</h1>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;"
+                        id="dashboard-date">Q2 2026 | Fleet Telemetry Report</p>
+                </div>
+                <div class="sla-badge-container">
+                    <div class="sla-badge">Freshness SLA: <span>2 MIN</span></div>
+                    <div class="sla-badge">Availability SLA: <span>99.9%</span></div>
+                </div>
+            </header>
+
+            <!-- Section: Analytics -->
+            <div id="section-analytics" class="section-view">
+                <!-- Swiss KPI Metrics Grid -->
+                <div class="telemetry-row">
+                    <div class="metric-widget">
+                        <span>Active Fleet Scale</span>
+                        <div class="val" id="fleet-scale-val">16,742</div>
+                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;">+8.2% ▲ <span
+                                style="color: var(--text-muted); font-weight: 500;">QoQ</span></p>
+                    </div>
+                    <div class="metric-widget">
+                        <span>Average Fleet Score</span>
+                        <div class="val" id="fleet-score-val">87.50</div>
+                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;"
+                            id="fleet-risk-label">+2.4% ▲ LOW RISK</p>
+                    </div>
+                    <div class="metric-widget">
+                        <span>Active Threat Alerts</span>
+                        <div class="val" style="color: var(--status-critical);">234</div>
+                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;">-12.5% ▼ Incidents
+                        </p>
+                    </div>
+                    <div class="metric-widget" style="border-right: none;">
+                        <span>Daily Ingest Events</span>
+                        <div class="val">142.4 M</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Kafka pipeline SLA
+                            compliant</p>
+                    </div>
+                </div>
+
+                <!-- Charts and Telemetry Summary Section -->
+                <div class="charts-grid">
+                    <!-- Line Chart Card -->
+                    <div class="chart-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; border: none; padding: 0;">Fleet Analytics & Diagnostics</h3>
+                            <select id="analysis-chart-dimension" onchange="renderActiveTrendChart()" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); cursor: pointer; border-radius: 4px; font-weight: 700; color: var(--text-primary);">
+                                <option value="trend">Compliance Trend Line</option>
+                                <option value="os">OS Platform Breakdown</option>
+                                <option value="location">Location Group Distribution</option>
+                            </select>
+                        </div>
+                        <div id="analytics-trend-chart-container" style="position: relative; width: 100%; height: 220px;">
+                            <!-- Dynamic SVG chart renders here -->
+                        </div>
+                        <div id="analytics-trend-legend" style="display: flex; gap: 2rem; justify-content: center; font-size: 0.85rem; margin-top: 0.5rem;">
+                            <!-- Dynamic legend renders here -->
+                        </div>
+                    </div>
+
+                    <!-- Pie/Donut Chart Card -->
+                    <div class="chart-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; border: none; padding: 0;">Fleet Distribution Profile</h3>
+                            <select id="analysis-risk-dimension" onchange="renderActiveRiskChart()" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); cursor: pointer; border-radius: 4px; font-weight: 700; color: var(--text-primary);">
+                                <option value="risk">Risk Tiers (Donut)</option>
+                                <option value="condition">Physical Conditions (Donut)</option>
+                            </select>
+                        </div>
+                        <div id="analytics-risk-chart-container" style="position: relative; width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+                            <!-- Dynamic SVG donut and legend renders here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Risk Management -->
+            <div id="section-risk" class="section-view" style="display: none;">
+                <!-- Main Content Card -->
+                <div class="card">
+                    <div class="tabs">
+                        <button class="tab-btn active" id="tab-btn-reconciler"
+                            onclick="switchTab('reconciler')">Reconciliation Pipeline</button>
+                        <button class="tab-btn" id="tab-btn-scorer" onclick="switchTab('scorer')">Weighted Scoring
+                            Engine</button>
+                        <button class="tab-btn" id="tab-btn-drift" onclick="switchTab('drift')">AI Score Drift
+                            (LSTM)</button>
+                    </div>
+
+                    <!-- Tab 1: Identity Reconciler -->
+                    <div id="tab-reconciler" class="tab-content">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                            Simulate the 5-stage device identity reconciliation pipeline. Incoming records are
+                            normalized, verified via SHA256 hardware fingerprints, evaluated for Levenshtein name
+                            distance, or queued for MiniLM semantic similarity/human reviews.
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                                <div>
+                                    <div class="input-group">
+                                        <label for="recon-name">Incoming Device Name</label>
+                                        <input type="text" id="recon-name" value="DESKTOP-A1B2C3-S1">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="recon-serial">Serial Number</label>
+                                        <input type="text" id="recon-serial" value="SN-DEL-992001">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="input-group">
+                                        <label for="recon-mac">MAC Address (mac[0])</label>
+                                        <input type="text" id="recon-mac" value="00:1A:2B:3C:4D:5E">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="recon-manufacturer">Manufacturer</label>
+                                        <select id="recon-manufacturer">
+                                            <option value="Dell Inc.">Dell Inc.</option>
+                                            <option value="Apple Inc.">Apple Inc.</option>
+                                            <option value="Lenovo">Lenovo</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <button class="btn" onclick="runReconciliationSimulation()">Reconcile Device
+                                    Identity</button>
+                            </div>
+
+                            <div>
+                                <h3
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1rem; color: var(--text-primary);">
+                                    Resolution Outcomes</h3>
+                                <div id="recon-output-panel"
+                                    style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem;">
+                                    <div><strong>Fingerprint SHA256:</strong> <span id="out-fp"
+                                            style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem; word-break: break-all;">Not
+                                            calculated</span></div>
+                                    <div><strong>Pipeline Phase Resolved:</strong> <span id="out-stage"
+                                            style="color: var(--text-primary); font-weight: 700;">-</span></div>
+                                    <div><strong>Confidence Level:</strong> <span id="out-confidence"
+                                            style="color: var(--text-primary); font-weight: 700;">-</span></div>
+                                    <div><strong>Pipeline Action:</strong> <span id="out-action" class="badge">-</span>
+                                    </div>
+                                    <div id="out-desc"
+                                        style="color: var(--text-secondary); font-style: italic; margin-top: 0.5rem; font-size: 0.9rem;">
+                                        Fill fields and trigger reconciliation.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 2: Scoring Engine -->
+                    <div id="tab-scorer" class="tab-content" style="display: none;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                            Adjust security control states to recalculate device scores using standard platform weights.
+                            Dimension scores undergo critical failure multipliers (BitLocker disabled or SentinelOne
+                            inactive result in critical 0.0 scores).
+                        </p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                            <div>
+                                <h3
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Dimension Controls</h3>
+                                <div class="input-group">
+                                    <label for="score-edr">SentinelOne Agent Status (EDR: 25%)</label>
+                                    <select id="score-edr" onchange="recalculateScores()">
+                                        <option value="compliant">Compliant (Active / 0 Threats)</option>
+                                        <option value="threats">Non-Compliant (Active Threats Detected)</option>
+                                        <option value="inactive">CRITICAL FAIL (Agent Disabled / Offline)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="score-patch">OS Patch Currency (Patch: 20%)</label>
+                                    <select id="score-patch" onchange="recalculateScores()">
+                                        <option value="compliant">Compliant (Fully Patched)</option>
+                                        <option value="late">Non-Compliant (Patches > 30 Days Late)</option>
+                                        <option value="eol">CRITICAL FAIL (OS End-of-Life)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label for="score-encryption">BitLocker Drive State (Encryption: 15%)</label>
+                                    <select id="score-encryption" onchange="recalculateScores()">
+                                        <option value="compliant">Compliant (AES-256 Encrypted / Keys Escrowed)</option>
+                                        <option value="disabled">CRITICAL FAIL (BitLocker Disabled)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3
+                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Risk Engine Output</h3>
+                                <div
+                                    style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; text-align: center;">
+                                    <div>
+                                        <span
+                                            style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Composite
+                                            Score</span>
+                                        <div id="out-calc-score"
+                                            style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.05em; margin: 0.5rem 0;">
+                                            100.00</div>
+                                        <div id="out-calc-level"
+                                            style="font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em; color: var(--status-low);">
+                                            LOW RISK</div>
+                                    </div>
+                                    <div
+                                        style="font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem; text-align: left; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                                        <div><strong>Critical Failures:</strong> <span id="out-penalty-label"
+                                                style="color: var(--status-low); font-weight: 700;">None (0%
+                                                drop)</span></div>
+                                        <div><strong>NIST CSF 2.0 Compliance:</strong> <span id="out-nist"
+                                                style="color: var(--status-low); font-weight: 700;">100%
+                                                Compliant</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab 3: AI score drift (LSTM) -->
+                    <div id="tab-drift" class="tab-content" style="display: none;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                            The PyTorch LSTM microservice analyzes the preceding 90-day time-series compliance events
+                            hypertable logs and projects future device scoring curves at 7, 14, and 30-day horizons.
+                        </p>
+                        <div class="input-group">
+                            <label for="drift-scenario">Simulation Core Scenario</label>
+                            <select id="drift-scenario" onchange="runDriftSimulation()">
+                                <option value="stable">Stable Compliance State (Constant 98-100 score)</option>
+                                <option value="decaying">Declining Posture (Outdated EDR versions & late patches)
+                                </option>
+                                <option value="critical">Rapid Threat Intrusion (Active malware & offline controls)
+                                </option>
+                            </select>
+                        </div>
+
+                        <h3
+                            style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 1rem 0; color: var(--text-primary);">
+                            LSTM 30-Day Forecast Benchmarks</h3>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                            <div class="metric-widget" style="border: 1px solid var(--border-clean);">
+                                <span>7-Day Projected Score</span>
+                                <div class="val" id="drift-7" style="font-size: 1.75rem;">98.50</div>
+                            </div>
+                            <div class="metric-widget" style="border: 1px solid var(--border-clean);">
+                                <span>14-Day Projected Score</span>
+                                <div class="val" id="drift-14" style="font-size: 1.75rem;">97.20</div>
+                            </div>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); border-right: 1px solid var(--border-clean);">
+                                <span>30-Day Projected Score</span>
+                                <div class="val" id="drift-30" style="font-size: 1.75rem;">95.40</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Reporting -->
+            <div id="section-reporting" class="section-view" style="display: none;">
+                <div class="charts-grid">
+                    <!-- Outbound Integrations Card -->
+                    <div class="card" style="padding: 2rem;">
+                        <h2>Outbound Integrations</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+                            Trigger real-time integrations using CloudEvents 1.0 specifications with secure HashiCorp
+                            Vault dynamic keys.
+                        </p>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <button class="btn btn-secondary" onclick="triggerOutbound('SERVICENOW')">ServiceNow
+                                Incident</button>
+                            <button class="btn btn-secondary" onclick="triggerOutbound('JIRA')">Jira Ticket</button>
+                            <button class="btn btn-secondary" onclick="triggerOutbound('SPLUNK')">Splunk SIEM
+                                Forwarder</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Audit Logs Card -->
+                    <div class="card" style="padding: 2rem; display: flex; flex-direction: column;">
+                        <h2>Audit Console</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Real-time multi-tenant platform
+                            events.</p>
+                        <div class="terminal-console" id="audit-terminal" style="flex-grow: 1; min-height: 180px;">
+                            <div class="terminal-line info">[SYS] EUD Compliance Dashboard Platform Core Bootstrapped.
+                            </div>
+                            <div class="terminal-line info">[SYS] Postgres Schema and TimescaleDB hypertables loaded.
+                            </div>
+                            <div class="terminal-line info">[SYS] Dynamic schema paths locked. Ready.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Compliance -->
+            <div id="section-compliance" class="section-view" style="display: none;">
+                <!-- Dynamic Asset details sub-panel (Software, User, Location, Condition audit) -->
+                <div class="card" id="audit-details-panel">
+                    <h2>Detailed Asset, User & Location Audit</h2>
+                    <div id="details-default-msg"
+                        style="color: var(--text-secondary); font-style: italic; text-align: center; padding: 2rem;">
+                        Select any device row in the fleet table below to audit installed software compliance, user
+                        assignments, physical conditions, and secure location groups.
+                    </div>
+                    <div id="details-content-box"
+                        style="display: none; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                        <!-- Column 1: Details & Software compliance -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Dynamic isolation alert banner -->
+                            <div id="det-isolation-banner"
+                                style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); padding: 0.75rem 1rem; color: var(--status-critical); font-weight: 700; font-size: 0.85rem; border-radius: 4px;">
+                                ⚠️ EDR ALERT: THIS HOST HAS BEEN ISOLATED FROM THE CORPORATE NETWORK. ALL SUBNET
+                                INGRESS/EGRESS CONSTRAINED.
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
+                                <div>
+                                    <h3 id="det-name"
+                                        style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">-</h3>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary);">ID: <span id="det-id"
+                                            style="font-family: var(--font-mono);">-</span> | Serial: <span
+                                            id="det-serial" style="font-family: var(--font-mono);">-</span></p>
+                                </div>
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <span id="det-condition-badge" class="badge">-</span>
+                                    <span id="det-level-badge" class="badge">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Corporate Metadata Grid -->
+                            <div
+                                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem;">
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">User
+                                        Assigned</span>
+                                    <strong id="det-user"
+                                        style="font-size: 0.95rem; color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Last
+                                        Login Session</span>
+                                    <strong id="det-login"
+                                        style="font-size: 0.95rem; font-family: var(--font-mono); color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Corporate
+                                        Location</span>
+                                    <strong id="det-location"
+                                        style="font-size: 0.95rem; color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Location
+                                        Group</span>
+                                    <span id="det-loc-group" class="badge">-</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                    Monitored Software compliance status (SCCM/MECM Audit)</h4>
+                                <table class="fleet-table" style="font-size: 0.85rem;">
+                                    <thead>
+                                        <tr>
+                                            <th>Software Package Name</th>
+                                            <th>Installed Version</th>
+                                            <th>Required Version</th>
+                                            <th>Audit Result</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="det-software-tbody">
+                                        <!-- Dynamic -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: Sparkline & Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Individual 30-Day Score sparkline -->
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
+                                    30-Day Score Sparkline</h4>
+                                <div style="height: 100px; position: relative;">
+                                    <svg viewBox="0 0 250 80" style="width: 100%; height: 100%;">
+                                        <!-- Grid sparkline background lines -->
+                                        <line x1="10" y1="10" x2="240" y2="10" stroke="var(--border-clean)"
+                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
+                                        <line x1="10" y1="40" x2="240" y2="40" stroke="var(--border-clean)"
+                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
+                                        <line x1="10" y1="70" x2="240" y2="70" stroke="var(--border-clean)"
+                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
+
+                                        <path id="det-sparkline-path" fill="none" stroke="var(--color-accent)"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d=""></path>
+                                        <g id="det-sparkline-dots"></g>
+                                    </svg>
+                                </div>
+                                <p
+                                    style="font-size: 0.7rem; color: var(--text-muted); font-style: italic; text-align: center; margin-top: -0.25rem;">
+                                    NIST compliance trajectory</p>
+                            </div>
+
+                            <!-- Remediation Actions -->
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
+                                    Remediation Controls</h4>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <button class="btn btn-secondary"
+                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
+                                        onclick="triggerDeviceRemediation('PATCH')"><span>🔄 Push Patch Updates</span>
+                                        <span style="font-weight:400; color:var(--text-muted);">SCCM</span></button>
+                                    <button class="btn btn-secondary"
+                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
+                                        onclick="triggerDeviceRemediation('EDR')"><span>🛡️ Run Endpoint Threat
+                                            Scan</span> <span
+                                            style="font-weight:400; color:var(--text-muted);">EDR</span></button>
+                                    <button class="btn btn-secondary"
+                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
+                                        onclick="triggerDeviceRemediation('VAULT')"><span>🔑 Escrow BitLocker
+                                            Keys</span> <span
+                                            style="font-weight:400; color:var(--text-muted);">Vault</span></button>
+                                    <button class="btn"
+                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between; background: var(--status-critical); border-color: var(--status-critical); color: var(--bg-main);"
+                                        id="btn-isolate-device" onclick="toggleDeviceIsolation()"><span>⚠️ Isolate
+                                            Network Host</span> <span
+                                            style="font-weight:400; opacity: 0.8;">Block</span></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fleet Table Card -->
+                <div class="card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
+                        <h2>Active Reconciled Fleet</h2>
+
+                        <!-- Import / Export Controls -->
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="triggerCsvExport()">📥 Export CSV</button>
+                            <label for="csv-import-file" class="btn"
+                                style="font-size: 0.75rem; padding: 0.5rem 1rem; margin: 0; display: inline-block; cursor: pointer;">📤
+                                Import Sheet</label>
+                            <input type="file" id="csv-import-file" accept=".csv, .xlsx, .xls" style="display: none;"
+                                onchange="handleCsvImport(event)">
+                        </div>
+                    </div>
+
+                    <!-- Client Filter & Search Box -->
+                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; margin-top: 1rem;">
+                        <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
+                            oninput="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+
+                        <select id="fleet-filter-risk" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All Risk Levels</option>
+                            <option value="LOW">Low Risk</option>
+                            <option value="MEDIUM">Medium Risk</option>
+                            <option value="HIGH">High Risk</option>
+                            <option value="CRITICAL">Critical Risk</option>
+                        </select>
+
+                        <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All Conditions</option>
+                            <option value="IN_USE">In Use</option>
+                            <option value="IN_REPAIR">In Repair</option>
+                            <option value="BROKEN">Broken</option>
+                            <option value="DECOMMISSIONED">Decommissioned</option>
+                        </select>
+
+                        <select id="fleet-filter-loc-group" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All Location Groups</option>
+                            <option value="Sift">Sift</option>
+                            <option value="Non-Sift">Non-Sift</option>
+                        </select>
+
+                        <select id="fleet-filter-os-platform" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All OS Families</option>
+                            <option value="Windows">Windows</option>
+                            <option value="macOS">macOS</option>
+                            <option value="Linux">Linux</option>
+                        </select>
+
+                        <select id="fleet-filter-score-range" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All Score Ranges</option>
+                            <option value="COMPLIANT">Compliant (90-100)</option>
+                            <option value="WARNING">Warning (60-89)</option>
+                            <option value="CRITICAL">Critical (<60)< /option>
+                        </select>
+                    </div>
+
+                    <div class="fleet-table-container">
+                        <table class="fleet-table">
+                            <thead>
+                                <tr>
+                                    <th>Device ID</th>
+                                    <th>Canonical Name</th>
+                                    <th>Assigned User</th>
+                                    <th>Last Login</th>
+                                    <th>Location</th>
+                                    <th>Loc Group</th>
+                                    <th>Condition</th>
+                                    <th>Score</th>
+                                    <th>Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fleet-table-body">
+                                <!-- Dynamic populating -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Swiss Minimalist Pagination -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-clean);">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Showing <span id="pag-start" style="font-weight: 700; color: var(--text-primary);">1</span>
+                            to <span id="pag-end" style="font-weight: 700; color: var(--text-primary);">10</span> of
+                            <span id="pag-total" style="font-weight: 700; color: var(--text-primary);">16,742</span>
+                            assets
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="changePage(-1)" id="btn-pag-prev">Previous</button>
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="changePage(1)" id="btn-pag-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: User Profile -->
+            <div id="section-profile" class="section-view" style="display: none;">
+                <div class="card">
+                    <h2>Security Analyst Profile</h2>
+                    <div
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2.5rem; margin-top: 1.5rem; align-items: center;">
+                        <div
+                            style="width: 120px; height: 120px; border: 2px solid var(--border-focus); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; background: var(--bg-secondary); color: var(--text-primary);">
+                            SEC
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);"
+                                id="profile-analyst-name">alkes.s</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Role:
+                                <strong>Global Security & Compliance Administrator</strong>
+                            </p>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary);">Assigned Tenant: <span
+                                    class="badge group-sift" id="profile-tenant-badge"
+                                    style="font-size: 0.75rem;">Empire Corp</span></p>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: 1px solid var(--border-clean); padding-top: 2rem; margin-top: 1rem;">
+                        <div>
+                            <h4
+                                style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                Access Credentials</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.4rem;">
+                                <strong>Auth Framework:</strong> NIST CSF 2.0 Identity Assertion
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.4rem;">
+                                <strong>Session Lease Exp:</strong> 2026-05-27 23:59 UTC
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-primary);"><strong>IP Bounds:</strong>
+                                10.240.12.0/24 (Corporate Subnet)</p>
+                        </div>
+                        <div>
+                            <h4
+                                style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                Platform Authorizations</h4>
+                            <div id="profile-authorizations-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span class="badge group-non-sift">Reconciliation Approval</span>
+                                <span class="badge group-non-sift">CSV Ingestion Authority</span>
+                                <span class="badge group-non-sift">Secret Key Leasing</span>
+                                <span class="badge group-sift">Sift Fleet Access</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: flex-end; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
+                        <button class="btn"
+                            style="background: var(--status-critical); border-color: var(--status-critical); color: var(--bg-main);"
+                            onclick="terminateSessionLease()">Terminate Session Lease</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: User Login -->
+            <div id="section-login" class="section-view" style="display: none;">
+                <div class="card" style="max-width: 500px; margin: 0 auto; text-align: center;">
+                    <h2>Active Session Gateway</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        You are currently authenticated as part of the corporate Imperial Active Directory.
+                    </p>
+                    <div
+                        style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.5rem; font-size: 0.9rem; color: var(--text-primary); text-align: left; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <div><strong>Authenticated User:</strong> <span id="session-display-user"
+                                style="font-weight: 700;">-</span></div>
+                        <div><strong>Corporate Role:</strong> <span id="session-display-role"
+                                class="badge group-sift">-</span></div>
+                        <div><strong>Tenant Context:</strong> <span id="session-display-tenant"
+                                style="font-family: var(--font-mono); color: var(--text-secondary);">-</span></div>
+                        <div><strong>Session Lease:</strong> <span
+                                style="color: var(--status-low); font-weight: 700;">ACTIVE (Leased via Vault)</span>
+                        </div>
+                    </div>
+                    <button class="btn"
+                        style="width: 100%; background: var(--status-critical); border-color: var(--status-critical); color: var(--bg-main);"
+                        onclick="terminateSessionLease()">Terminate Session & Lock Gateway</button>
+                </div>
+            </div>
+
+            <!-- Section: Settings -->
+            <div id="section-settings" class="section-view" style="display: none;">
+                <div class="card">
+                    <h2>System Configurations</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Manage real-time compliance ingestion topics, Vault gateway paths, and EDR scoring parameters.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                        <div>
+                            <h3
+                                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.4rem;">
+                                Ingestion Pipeline (Kafka)</h3>
+                            <div class="input-group">
+                                <label for="set-kafka-topic">Kafka Compliance Ingest Topic</label>
+                                <input type="text" id="set-kafka-topic" value="eud.telemetry.compliance.raw">
+                            </div>
+                            <div class="input-group">
+                                <label for="set-kafka-partitions">Partitions Count</label>
+                                <input type="number" id="set-kafka-partitions" value="12">
+                            </div>
+                        </div>
+                        <div>
+                            <h3
+                                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.4rem;">
+                                Dynamic Key Provider (HashiCorp Vault)</h3>
+                            <div class="input-group">
+                                <label for="set-vault-addr">Vault Server Address</label>
+                                <input type="text" id="set-vault-addr"
+                                    value="https://vault.internal.aethelred.corp:8200">
+                            </div>
+                            <div class="input-group">
+                                <label for="set-vault-engine">Secret Engine Mount Path</label>
+                                <input type="text" id="set-vault-engine" value="secret/data/tenants">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary"
+                            onclick="logToTerminal('Settings modifications discarded.')">Reset</button>
+                        <button class="btn" onclick="saveSettings()">Save Configurations</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Interactive JS logic -->
+    <script>
+        // Simulated LDAP user and authorization directory
+        const simulatedLDAPDirectory = {
+            "admin.security": {
+                pin: "vault-admin-2026",
+                role: "admin",
+                roleLabel: "Global Security & Compliance Administrator",
+                authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Secret Key Leasing", "Sift Fleet Access", "Outbound Alerts Dispatch"]
+            },
+            "analyst.fleet": {
+                pin: "vault-analyst-2026",
+                role: "analyst",
+                roleLabel: "Global Security Analyst",
+                authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Sift Fleet Access"]
+            },
+            "operator.contain": {
+                pin: "vault-operator-2026",
+                role: "operator",
+                roleLabel: "Security Operations Operator",
+                authorizations: ["Reconciliation Approval", "Sift Fleet Access"]
+            },
+            "auditor.compliance": {
+                pin: "vault-auditor-2026",
+                role: "auditor",
+                roleLabel: "External Compliance Auditor",
+                authorizations: ["Read-Only Ledger Access"]
+            }
+        };
+
+        // Current active tenant session details
+        let currentSession = {
+            isLoggedIn: false, // Default is false, requiring full screen login on page boot
+            username: "",
+            role: "",
+            roleLabel: "",
+            tenant: "",
+            authorizations: []
+        };
+
+        let loginFailCount = 0;
+        let lockoutTimer = null;
+        let lockoutUntil = 0;
+
+        // Role-based privilege mapping & element locks
+        function enforceRoleBasedControls() {
+            const role = currentSession.role;
+            const isAdmin = (role === "admin");
+            const isAnalyst = (role === "analyst");
+            const isOperator = (role === "operator");
+            const isAuditor = (role === "auditor");
+
+            // 1. Details view controls & Network isolation buttons
+            const remButtons = document.querySelectorAll("#audit-details-panel .btn, #audit-details-panel .btn-secondary");
+            remButtons.forEach(btn => {
+                const isIsolation = btn.id === "btn-isolate-device";
+
+                // Identify which remediation
+                let onClickAttr = btn.getAttribute("onclick") || "";
+                const isRemPatch = onClickAttr.includes("'PATCH'");
+                const isRemEdr = onClickAttr.includes("'EDR'");
+                const isRemVault = onClickAttr.includes("'VAULT'");
+
+                if (isIsolation || isRemPatch || isRemEdr || isRemVault) {
+                    if (isAuditor) {
+                        btn.disabled = true;
+                        btn.style.opacity = 0.55;
+                        btn.style.cursor = "not-allowed";
+                        btn.title = "Access Denied: Auditor Read-Only";
+
+                        if (isIsolation) {
+                            btn.innerHTML = `<span>🔒 Isolated (Auditor Read-Only)</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                            btn.style.background = "var(--border-clean)";
+                            btn.style.borderColor = "var(--border-clean)";
+                            btn.style.color = "var(--text-muted)";
+                        }
+                    } else if (isOperator) {
+                        // Operator can isolate/reconnect and patch, but NOT EDR Scan or Vault Escrow
+                        if (isRemEdr || isRemVault) {
+                            btn.disabled = true;
+                            btn.style.opacity = 0.55;
+                            btn.style.cursor = "not-allowed";
+                            btn.title = "Access Denied: Operator Restricted";
+                        } else {
+                            btn.disabled = false;
+                            btn.style.opacity = 1;
+                            btn.style.cursor = "pointer";
+                            btn.title = "";
+
+                            if (isIsolation) {
+                                const dev = fleetDataset.find(d => d.id === selectedDevice);
+                                if (dev) {
+                                    if (dev.is_isolated) {
+                                        btn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                                        btn.style.background = "var(--status-low)";
+                                        btn.style.borderColor = "var(--status-low)";
+                                        btn.style.color = "var(--bg-main)";
+                                    } else {
+                                        btn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                                        btn.style.background = "var(--status-critical)";
+                                        btn.style.borderColor = "var(--status-critical)";
+                                        btn.style.color = "var(--bg-main)";
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // Admin & Analyst have full access to remediation
+                        btn.disabled = false;
+                        btn.style.opacity = 1;
+                        btn.style.cursor = "pointer";
+                        btn.title = "";
+
+                        if (isIsolation) {
+                            const dev = fleetDataset.find(d => d.id === selectedDevice);
+                            if (dev) {
+                                if (dev.is_isolated) {
+                                    btn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                                    btn.style.background = "var(--status-low)";
+                                    btn.style.borderColor = "var(--status-low)";
+                                    btn.style.color = "var(--bg-main)";
+                                } else {
+                                    btn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                                    btn.style.background = "var(--status-critical)";
+                                    btn.style.borderColor = "var(--status-critical)";
+                                    btn.style.color = "var(--bg-main)";
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 2. CSV Import / Export
+            const importBtnLabel = document.querySelector('label[for="csv-import-file"]');
+            const exportBtn = document.querySelector('button[onclick="triggerCsvExport()"]');
+
+            if (isAuditor || isOperator) {
+                const labelTitle = isAuditor ? "Auditor Read-Only" : "Operator Restricted";
+                if (importBtnLabel) {
+                    importBtnLabel.style.opacity = 0.55;
+                    importBtnLabel.style.cursor = "not-allowed";
+                    importBtnLabel.style.pointerEvents = "none";
+                    importBtnLabel.title = labelTitle;
+                }
+                if (exportBtn) {
+                    exportBtn.disabled = true;
+                    exportBtn.style.opacity = 0.55;
+                    exportBtn.style.cursor = "not-allowed";
+                    exportBtn.title = labelTitle;
+                }
+            } else {
+                if (importBtnLabel) {
+                    importBtnLabel.style.opacity = 1;
+                    importBtnLabel.style.cursor = "pointer";
+                    importBtnLabel.style.pointerEvents = "auto";
+                    importBtnLabel.title = "";
+                }
+                if (exportBtn) {
+                    exportBtn.disabled = false;
+                    exportBtn.style.opacity = 1;
+                    exportBtn.style.cursor = "pointer";
+                    exportBtn.title = "";
+                }
+            }
+
+            // 3. Reconciliation Simulation Button (Risk Management view)
+            const reconBtn = document.querySelector('button[onclick="runReconciliationSimulation()"]');
+            if (reconBtn) {
+                if (isAuditor || isOperator) {
+                    reconBtn.disabled = true;
+                    reconBtn.style.opacity = 0.55;
+                    reconBtn.style.cursor = "not-allowed";
+                    reconBtn.title = isAuditor ? "Auditor Read-Only" : "Operator Restricted";
+                } else {
+                    reconBtn.disabled = false;
+                    reconBtn.style.opacity = 1;
+                    reconBtn.style.cursor = "pointer";
+                    reconBtn.title = "";
+                }
+            }
+        }
+
+        // Security helpers to mitigate Stored XSS and CSV Formula Injection
+        function escapeHTML(str) {
+            if (str === undefined || str === null) return "";
+            return String(str).replace(/[&<>'"]/g,
+                tag => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                }[tag] || tag)
+            );
+        }
+
+        function sanitizeCSVCell(val) {
+            if (val === undefined || val === null) return "";
+            let str = String(val);
+            // Mitigate spreadsheet formula injection attacks (CSV Injection)
+            if (str.startsWith("=") || str.startsWith("+") || str.startsWith("-") || str.startsWith("@") || str.startsWith("\t") || str.startsWith("\r")) {
+                str = "'" + str;
+            }
+            return str;
+        }
+
+        const assetConditions = ["IN_USE", "IN_REPAIR", "BROKEN", "DECOMMISSIONED"];
+        const manufacturersList = ["Dell Inc.", "Apple Inc.", "Lenovo", "HP", "Microsoft"];
+        const osVersionsList = [
+            { os: "Windows 11 (22631)", family: "Windows" },
+            { os: "Windows 10 Enterprise", family: "Windows" },
+            { os: "macOS 14.4 (Sonoma)", family: "macOS" },
+            { os: "Ubuntu 22.04 LTS", family: "Linux" }
+        ];
+
+        // Software catalogs
+        const sampleSoftwareCatalog = [
+            { name: "SentinelOne Endpoint Agent", required: "v24.2.0" },
+            { name: "Zscaler Client Connector", required: "v4.2.0" },
+            { name: "Microsoft Defender ATP", required: "v10.1.2" },
+            { name: "Slack Desktop Client", required: "v4.36.0" },
+            { name: "Zoom Meetings Client", required: "v5.17.5" }
+        ];
+
+        // Corporate User Assigned and Office Locations catalogs
+        const userAssignedCatalog = ["alkes.s", "j.doe", "s.johnson", "a.taylor", "r.jones", "m.smith", "d.brown", "c.miller", "l.davis", "k.wilson"];
+        const officeLocationsCatalog = ["New York HQs", "London Office", "Singapore Hub", "Remote - US", "Munich Lab", "Tokyo branch"];
+
+        // Seed generator for highly deterministic, realistic dataset at true corporate scale (exactly 16,742 devices)
+        function generateStructuredAssets(count) {
+            const list = [];
+            for (let i = 1; i <= count; i++) {
+                const man = manufacturersList[i % manufacturersList.length];
+                const osInfo = osVersionsList[i % osVersionsList.length];
+
+                // Realistic distribution: 92% in use, 4% in repair, 2% broken, 2% decommissioned
+                let condition = "IN_USE";
+                if (i % 25 === 0) condition = "IN_REPAIR";
+                else if (i % 50 === 0) condition = "BROKEN";
+                else if (i % 47 === 0) condition = "DECOMMISSIONED";
+
+                // Corporate standard: ~85% low risk compliant, ~10% medium risk warnings, ~5% high/critical incidents
+                let score = 100.00;
+                if (condition === "BROKEN") {
+                    score = 12.50;
+                } else if (condition === "IN_REPAIR") {
+                    score = 54.20;
+                } else if (i % 10 === 0) {
+                    score = parseFloat((Math.random() * (84 - 65) + 65).toFixed(2));
+                } else if (i % 20 === 0) {
+                    score = parseFloat((Math.random() * (64 - 40) + 40).toFixed(2));
+                } else if (i % 33 === 0) {
+                    score = parseFloat((Math.random() * (39 - 10) + 10).toFixed(2));
+                } else {
+                    score = parseFloat((Math.random() * (100 - 92) + 92).toFixed(2));
+                }
+
+                let level = "LOW";
+                if (score < 40) level = "CRITICAL";
+                else if (score < 65) level = "HIGH";
+                else if (score < 85) level = "MEDIUM";
+
+                // Generate software audits
+                const software = sampleSoftwareCatalog.map((sw, swIdx) => {
+                    let status = "COMPLIANT";
+                    let installed = sw.required;
+                    if (score < 90 && (swIdx + i) % 2 === 0) {
+                        status = "NON_COMPLIANT";
+                        installed = "v" + (parseInt(sw.required.substring(1, 3)) - 1) + ".0.0";
+                    }
+                    return { name: sw.name, installed: installed, required: sw.required, status: status };
+                });
+
+                // Generate new corporate metadata fields
+                const user = userAssignedCatalog[i % userAssignedCatalog.length];
+                const location = officeLocationsCatalog[i % officeLocationsCatalog.length];
+
+                // Strictly 'Sift' or 'Non-Sift' location group category
+                const locationGroup = (i % 3 === 0) ? "Sift" : "Non-Sift";
+
+                // Deterministic last login dates
+                const hour = 10 + (i % 8);
+                const min = 10 + (i % 45);
+                const lastLoginStr = `2026-05-${20 + (i % 7)} ${hour}:${min}`;
+
+                const deviceName = `${man.substring(0, 3).toUpperCase()}-EUD-${1000 + i}`;
+                list.push({
+                    id: `dev-${Math.abs(8000 + i).toString(16)}`,
+                    canonical_name: deviceName.toLowerCase(),
+                    serial: `SN-${man.substring(0, 3).toUpperCase()}-992${1000 + i}`,
+                    mac: `00:1A:2B:3C:5F:${(10 + i % 240).toString(16).toUpperCase()}`,
+                    manufacturer: man,
+                    os: osInfo.os,
+                    os_family: osInfo.family,
+                    score: score,
+                    level: level,
+                    condition: condition,
+                    software: software,
+                    user_assigned: user,
+                    last_login: lastLoginStr,
+                    location: location,
+                    location_group: locationGroup,
+                    is_isolated: false
+                });
+            }
+            return list;
+        }
+
+        // Initialize with exactly 16,742 corporate assets
+        let fleetDataset = generateStructuredAssets(16742);
+        let filteredDataset = [...fleetDataset];
+        let selectedDevice = null;
+
+        // Swiss Pagination variables
+        let currentPage = 1;
+        const pageSize = 10;
+
+        function logToTerminal(text, type = "info") {
+            const term = document.getElementById("audit-terminal");
+            if (!term) return;
+            const line = document.createElement("div");
+            line.className = `terminal-line ${type}`;
+            const time = new Date().toLocaleTimeString();
+            line.innerText = `[${time}] ${text}`;
+            term.appendChild(line);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        function switchNavSection(target) {
+            // NIST CSF 2.0 Airtight Auth Boundaries
+            if (!currentSession.isLoggedIn && target !== 'login') {
+                logToTerminal(`[Security Challenge] Access Blocked: Session token missing or lease expired. Redirecting.`, "error");
+                document.getElementById("login-screen-canvas").style.display = "flex";
+                document.getElementById("main-app-container").style.display = "none";
+                return;
+            }
+
+            if (currentSession.isLoggedIn) {
+                if ((target === 'settings' || target === 'reporting') && currentSession.role !== 'admin') {
+                    logToTerminal(`[Security Alert] RBAC Violation: User "${currentSession.username}" (Role: ${currentSession.role.toUpperCase()}) lacks Global Admin privileges for "${target.toUpperCase()}".`, "error");
+                    alert(`Access Denied: Global Administrator privileges are required to view the ${target.toUpperCase()} configurations.`);
+                    return;
+                }
+            }
+
+            // Update session status displays if target is login
+            if (target === 'login') {
+                document.getElementById("session-display-user").innerText = currentSession.username;
+                const roleBadge = document.getElementById("session-display-role");
+                roleBadge.innerText = currentSession.role.toUpperCase();
+                roleBadge.className = `badge ${currentSession.role === 'admin' ? 'group-sift' : 'group-non-sift'}`;
+                document.getElementById("session-display-tenant").innerText = currentSession.tenant.replace(/\s+/g, ' ');
+            }
+
+            document.querySelectorAll(".sidebar-menu .menu-item").forEach(item => item.classList.remove("active"));
+
+            const clickedMenu = document.getElementById(`menu-${target}`);
+            if (clickedMenu) {
+                clickedMenu.classList.add("active");
+            } else if (window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add("active");
+            }
+
+            logToTerminal(`Console navigation: loading sidebar target view "${target.toUpperCase()}"...`);
+
+            // Hide all section views
+            document.querySelectorAll(".section-view").forEach(section => {
+                section.style.display = "none";
+            });
+
+            // Show selected section view
+            const targetSection = document.getElementById(`section-${target}`);
+            if (targetSection) {
+                targetSection.style.display = "block";
+            }
+
+            // Update main section title dynamically
+            const titleEl = document.getElementById("main-section-title");
+            if (titleEl) {
+                switch (target) {
+                    case "analytics":
+                        titleEl.innerText = "Executive Overview";
+                        break;
+                    case "compliance":
+                        titleEl.innerText = "Fleet Compliance Ledger";
+                        break;
+                    case "risk":
+                        titleEl.innerText = "Compliance & Risk Management Engine";
+                        break;
+                    case "reporting":
+                        titleEl.innerText = "Compliance Telemetry Reporting Center";
+                        break;
+                    case "profile":
+                        titleEl.innerText = "Security Analyst Identity";
+                        break;
+                    case "login":
+                        titleEl.innerText = "Tenant Session Gateway";
+                        break;
+                    case "settings":
+                        titleEl.innerText = "Console Settings & Pipeline Parameters";
+                        break;
+                    default:
+                        titleEl.innerText = "Executive Overview";
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(content => content.style.display = "none");
+
+            const clickedBtn = document.getElementById(`tab-btn-${tabId}`);
+            if (clickedBtn) clickedBtn.classList.add("active");
+            document.getElementById(`tab-${tabId}`).style.display = "block";
+            logToTerminal(`Console navigation: switched control pane to ${tabId.toUpperCase()}`);
+        }
+
+        // CSV Ingestion & Export
+        function triggerCsvExport() {
+            logToTerminal(`[Export] Extracting active query records for export...`);
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Device ID,Device Name,OS,Serial And Manufacturer,User Assigned,Last Login,Location,Location Group,Condition,Compliance Score,Risk Level\n";
+
+            filteredDataset.forEach(row => {
+                const idSanitized = sanitizeCSVCell(row.id);
+                const nameSanitized = sanitizeCSVCell(row.canonical_name);
+                const osSanitized = sanitizeCSVCell(row.os);
+                const serialMfgSanitized = sanitizeCSVCell(`${row.serial} / ${row.manufacturer}`);
+                const userSanitized = sanitizeCSVCell(row.user_assigned);
+                const loginSanitized = sanitizeCSVCell(row.last_login);
+                const locSanitized = sanitizeCSVCell(row.location);
+                const locGrpSanitized = sanitizeCSVCell(row.location_group);
+                const condSanitized = sanitizeCSVCell(row.condition);
+                const levelSanitized = sanitizeCSVCell(row.level);
+
+                const line = `"${idSanitized}","${nameSanitized}","${osSanitized}","${serialMfgSanitized}","${userSanitized}","${loginSanitized}","${locSanitized}","${locGrpSanitized}","${condSanitized}",${row.score},"${levelSanitized}"`;
+                csvContent += line + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `eud_compliance_export_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            logToTerminal(`[Export] File successfully compiled. Dispatched ${filteredDataset.length} rows as CSV download stream.`, "info");
+        }
+
+        function handleCsvImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            logToTerminal(`[Import] Upload request recognized for file: "${file.name}"`);
+            const reader = new FileReader();
+            const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+
+            reader.onload = function (e) {
+                let data = e.target.result;
+                let workbook;
+                try {
+                    if (isExcel) {
+                        const bytes = new Uint8Array(data);
+                        workbook = XLSX.read(bytes, { type: "array" });
+                    } else {
+                        workbook = XLSX.read(data, { type: "string" });
+                    }
+                } catch (err) {
+                    logToTerminal(`[Import] Parsing failed: ${err.message}`, "error");
+                    return;
+                }
+
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+
+                if (rows.length < 2) {
+                    logToTerminal("[Import] Failed: Incompatible empty or corrupted file template.", "error");
+                    return;
+                }
+
+                const headers = rows[0].map(h => String(h).replace(/["\r]/g, "").trim().toLowerCase());
+                const headerMap = {};
+                headers.forEach((h, i) => headerMap[h] = i);
+
+                const required = ["devicename", "serialnumber", "macaddress", "manufacturer"];
+                for (let r of required) {
+                    if (headerMap[r] === undefined) {
+                        logToTerminal(`[Import] Ingestion failed: Missing mandatory column header: "${r}"`, "error");
+                        return;
+                    }
+                }
+
+                let newItems = 0;
+                let mergedItems = 0;
+
+                for (let i = 1; i < rows.length; i++) {
+                    const row = rows[i];
+                    if (!row || row.length === 0 || !row[headerMap["devicename"]]) continue;
+
+                    const name = String(row[headerMap["devicename"]]).trim();
+                    const serial = String(row[headerMap["serialnumber"]]).trim();
+                    const mac = String(row[headerMap["macaddress"]]).trim();
+                    const manufacturer = String(row[headerMap["manufacturer"]]).trim();
+
+                    const condition = (headerMap["condition"] !== undefined && row[headerMap["condition"]] !== undefined) ? String(row[headerMap["condition"]]).trim() : "IN_USE";
+                    const user = (headerMap["userassigned"] !== undefined && row[headerMap["userassigned"]] !== undefined) ? String(row[headerMap["userassigned"]]).trim() : "unassigned";
+                    const lastLogin = (headerMap["lastlogin"] !== undefined && row[headerMap["lastlogin"]] !== undefined) ? String(row[headerMap["lastlogin"]]).trim() : "2026-05-27 09:00";
+                    const location = (headerMap["location"] !== undefined && row[headerMap["location"]] !== undefined) ? String(row[headerMap["location"]]).trim() : "Remote";
+                    const locationGroup = (headerMap["locationgroup"] !== undefined && row[headerMap["locationgroup"]] !== undefined) ? String(row[headerMap["locationgroup"]]).trim() : "Non-Sift";
+
+                    if (!name || !serial) continue;
+
+                    const normName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    let existing = fleetDataset.find(dev => dev.serial === serial || dev.canonical_name === normName);
+
+                    if (existing) {
+                        existing.score = 100.00;
+                        existing.level = "LOW";
+                        existing.condition = condition;
+                        existing.user_assigned = user;
+                        existing.last_login = lastLogin;
+                        existing.location = location;
+                        existing.location_group = locationGroup;
+                        mergedItems++;
+                    } else {
+                        fleetDataset.push({
+                            id: `dev-${Math.random().toString(36).substring(2, 8)}`,
+                            canonical_name: name,
+                            serial: serial,
+                            mac: mac,
+                            manufacturer: manufacturer,
+                            os: "Windows 10 Enterprise",
+                            os_family: "Windows",
+                            score: 100.00,
+                            level: "LOW",
+                            condition: condition,
+                            user_assigned: user,
+                            last_login: lastLogin,
+                            location: location,
+                            location_group: locationGroup,
+                            is_isolated: false,
+                            software: sampleSoftwareCatalog.map(sw => ({ name: sw.name, installed: sw.required, required: sw.required, status: "COMPLIANT" }))
+                        });
+                        newItems++;
+                    }
+                }
+
+                updateFleetWideMetrics();
+                logToTerminal(`[Import] Completed sheet processing. Registered ${newItems} new devices. Updated/merged ${mergedItems} entries.`, "info");
+
+                handleFleetQueryChange();
+            };
+
+            if (isExcel) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
+        }
+
+        // Filtering & Search functions
+        function handleFleetQueryChange() {
+            const query = document.getElementById("fleet-search-input").value.toLowerCase();
+            const riskFilter = document.getElementById("fleet-filter-risk").value;
+            const conditionFilter = document.getElementById("fleet-filter-condition").value;
+            const locGroupFilter = document.getElementById("fleet-filter-loc-group").value;
+            const osPlatformFilter = document.getElementById("fleet-filter-os-platform").value;
+            const scoreRangeFilter = document.getElementById("fleet-filter-score-range").value;
+
+            filteredDataset = fleetDataset.filter(item => {
+                const matchesSearch =
+                    item.id.toLowerCase().includes(query) ||
+                    item.canonical_name.toLowerCase().includes(query) ||
+                    item.serial.toLowerCase().includes(query) ||
+                    item.os.toLowerCase().includes(query) ||
+                    item.condition.toLowerCase().includes(query) ||
+                    item.user_assigned.toLowerCase().includes(query) ||
+                    item.location.toLowerCase().includes(query);
+
+                const matchesRisk = (riskFilter === "ALL") || (item.level === riskFilter);
+                const matchesCondition = (conditionFilter === "ALL") || (item.condition === conditionFilter);
+                const matchesLocGroup = (locGroupFilter === "ALL") || (item.location_group === locGroupFilter);
+
+                // OS family match: check if matches family or if family string is contained
+                const matchesOS = (osPlatformFilter === "ALL") ||
+                    (item.os_family && item.os_family.toLowerCase() === osPlatformFilter.toLowerCase()) ||
+                    (item.os && item.os.toLowerCase().includes(osPlatformFilter.toLowerCase()));
+
+                // Score range match
+                let matchesScore = true;
+                if (scoreRangeFilter === "COMPLIANT") {
+                    matchesScore = (item.score >= 90);
+                } else if (scoreRangeFilter === "WARNING") {
+                    matchesScore = (item.score >= 60 && item.score < 90);
+                } else if (scoreRangeFilter === "CRITICAL") {
+                    matchesScore = (item.score < 60);
+                }
+
+                return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS && matchesScore;
+            });
+
+            currentPage = 1;
+            populateFleetTable();
+        }
+
+        function changePage(direction) {
+            const maxPage = Math.ceil(filteredDataset.length / pageSize) || 1;
+            currentPage += direction;
+            if (currentPage < 1) currentPage = 1;
+            if (currentPage > maxPage) currentPage = maxPage;
+            populateFleetTable();
+        }
+
+        function getConditionBadgeClass(state) {
+            switch (state) {
+                case "IN_USE": return "state-use";
+                case "IN_REPAIR": return "state-repair";
+                case "BROKEN": return "state-broken";
+                default: return "state-decom";
+            }
+        }
+
+        function getRiskBadgeClass(level) {
+            switch (level) {
+                case "LOW": return "risk-low";
+                case "MEDIUM": return "risk-medium";
+                case "HIGH": return "risk-high";
+                default: return "risk-critical";
+            }
+        }
+
+        function showDeviceAuditDetails(devId) {
+            const dev = fleetDataset.find(d => d.id === devId);
+            if (!dev) return;
+
+            selectedDevice = devId;
+
+            document.getElementById("details-default-msg").style.display = "none";
+            const contentBox = document.getElementById("details-content-box");
+            contentBox.style.display = "grid";
+
+            document.getElementById("det-name").innerText = dev.canonical_name.toUpperCase();
+            document.getElementById("det-id").innerText = dev.id;
+            document.getElementById("det-serial").innerText = dev.serial;
+
+            const condBadge = document.getElementById("det-condition-badge");
+            condBadge.innerText = dev.condition.replace("_", " ");
+            condBadge.className = `badge ${getConditionBadgeClass(dev.condition)}`;
+
+            const levelBadge = document.getElementById("det-level-badge");
+            levelBadge.innerText = dev.level + " RISK";
+            levelBadge.className = `badge ${getRiskBadgeClass(dev.level)}`;
+
+            // Toggle isolation alert banner
+            const banner = document.getElementById("det-isolation-banner");
+            if (dev.is_isolated) {
+                banner.style.display = "block";
+            } else {
+                banner.style.display = "none";
+            }
+
+            // Populate newly requested fields
+            document.getElementById("det-user").innerText = dev.user_assigned;
+            document.getElementById("det-login").innerText = dev.last_login;
+            document.getElementById("det-location").innerText = dev.location;
+
+            const locGrpBadge = document.getElementById("det-loc-group");
+            locGrpBadge.innerText = dev.location_group;
+            locGrpBadge.className = `badge ${dev.location_group === 'Sift' ? 'group-sift' : 'group-non-sift'}`;
+
+            const tbody = document.getElementById("det-software-tbody");
+            tbody.innerHTML = "";
+            dev.software.forEach(sw => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td><strong>${escapeHTML(sw.name)}</strong></td>
+                    <td style="font-family: var(--font-mono);">${escapeHTML(sw.installed)}</td>
+                    <td style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHTML(sw.required)}</td>
+                    <td><span class="badge ${sw.status === 'COMPLIANT' ? 'risk-low' : 'risk-critical'}">${escapeHTML(sw.status)}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Generate deterministic scoring trend sparkline points (6 historical intervals)
+            const trendScores = [];
+            const seed = dev.id.charCodeAt(dev.id.length - 1) || 42;
+            for (let k = 0; k < 5; k++) {
+                const modifier = Math.sin(k + seed) * 10;
+                let prevScore = dev.score - (5 - k) * 2.5 + modifier;
+                prevScore = Math.min(100, Math.max(0, parseFloat(prevScore.toFixed(2))));
+                trendScores.push(prevScore);
+            }
+            trendScores.push(dev.score);
+
+            const mapX = (idx) => 10 + (idx * 46);
+            const mapY = (score) => 70 - ((score / 100) * 60);
+
+            let pathD = `M ${mapX(0)},${mapY(trendScores[0])}`;
+            for (let k = 1; k < trendScores.length; k++) {
+                pathD += ` L ${mapX(k)},${mapY(trendScores[k])}`;
+            }
+            document.getElementById("det-sparkline-path").setAttribute("d", pathD);
+
+            const dotsContainer = document.getElementById("det-sparkline-dots");
+            dotsContainer.innerHTML = "";
+            trendScores.forEach((score, idx) => {
+                const cx = mapX(idx);
+                const cy = mapY(score);
+
+                // Adaptive vertical text offset: if dot near top, render numeric score below it, else above it
+                const textYOffset = cy < 20 ? cy + 12 : cy - 8;
+
+                dotsContainer.innerHTML += `
+                    <circle cx="${cx}" cy="${cy}" r="3" fill="#ffffff" stroke="var(--color-accent)" stroke-width="1.5"></circle>
+                    <text x="${cx}" y="${textYOffset}" font-size="8px" fill="var(--text-secondary)" font-family="var(--font-mono)" font-weight="700" text-anchor="middle">${score.toFixed(1)}</text>
+                `;
+            });
+
+            // Update Network Isolation Button state
+            const isolateBtn = document.getElementById("btn-isolate-device");
+            if (dev.is_isolated) {
+                isolateBtn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                isolateBtn.style.background = "var(--status-low)";
+                isolateBtn.style.borderColor = "var(--status-low)";
+            } else {
+                isolateBtn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                isolateBtn.style.background = "var(--status-critical)";
+                isolateBtn.style.borderColor = "var(--status-critical)";
+            }
+
+            logToTerminal(`[Audit] Loaded software and corporate metadata audits for device ID ${dev.id}`);
+            populateFleetTable();
+            enforceRoleBasedControls();
+        }
+
+        // Unified score calculation algorithm link software table status dynamically
+        function recalculateSingleDeviceScore(dev) {
+            if (dev.is_isolated) {
+                dev.score = 10.00;
+                dev.level = "CRITICAL";
+                return;
+            }
+            if (dev.condition === "BROKEN") {
+                dev.score = 12.50;
+                dev.level = "CRITICAL";
+                return;
+            }
+            if (dev.condition === "IN_REPAIR") {
+                dev.score = 54.20;
+                dev.level = "HIGH";
+                return;
+            }
+
+            let score = 100.00;
+            let nonCompliantCount = 0;
+            dev.software.forEach(sw => {
+                if (sw.status === "NON_COMPLIANT") {
+                    nonCompliantCount++;
+                    if (sw.name.includes("SentinelOne") || sw.name.includes("Defender")) {
+                        score -= 25.0; // Heavyweight critical security agent
+                    } else if (sw.name.includes("Zscaler")) {
+                        score -= 15.0; // Network proxy/gateway
+                    } else {
+                        score -= 10.0; // Normal office package
+                    }
+                }
+            });
+
+            score = Math.max(0, Math.min(100, score));
+            dev.score = parseFloat(score.toFixed(2));
+
+            if (dev.score < 40) dev.level = "CRITICAL";
+            else if (dev.score < 65) dev.level = "HIGH";
+            else if (dev.score < 85) dev.level = "MEDIUM";
+            else dev.level = "LOW";
+        }
+
+        // Remediation trigger handler simulation
+        function triggerDeviceRemediation(action) {
+            if (!selectedDevice) return;
+            const dev = fleetDataset.find(d => d.id === selectedDevice);
+            if (!dev) return;
+
+            let buttonSelector = "";
+            let prefix = "";
+
+            if (action === 'PATCH') {
+                buttonSelector = "PATCH";
+                prefix = "[WSUS PATCH]";
+                logToTerminal(`${prefix} Initiating remote WSUS policy sync & updates installation for host ${dev.canonical_name.toUpperCase()} (ID: ${dev.id})...`);
+            } else if (action === 'EDR') {
+                buttonSelector = "EDR";
+                prefix = "[SentinelOne EDR]";
+                logToTerminal(`${prefix} Dispatched remote threat verification scan command...`);
+            } else if (action === 'VAULT') {
+                buttonSelector = "VAULT";
+                prefix = "[HashiCorp Vault]";
+                logToTerminal(`${prefix} Initializing secure BitLocker cryptographic recovery escrow session...`);
+            }
+
+            // Button feedback loaders
+            const buttons = document.querySelectorAll(".btn-secondary");
+            let targetBtn = null;
+            buttons.forEach(btn => {
+                if (btn.getAttribute("onclick") && btn.getAttribute("onclick").includes(action)) {
+                    targetBtn = btn;
+                }
+            });
+
+            if (targetBtn) {
+                targetBtn.disabled = true;
+                const originalHtml = targetBtn.innerHTML;
+                targetBtn.innerHTML = `<span>⏳ Processing Remediation...</span> <span style="font-weight:400; color:var(--text-muted);">${action}</span>`;
+
+                setTimeout(() => {
+                    targetBtn.disabled = false;
+                    targetBtn.innerHTML = originalHtml;
+
+                    if (action === 'PATCH') {
+                        let patchesApplied = 0;
+                        dev.software.forEach(sw => {
+                            if (sw.status === "NON_COMPLIANT" && !sw.name.includes("SentinelOne")) {
+                                sw.installed = sw.required;
+                                sw.status = "COMPLIANT";
+                                patchesApplied++;
+                                logToTerminal(`${prefix} Package "${sw.name}" successfully upgraded to ${sw.required}.`, "info");
+                            }
+                        });
+                        logToTerminal(`${prefix} Patch reconciliation completed. Applied ${patchesApplied} pending security updates.`, "info");
+                    } else if (action === 'EDR') {
+                        let threatsQuarantined = 0;
+                        dev.software.forEach(sw => {
+                            if (sw.name.includes("SentinelOne") && sw.status === "NON_COMPLIANT") {
+                                sw.installed = sw.required;
+                                sw.status = "COMPLIANT";
+                                threatsQuarantined++;
+                                logToTerminal(`${prefix} SentinelOne agent upgraded and quarantined threat nodes.`, "info");
+                            }
+                        });
+                        logToTerminal(`${prefix} Active threat quarantine verified. Agent operational.`, "info");
+                    } else if (action === 'VAULT') {
+                        logToTerminal(`${prefix} Secure escrow verified. Transported AES-256 BitLocker recovery keys to vault mount "secret/data/tenants/${dev.id}". Key lease lease-id-${Math.random().toString(36).substring(7)} created.`, "info");
+                    }
+
+                    recalculateSingleDeviceScore(dev);
+                    showDeviceAuditDetails(dev.id);
+                    populateFleetTable();
+                    updateFleetWideMetrics();
+                }, 800);
+            }
+        }
+
+        // Subnet Isolation Containment control
+        function toggleDeviceIsolation() {
+            if (!selectedDevice) return;
+            const dev = fleetDataset.find(d => d.id === selectedDevice);
+            if (!dev) return;
+
+            const prefix = "[EDR Containment]";
+
+            if (dev.is_isolated) {
+                dev.is_isolated = false;
+                logToTerminal(`${prefix} Restored network routes and unlocked firewall rules for host ${dev.canonical_name.toUpperCase()}. Reconnected.`, "info");
+            } else {
+                dev.is_isolated = true;
+                logToTerminal(`${prefix} WARNING: HOST ISOLATION TRIGGERED for host ${dev.canonical_name.toUpperCase()} (ID: ${dev.id}). Port blocks successfully active.`, "error");
+            }
+
+            recalculateSingleDeviceScore(dev);
+            showDeviceAuditDetails(dev.id);
+            populateFleetTable();
+            updateFleetWideMetrics();
+        }
+
+        function populateFleetTable() {
+            const body = document.getElementById("fleet-table-body");
+            body.innerHTML = "";
+
+            const total = filteredDataset.length;
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = Math.min(startIdx + pageSize, total);
+
+            const displaySlice = filteredDataset.slice(startIdx, endIdx);
+
+            if (displaySlice.length === 0) {
+                body.innerHTML = `<tr><td colspan="9" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets found.</td></tr>`;
+            } else {
+                displaySlice.forEach(dev => {
+                    const isSelected = (dev.id === selectedDevice) ? "selected-row" : "";
+                    const tr = document.createElement("tr");
+                    tr.className = isSelected;
+                    tr.setAttribute("onclick", `showDeviceAuditDetails('${dev.id}')`);
+
+                    const escapedName = escapeHTML(dev.canonical_name);
+                    let deviceNameMarkup = escapedName;
+                    if (dev.is_isolated) {
+                        deviceNameMarkup = `<span style="text-decoration: line-through; color: var(--status-critical); font-weight:700;">${escapedName}</span> <span class="badge risk-critical" style="font-size:0.6rem; padding: 0.1rem 0.25rem;">CONTAINED</span>`;
+                    } else {
+                        deviceNameMarkup = `<strong>${escapedName}</strong>`;
+                    }
+
+                    tr.innerHTML = `
+                        <td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem;">${escapeHTML(dev.id)}</td>
+                        <td>${deviceNameMarkup}</td>
+                        <td style="font-size: 0.85rem; font-weight: 600;">${escapeHTML(dev.user_assigned)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary);">${escapeHTML(dev.last_login)}</td>
+                        <td style="font-size: 0.85rem; color: var(--text-secondary);">${escapeHTML(dev.location)}</td>
+                        <td><span class="badge ${dev.location_group === 'Sift' ? 'group-sift' : 'group-non-sift'}">${escapeHTML(dev.location_group)}</span></td>
+                        <td><span class="badge ${getConditionBadgeClass(dev.condition)}">${escapeHTML(dev.condition.replace("_", " "))}</span></td>
+                        <td style="font-weight: 700; font-family: var(--font-mono); color: ${getScoreColor(dev.score)};">${dev.score.toFixed(2)}</td>
+                        <td><span class="badge ${getRiskBadgeClass(dev.level)}">${escapeHTML(dev.level)}</span></td>
+                    `;
+                    body.appendChild(tr);
+                });
+            }
+
+            document.getElementById("pag-start").innerText = total === 0 ? 0 : (startIdx + 1).toLocaleString();
+            document.getElementById("pag-end").innerText = endIdx.toLocaleString();
+            document.getElementById("pag-total").innerText = total.toLocaleString();
+
+            const btnPrev = document.getElementById("btn-pag-prev");
+            const btnNext = document.getElementById("btn-pag-next");
+
+            btnPrev.disabled = (currentPage === 1);
+            btnNext.disabled = (endIdx >= total);
+
+            btnPrev.style.opacity = btnPrev.disabled ? 0.4 : 1;
+            btnNext.style.opacity = btnNext.disabled ? 0.4 : 1;
+            enforceRoleBasedControls();
+        }
+
+        // Dynamic EDR S1 controls
+        function calculateFingerprint(serial, mac0, manufacturer) {
+            const raw = `${serial.trim().toLowerCase()}:${mac0.trim().toLowerCase()}:${manufacturer.trim().toLowerCase()}`;
+            let hash = 0;
+            for (let i = 0; i < raw.length; i++) {
+                hash = (hash << 5) - hash + raw.charCodeAt(i);
+                hash |= 0;
+            }
+            return "sha256-" + Math.abs(hash).toString(16).repeat(4).substring(0, 64);
+        }
+
+        function getLevenshteinDistance(s, t) {
+            if (!s.length) return t.length;
+            if (!t.length) return s.length;
+            const arr = [];
+            for (let i = 0; i <= t.length; i++) { arr[i] = [i]; }
+            for (let j = 0; j <= s.length; j++) { arr[0][j] = j; }
+            for (let i = 1; i <= t.length; i++) {
+                for (let j = 1; j <= s.length; j++) {
+                    const cost = t[i - 1] === s[j - 1] ? 0 : 1;
+                    arr[i][j] = Math.min(
+                        arr[i - 1][j] + 1,
+                        arr[i][j - 1] + 1,
+                        arr[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return arr[t.length][s.length];
+        }
+
+        function runReconciliationSimulation() {
+            const nameInput = document.getElementById("recon-name").value;
+            const serialInput = document.getElementById("recon-serial").value;
+            const macInput = document.getElementById("recon-mac").value;
+            const manufacturerInput = document.getElementById("recon-manufacturer").value;
+
+            const normalizedInput = nameInput.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+            const fp = calculateFingerprint(serialInput, macInput, manufacturerInput);
+            document.getElementById("out-fp").innerText = fp;
+
+            logToTerminal(`[Reconciler] Evaluation triggered for incoming name: "${nameInput}"`);
+
+            const actionBadge = document.getElementById("out-action");
+
+            const subset = fleetDataset.slice(0, 500);
+            for (let dev of subset) {
+                if (dev.canonical_name === normalizedInput) {
+                    document.getElementById("out-stage").innerText = "Stage 1: Exact Match (Normalized Name)";
+                    document.getElementById("out-confidence").innerText = "100.00%";
+                    actionBadge.innerText = "AUTO_MERGE";
+                    actionBadge.className = "badge risk-low";
+                    document.getElementById("out-desc").innerText = `Reconciled perfectly against existing device ID ${dev.id}.`;
+                    logToTerminal(`[Reconciler] Stage 1 Exact Match resolved against device ${dev.id} (Confidence 100%). Decision: AUTO_MERGE`, "info");
+                    return;
+                }
+            }
+
+            for (let dev of subset) {
+                const devFp = calculateFingerprint(dev.serial, dev.mac, dev.manufacturer);
+                if (devFp === fp || dev.serial === serialInput) {
+                    document.getElementById("out-stage").innerText = "Stage 2: Hardware Fingerprint Matching";
+                    document.getElementById("out-confidence").innerText = "95.00%";
+                    actionBadge.innerText = "AUTO_MERGE";
+                    actionBadge.className = "badge risk-low";
+                    document.getElementById("out-desc").innerText = `Reconciled via hardware cryptographic fingerprint matching device ID ${dev.id}.`;
+                    logToTerminal(`[Reconciler] Stage 2 Fingerprint matched device ${dev.id} (Confidence 95%). Decision: AUTO_MERGE`, "info");
+                    return;
+                }
+            }
+
+            let bestDist = 999;
+            let matchedDev = null;
+            for (let dev of subset) {
+                const dist = getLevenshteinDistance(normalizedInput, dev.canonical_name);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    matchedDev = dev;
+                }
+            }
+
+            const threshold = Math.max(2, Math.floor(normalizedInput.length / 5));
+            if (bestDist <= threshold) {
+                const confidence = 100 - (bestDist * 15);
+                const action = confidence >= 90 ? "AUTO_MERGE" : "HUMAN_QUEUE";
+
+                document.getElementById("out-stage").innerText = "Stage 3: Levenshtein Edit Distance";
+                document.getElementById("out-confidence").innerText = `${confidence.toFixed(2)}%`;
+                actionBadge.innerText = action;
+                actionBadge.className = action === "AUTO_MERGE" ? "badge risk-low" : "badge";
+                document.getElementById("out-desc").innerText = `Name edit distance matched existing record "${matchedDev.canonical_name}" with distance value ${bestDist}.`;
+
+                logToTerminal(`[Reconciler] Stage 3 Levenshtein resolved close match to "${matchedDev.canonical_name}" (Confidence ${confidence}%). Action: ${action}`, action === "AUTO_MERGE" ? "info" : "warn");
+                return;
+            }
+
+            document.getElementById("out-stage").innerText = "Stage 5: Human Review Queue routing";
+            document.getElementById("out-confidence").innerText = "0.00% (No baseline matches)";
+            actionBadge.innerText = "HUMAN_QUEUE";
+            actionBadge.className = "badge risk-critical";
+            document.getElementById("out-desc").innerText = "No automated match met trust boundaries. Programmatically routing record to the verification queue.";
+            logToTerminal("[Reconciler] Stage 5 triggered: no cryptographic or edit similarity found. Incident routed to security analyst queue.", "error");
+        }
+
+        function recalculateScores() {
+            const edr = document.getElementById("score-edr").value;
+            const patch = document.getElementById("score-patch").value;
+            const enc = document.getElementById("score-encryption").value;
+
+            let edrScore = edr === "compliant" ? 100 : edr === "threats" ? 40 : 0;
+            let patchScore = patch === "compliant" ? 100 : patch === "late" ? 40 : 0;
+            let encScore = enc === "compliant" ? 100 : 0;
+
+            let criticalCount = 0;
+            if (edr === "inactive") criticalCount++;
+            if (patch === "eol") criticalCount++;
+            if (enc === "disabled") criticalCount++;
+
+            const baseScore = ((edrScore * 0.25) + (patchScore * 0.20) + (encScore * 0.15)) / 0.60;
+            const penalty = Math.min(criticalCount * 0.25, 0.75);
+            const finalScore = baseScore * (1 - penalty);
+
+            const displayScore = document.getElementById("out-calc-score");
+            const displayLevel = document.getElementById("out-calc-level");
+            displayScore.innerText = finalScore.toFixed(2);
+
+            let riskTier = "LOW RISK";
+            let color = "#16a34a";
+            if (finalScore < 40) { riskTier = "CRITICAL RISK"; color = "#b91c1c"; }
+            else if (finalScore < 65) { riskTier = "HIGH RISK"; color = "#c2410c"; }
+            else if (finalScore < 85) { riskTier = "MEDIUM RISK"; color = "#a16207"; }
+
+            displayScore.style.color = color;
+            displayLevel.innerText = riskTier;
+            displayLevel.style.color = color;
+
+            const penaltyLabel = document.getElementById("out-penalty-label");
+            if (criticalCount > 0) {
+                penaltyLabel.innerText = `Active Failures: ${criticalCount} (${(penalty * 100)}% Drop Applied)`;
+                penaltyLabel.style.color = "#b91c1c";
+            } else {
+                penaltyLabel.innerText = "None (0% drop)";
+                penaltyLabel.style.color = "#16a34a";
+            }
+
+            document.getElementById("out-nist").innerText = finalScore === 100 ? "100% Compliant" : `${finalScore.toFixed(0)}% Compliant`;
+            document.getElementById("out-nist").style.color = finalScore === 100 ? "#16a34a" : "#a16207";
+
+            logToTerminal(`[Risk Engine] Compliance recalculated. Base: ${baseScore.toFixed(2)}, Criticals: ${criticalCount}, Final: ${finalScore.toFixed(2)} (${riskTier})`);
+        }
+
+        function runDriftSimulation() {
+            const scenario = document.getElementById("drift-scenario").value;
+            const d7 = document.getElementById("drift-7");
+            const d14 = document.getElementById("drift-14");
+            const d30 = document.getElementById("drift-30");
+
+            logToTerminal(`[AI Drift] Running 90-day LSTM timeseries projection for "${scenario}" scenario...`);
+
+            if (scenario === "stable") {
+                updateDriftDisplays(d7, 98.40, d14, 98.10, d30, 97.80);
+            } else if (scenario === "decaying") {
+                updateDriftDisplays(d7, 84.10, d14, 76.50, d30, 58.20);
+            } else if (scenario === "critical") {
+                updateDriftDisplays(d7, 52.00, d14, 38.50, d30, 12.00);
+            }
+        }
+
+        function updateDriftDisplays(t7, v7, t14, v14, t30, v30) {
+            t7.innerText = v7.toFixed(2); t7.style.color = getScoreColor(v7);
+            t14.innerText = v14.toFixed(2); t14.style.color = getScoreColor(v14);
+            t30.innerText = v30.toFixed(2); t30.style.color = getScoreColor(v30);
+            logToTerminal(`[AI Drift] LSTM Forecast completed. 7d: ${v7}, 14d: ${v14}, 30d: ${v30}`);
+        }
+
+        function getScoreColor(score) {
+            if (score < 40) return "#b91c1c";
+            if (score < 65) return "#c2410c";
+            if (score < 85) return "#a16207";
+            return "#15803d";
+        }
+
+        function triggerOutbound(system) {
+            logToTerminal(`[Vault] Authenticating and requesting dynamic secret lease for outbound client...`);
+            logToTerminal(`[Vault] Generated dynamic session key: "vault-lease-${Math.random().toString(36).substring(7)}"`, "info");
+            logToTerminal(`[Kong Gateway] Verified route mapping to outbound endpoints.`);
+
+            const eventPayload = {
+                specversion: "1.0",
+                id: `evt-${Date.now()}`,
+                source: "/compliance/risk-engine",
+                type: `eud.integration.${system.toLowerCase()}`,
+                subject: "device:dev-f2910a:compliance_audit",
+                tenantid: "tenant-xyz",
+                deviceid: "dev-f2910a",
+                datacontenttype: "application/json",
+                data: {
+                    severity: "CRITICAL",
+                    score: 24.50,
+                    remediation: "S1 inactive, BitLocker disabled"
+                }
+            };
+
+            logToTerminal(`[Event Bus] Dispatched CloudEvent 1.0 to topic "eud.integration.${system.toLowerCase()}"`, "info");
+            logToTerminal(`[API POST] Payload: ${JSON.stringify(eventPayload)}`, "info");
+        }
+
+        // Fleet stats updater
+        function updateFleetWideMetrics() {
+            const scaleVal = fleetDataset.length;
+            document.getElementById("fleet-scale-val").innerText = scaleVal.toLocaleString();
+
+            const avg = fleetDataset.reduce((sum, item) => sum + item.score, 0) / scaleVal;
+            const scoreDisplay = document.getElementById("fleet-score-val");
+            scoreDisplay.innerText = avg.toFixed(2);
+            scoreDisplay.style.color = getScoreColor(avg);
+
+            const riskLabel = document.getElementById("fleet-risk-label");
+            if (avg < 40) { riskLabel.innerText = "CRITICAL FLEET RISK"; riskLabel.style.color = "#b91c1c"; }
+            else if (avg < 65) { riskLabel.innerText = "HIGH FLEET RISK"; riskLabel.style.color = "#c2410c"; }
+            else if (avg < 85) { riskLabel.innerText = "MEDIUM FLEET RISK"; riskLabel.style.color = "#a16207"; }
+            else { riskLabel.innerText = "LOW FLEET RISK (COMPLIANT)"; riskLabel.style.color = "#15803d"; }
+
+            // Recalculate and update charts in real-time
+            renderActiveTrendChart();
+            renderActiveRiskChart();
+        }
+
+        // SVG Charts and Telemetry Visualizations
+        function renderActiveTrendChart() {
+            const container = document.getElementById("analytics-trend-chart-container");
+            const legend = document.getElementById("analytics-trend-legend");
+            if (!container || !legend) return;
+
+            const dimension = document.getElementById("analysis-chart-dimension").value;
+            container.innerHTML = "";
+            legend.innerHTML = "";
+
+            if (dimension === "trend") {
+                // Calculate fleet average compliance score
+                const scaleVal = fleetDataset.length;
+                const avg = scaleVal > 0 ? (fleetDataset.reduce((sum, item) => sum + item.score, 0) / scaleVal) : 0;
+
+                // Preceding 5 points + current point
+                const months = ["Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May (Current)"];
+                const points = [
+                    Math.min(100, Math.max(0, avg - 4.5)),
+                    Math.min(100, Math.max(0, avg - 3.2)),
+                    Math.min(100, Math.max(0, avg - 1.8)),
+                    Math.min(100, Math.max(0, avg - 2.5)),
+                    Math.min(100, Math.max(0, avg - 0.7)),
+                    Math.min(100, Math.max(0, avg))
+                ];
+
+                const minY = Math.max(0, Math.floor(Math.min(...points) - 5));
+                const maxY = 100;
+                const ySpan = (maxY - minY) || 1;
+
+                const width = 600;
+                const height = 220;
+                const padLeft = 45;
+                const padRight = 20;
+                const padTop = 20;
+                const padBottom = 30;
+
+                const plotWidth = width - padLeft - padRight;
+                const plotHeight = height - padTop - padBottom;
+
+                const mapX = (idx) => padLeft + (idx * (plotWidth / 5));
+                const mapY = (val) => padTop + plotHeight - (((val - minY) / ySpan) * plotHeight);
+
+                let svgContent = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow: visible;">`;
+                
+                // Define linear gradient for glowing line area
+                svgContent += `
+                    <defs>
+                        <linearGradient id="trend-area-gradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.15"/>
+                            <stop offset="100%" stop-color="var(--color-accent)" stop-opacity="0.0"/>
+                        </linearGradient>
+                    </defs>
+                `;
+
+                // Draw Grid horizontal lines
+                const gridTicks = 5;
+                for (let i = 0; i <= gridTicks; i++) {
+                    const val = minY + (i * (ySpan / gridTicks));
+                    const cy = mapY(val);
+                    svgContent += `
+                        <line x1="${padLeft}" y1="${cy}" x2="${width - padRight}" y2="${cy}" stroke="var(--border-clean)" stroke-width="0.5" stroke-dasharray="3,3" />
+                        <text x="${padLeft - 8}" y="${cy + 3}" font-size="9px" font-family="var(--font-mono)" fill="var(--text-muted)" text-anchor="end">${val.toFixed(0)}%</text>
+                    `;
+                }
+
+                // Draw X-axis month labels
+                months.forEach((m, idx) => {
+                    const cx = mapX(idx);
+                    svgContent += `
+                        <text x="${cx}" y="${height - 8}" font-size="9px" font-weight="700" fill="var(--text-muted)" text-anchor="middle">${m}</text>
+                    `;
+                });
+
+                // Generate path string for trend line
+                let pathD = `M ${mapX(0)},${mapY(points[0])}`;
+                for (let i = 1; i < points.length; i++) {
+                    pathD += ` L ${mapX(i)},${mapY(points[i])}`;
+                }
+
+                // Area path for gradient fill
+                const areaPathD = `${pathD} L ${mapX(points.length - 1)},${mapY(minY)} L ${mapX(0)},${mapY(minY)} Z`;
+
+                // Render area under line
+                svgContent += `<path d="${areaPathD}" fill="url(#trend-area-gradient)" />`;
+
+                // Render active compliance path line
+                svgContent += `<path d="${pathD}" stroke="var(--color-accent)" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" />`;
+
+                // Render Target SLA Threshold Line (85%)
+                if (85 >= minY && 85 <= maxY) {
+                    const slaY = mapY(85);
+                    svgContent += `
+                        <line x1="${padLeft}" y1="${slaY}" x2="${width - padRight}" y2="${slaY}" stroke="var(--status-low)" stroke-width="1.2" stroke-dasharray="4,4" />
+                        <text x="${width - padRight - 5}" y="${slaY - 4}" font-size="8px" font-weight="700" fill="var(--status-low)" text-anchor="end">SLA Target (85.0%)</text>
+                    `;
+                }
+
+                // Draw dots and interactive circles
+                points.forEach((val, idx) => {
+                    const cx = mapX(idx);
+                    const cy = mapY(val);
+                    svgContent += `
+                        <circle cx="${cx}" cy="${cy}" r="4" fill="var(--bg-card)" stroke="var(--color-accent)" stroke-width="2" />
+                        <circle cx="${cx}" cy="${cy}" r="12" fill="transparent" style="cursor: pointer;"
+                            onmouseover="showTrendTooltip(event, '${months[idx]}', ${val.toFixed(2)})"
+                            onmouseout="hideTrendTooltip()" />
+                    `;
+                });
+
+                svgContent += `</svg>`;
+                container.innerHTML = svgContent;
+
+                // Legend
+                legend.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--color-accent);"></span>
+                        <span>Fleet Compliance Average: <strong style="color: var(--text-primary);">${avg.toFixed(2)}%</strong></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                        <span style="display: inline-block; width: 10px; height: 2px; border-top: 2px dashed var(--status-low);"></span>
+                        <span style="color: var(--text-secondary);">Target Threshold SLA: <strong>85.0%</strong></span>
+                    </div>
+                `;
+            } else if (dimension === "os") {
+                // OS breakdown column chart
+                let winCount = 0, macCount = 0, linuxCount = 0, otherCount = 0;
+                fleetDataset.forEach(d => {
+                    const family = (d.os_family || "").toLowerCase();
+                    const name = (d.os || "").toLowerCase();
+                    if (family === "windows" || name.includes("windows")) winCount++;
+                    else if (family === "macos" || name.includes("macos") || name.includes("sonoma")) macCount++;
+                    else if (family === "linux" || name.includes("linux") || name.includes("ubuntu")) linuxCount++;
+                    else otherCount++;
+                });
+
+                const total = fleetDataset.length;
+                const osData = [
+                    { name: "Windows", count: winCount, pct: total > 0 ? (winCount / total) * 100 : 0, color: "#334155" },
+                    { name: "macOS", count: macCount, pct: total > 0 ? (macCount / total) * 100 : 0, color: "#0f172a" },
+                    { name: "Linux", count: linuxCount, pct: total > 0 ? (linuxCount / total) * 100 : 0, color: "var(--color-accent)" },
+                    { name: "Other", count: otherCount, pct: total > 0 ? (otherCount / total) * 100 : 0, color: "var(--status-low)" }
+                ];
+
+                const width = 600;
+                const height = 220;
+                const padLeft = 45;
+                const padRight = 20;
+                const padTop = 30;
+                const padBottom = 30;
+
+                const plotWidth = width - padLeft - padRight;
+                const plotHeight = height - padTop - padBottom;
+
+                const maxPct = Math.max(...osData.map(o => o.pct), 10);
+                const maxVal = Math.ceil(maxPct / 10) * 10; // Round up to nearest 10
+
+                let svgContent = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
+
+                // Horizontal grid lines
+                const ticks = 4;
+                for (let i = 0; i <= ticks; i++) {
+                    const pctVal = (i * (maxVal / ticks));
+                    const cy = padTop + plotHeight - ((pctVal / maxVal) * plotHeight);
+                    svgContent += `
+                        <line x1="${padLeft}" y1="${cy}" x2="${width - padRight}" y2="${cy}" stroke="var(--border-clean)" stroke-width="0.5" stroke-dasharray="3,3" />
+                        <text x="${padLeft - 8}" y="${cy + 3}" font-size="9px" font-family="var(--font-mono)" fill="var(--text-muted)" text-anchor="end">${pctVal.toFixed(0)}%</text>
+                    `;
+                }
+
+                // Render columns
+                const colWidth = 60;
+                const colGap = (plotWidth - (colWidth * 4)) / 5;
+
+                osData.forEach((os, idx) => {
+                    const cx = padLeft + colGap + (idx * (colWidth + colGap));
+                    const colHeight = (os.pct / maxVal) * plotHeight;
+                    const cy = padTop + plotHeight - colHeight;
+
+                    svgContent += `
+                        <rect x="${cx}" y="${cy}" width="${colWidth}" height="${colHeight}" fill="${os.color}" rx="3" ry="3"
+                            style="transition: fill 0.2s; cursor: pointer;"
+                            onmouseover="showOsTooltip(event, '${os.name}', ${os.count}, ${os.pct.toFixed(1)})"
+                            onmouseout="hideTrendTooltip()" />
+                        <text x="${cx + (colWidth / 2)}" y="${cy - 6}" font-size="9px" font-weight="700" fill="var(--text-primary)" font-family="var(--font-mono)" text-anchor="middle">${os.pct.toFixed(1)}%</text>
+                        <text x="${cx + (colWidth / 2)}" y="${height - 8}" font-size="9px" font-weight="700" fill="var(--text-muted)" text-anchor="middle">${os.name}</text>
+                    `;
+                });
+
+                svgContent += `</svg>`;
+                container.innerHTML = svgContent;
+
+                // Legend
+                legend.innerHTML = osData.map(os => `
+                    <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: ${os.color};"></span>
+                        <span>${os.name}: <strong>${os.count.toLocaleString()}</strong> (${os.pct.toFixed(1)}%)</span>
+                    </div>
+                `).join("");
+
+            } else if (dimension === "location") {
+                // Location Group Distribution Comparison
+                let siftCount = 0, nonSiftCount = 0;
+                let siftScoreSum = 0, nonSiftScoreSum = 0;
+
+                fleetDataset.forEach(d => {
+                    if (d.location_group === "Sift") {
+                        siftCount++;
+                        siftScoreSum += d.score;
+                    } else {
+                        nonSiftCount++;
+                        nonSiftScoreSum += d.score;
+                    }
+                });
+
+                const total = fleetDataset.length;
+                const siftPct = total > 0 ? (siftCount / total) * 100 : 0;
+                const nonSiftPct = total > 0 ? (nonSiftCount / total) * 100 : 0;
+
+                const siftAvg = siftCount > 0 ? (siftScoreSum / siftCount) : 0;
+                const nonSiftAvg = nonSiftCount > 0 ? (nonSiftScoreSum / nonSiftCount) : 0;
+
+                const width = 600;
+                const height = 220;
+                const padLeft = 45;
+                const padRight = 20;
+                const padTop = 30;
+                const padBottom = 30;
+
+                const plotWidth = width - padLeft - padRight;
+                const plotHeight = height - padTop - padBottom;
+
+                const maxCount = Math.max(siftCount, nonSiftCount, 1);
+                const maxVal = Math.ceil(maxCount / 1000) * 1000;
+
+                let svgContent = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}">`;
+
+                // Horizontal grid lines
+                const ticks = 4;
+                for (let i = 0; i <= ticks; i++) {
+                    const tickVal = (i * (maxVal / ticks));
+                    const cy = padTop + plotHeight - ((tickVal / maxVal) * plotHeight);
+                    svgContent += `
+                        <line x1="${padLeft}" y1="${cy}" x2="${width - padRight}" y2="${cy}" stroke="var(--border-clean)" stroke-width="0.5" stroke-dasharray="3,3" />
+                        <text x="${padLeft - 8}" y="${cy + 3}" font-size="9px" font-family="var(--font-mono)" fill="var(--text-muted)" text-anchor="end">${tickVal.toLocaleString()}</text>
+                    `;
+                }
+
+                // Render two wide comparison columns
+                const colWidth = 80;
+                const groups = [
+                    { name: "Sift Secure Zone", count: siftCount, pct: siftPct, avg: siftAvg, color: "#1e40af", xIdx: 0 },
+                    { name: "Non-Sift Generic", count: nonSiftCount, pct: nonSiftPct, avg: nonSiftAvg, color: "#475569", xIdx: 1 }
+                ];
+
+                const space = (plotWidth - (colWidth * 2)) / 3;
+
+                groups.forEach(g => {
+                    const cx = padLeft + space + (g.xIdx * (colWidth + space));
+                    const colHeight = (g.count / maxVal) * plotHeight;
+                    const cy = padTop + plotHeight - colHeight;
+
+                    svgContent += `
+                        <rect x="${cx}" y="${cy}" width="${colWidth}" height="${colHeight}" fill="${g.color}" rx="4" ry="4"
+                            style="transition: opacity 0.2s; cursor: pointer;"
+                            onmouseover="showLocTooltip(event, '${g.name}', ${g.count}, ${g.pct.toFixed(1)}, ${g.avg.toFixed(2)})"
+                            onmouseout="hideTrendTooltip()" />
+                        
+                        <!-- Count overlay -->
+                        <text x="${cx + (colWidth / 2)}" y="${cy - 16}" font-size="10px" font-weight="700" fill="var(--text-primary)" font-family="var(--font-mono)" text-anchor="middle">${g.count.toLocaleString()}</text>
+                        <text x="${cx + (colWidth / 2)}" y="${cy - 6}" font-size="8px" fill="var(--text-secondary)" font-family="var(--font-sans)" text-anchor="middle">avg score: ${g.avg.toFixed(1)}</text>
+                        
+                        <!-- Bottom labels -->
+                        <text x="${cx + (colWidth / 2)}" y="${height - 8}" font-size="9px" font-weight="700" fill="var(--text-muted)" text-anchor="middle">${g.xIdx === 0 ? 'SIFT SECURE' : 'NON-SIFT'}</text>
+                    `;
+                });
+
+                svgContent += `</svg>`;
+                container.innerHTML = svgContent;
+
+                // Legend
+                legend.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #1e40af;"></span>
+                        <span>Sift SECURE Zone: <strong>${siftCount.toLocaleString()}</strong> devices (${siftPct.toFixed(1)}%) | score avg: <strong style="color:#1e40af;">${siftAvg.toFixed(2)}</strong></span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem;">
+                        <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: #475569;"></span>
+                        <span>Non-Sift Generic: <strong>${nonSiftCount.toLocaleString()}</strong> devices (${nonSiftPct.toFixed(1)}%) | score avg: <strong style="color:#475569;">${nonSiftAvg.toFixed(2)}</strong></span>
+                    </div>
+                `;
+            }
+        }
+
+        function renderActiveRiskChart() {
+            const container = document.getElementById("analytics-risk-chart-container");
+            if (!container) return;
+
+            const dimension = document.getElementById("analysis-risk-dimension").value;
+            container.innerHTML = "";
+
+            if (dimension === "risk") {
+                // Count risk tiers dynamically
+                let low = 0, med = 0, high = 0, crit = 0;
+                fleetDataset.forEach(d => {
+                    if (d.level === "LOW") low++;
+                    else if (d.level === "MEDIUM") med++;
+                    else if (d.level === "HIGH") high++;
+                    else if (d.level === "CRITICAL") crit++;
+                });
+
+                const total = fleetDataset.length;
+                const data = [
+                    { name: "Low Risk", count: low, pct: total > 0 ? (low / total) * 100 : 0, color: "var(--status-low)" },
+                    { name: "Medium Risk", count: med, pct: total > 0 ? (med / total) * 100 : 0, color: "var(--status-medium)" },
+                    { name: "High Risk", count: high, pct: total > 0 ? (high / total) * 100 : 0, color: "var(--status-high)" },
+                    { name: "Critical Risk", count: crit, pct: total > 0 ? (crit / total) * 100 : 0, color: "var(--status-critical)" }
+                ];
+
+                // Circumference is exactly 440 (2 * pi * 70 = 439.82)
+                const C = 440;
+                let currentOffset = 0;
+
+                let donutSvg = `
+                    <div style="width: 140px; height: 140px; position: relative; flex-shrink: 0;">
+                        <svg width="100%" height="100%" viewBox="0 0 220 220" style="transform: rotate(-90deg);">
+                `;
+
+                data.forEach(item => {
+                    const arcLength = (item.pct / 100) * C;
+                    donutSvg += `
+                        <circle cx="110" cy="110" r="70" fill="transparent" stroke="${item.color}" stroke-width="24"
+                            stroke-dasharray="${arcLength} ${C}" stroke-dashoffset="${-currentOffset}"
+                            style="transition: stroke-width 0.2s; cursor: pointer;"
+                            onmouseover="highlightDonutSlice(this); showRiskSliceTooltip(event, '${item.name}', ${item.count}, ${item.pct.toFixed(1)})"
+                            onmouseout="restoreDonutSlice(this)" />
+                    `;
+                    currentOffset += arcLength;
+                });
+
+                donutSvg += `
+                        </svg>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center;">
+                            <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: -0.1rem;">Total Fleet</span>
+                            <span style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">${total.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+
+                // Add Legend on the right side
+                let legendContent = `
+                    <div style="display: flex; flex-direction: column; gap: 0.65rem; flex-grow: 1; min-width: 160px;">
+                `;
+
+                data.forEach(item => {
+                    legendContent += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.35rem;">
+                            <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: ${item.color};"></span>
+                                <span style="font-weight: 600; color: var(--text-secondary);">${item.name}</span>
+                            </div>
+                            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">${item.count.toLocaleString()} <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 500;">(${item.pct.toFixed(1)}%)</span></span>
+                        </div>
+                    `;
+                });
+
+                legendContent += `</div>`;
+
+                container.innerHTML = donutSvg + legendContent;
+            } else if (dimension === "condition") {
+                // Count physical conditions dynamically
+                let use = 0, repair = 0, broken = 0, decom = 0;
+                fleetDataset.forEach(d => {
+                    if (d.condition === "IN_USE") use++;
+                    else if (d.condition === "IN_REPAIR") repair++;
+                    else if (d.condition === "BROKEN") broken++;
+                    else if (d.condition === "DECOMMISSIONED") decom++;
+                });
+
+                const total = fleetDataset.length;
+                const data = [
+                    { name: "In Use", count: use, pct: total > 0 ? (use / total) * 100 : 0, color: "#64748b" },
+                    { name: "In Repair", count: repair, pct: total > 0 ? (repair / total) * 100 : 0, color: "var(--status-medium)" },
+                    { name: "Broken", count: broken, pct: total > 0 ? (broken / total) * 100 : 0, color: "var(--status-critical)" },
+                    { name: "Decommissioned", count: decom, pct: total > 0 ? (decom / total) * 100 : 0, color: "#cbd5e1" }
+                ];
+
+                const C = 440;
+                let currentOffset = 0;
+
+                let donutSvg = `
+                    <div style="width: 140px; height: 140px; position: relative; flex-shrink: 0;">
+                        <svg width="100%" height="100%" viewBox="0 0 220 220" style="transform: rotate(-90deg);">
+                `;
+
+                data.forEach(item => {
+                    const arcLength = (item.pct / 100) * C;
+                    donutSvg += `
+                        <circle cx="110" cy="110" r="70" fill="transparent" stroke="${item.color}" stroke-width="24"
+                            stroke-dasharray="${arcLength} ${C}" stroke-dashoffset="${-currentOffset}"
+                            style="transition: stroke-width 0.2s; cursor: pointer;"
+                            onmouseover="highlightDonutSlice(this); showRiskSliceTooltip(event, '${item.name}', ${item.count}, ${item.pct.toFixed(1)})"
+                            onmouseout="restoreDonutSlice(this)" />
+                    `;
+                    currentOffset += arcLength;
+                });
+
+                donutSvg += `
+                        </svg>
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; text-align: center;">
+                            <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: -0.1rem;">Asset</span>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 800; color: var(--text-primary);">States</span>
+                        </div>
+                    </div>
+                `;
+
+                // Add Legend on the right side
+                let legendContent = `
+                    <div style="display: flex; flex-direction: column; gap: 0.65rem; flex-grow: 1; min-width: 160px;">
+                `;
+
+                data.forEach(item => {
+                    legendContent += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.35rem;">
+                            <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                <span style="display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: ${item.color};"></span>
+                                <span style="font-weight: 600; color: var(--text-secondary);">${item.name}</span>
+                            </div>
+                            <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-primary);">${item.count.toLocaleString()} <span style="color: var(--text-muted); font-size: 0.7rem; font-weight: 500;">(${item.pct.toFixed(1)}%)</span></span>
+                        </div>
+                    `;
+                });
+
+                legendContent += `</div>`;
+
+                container.innerHTML = donutSvg + legendContent;
+            }
+        }
+
+        // Custom SVGs Interactive Tooltip Helpers
+        function showTrendTooltip(e, label, val) {
+            let tooltip = document.getElementById("chart-tooltip");
+            if (!tooltip) {
+                tooltip = document.createElement("div");
+                tooltip.id = "chart-tooltip";
+                tooltip.style.position = "absolute";
+                tooltip.style.background = "var(--text-primary)";
+                tooltip.style.color = "var(--bg-main)";
+                tooltip.style.padding = "0.5rem 0.75rem";
+                tooltip.style.fontSize = "0.75rem";
+                tooltip.style.fontWeight = "700";
+                tooltip.style.borderRadius = "4px";
+                tooltip.style.pointerEvents = "none";
+                tooltip.style.zIndex = "9999";
+                tooltip.style.boxShadow = "0 4px 12px rgba(15, 23, 42, 0.15)";
+                tooltip.style.border = "1px solid var(--border-clean)";
+                tooltip.style.fontFamily = "var(--font-sans)";
+                document.body.appendChild(tooltip);
+            }
+            tooltip.innerHTML = `
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; text-transform: uppercase;">${label}</div>
+                <div>Compliance Avg: <span style="color: var(--color-accent); font-family: var(--font-mono);">${val.toFixed(2)}%</span></div>
+            `;
+            tooltip.style.display = "block";
+            tooltip.style.left = (e.pageX + 15) + "px";
+            tooltip.style.top = (e.pageY - 35) + "px";
+        }
+
+        function showOsTooltip(e, name, count, pct) {
+            let tooltip = document.getElementById("chart-tooltip");
+            if (!tooltip) {
+                showTrendTooltip(e, "", 0);
+            }
+            tooltip.innerHTML = `
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; text-transform: uppercase;">Platform Footprint</div>
+                <div><strong>${name}</strong>: <span style="font-family: var(--font-mono);">${count.toLocaleString()}</span> devices (${pct}%)</div>
+            `;
+            tooltip.style.display = "block";
+            tooltip.style.left = (e.pageX + 15) + "px";
+            tooltip.style.top = (e.pageY - 35) + "px";
+        }
+
+        function showLocTooltip(e, name, count, pct, avg) {
+            let tooltip = document.getElementById("chart-tooltip");
+            if (!tooltip) {
+                showTrendTooltip(e, "", 0);
+            }
+            tooltip.innerHTML = `
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; text-transform: uppercase;">${name}</div>
+                <div style="margin-bottom: 0.15rem;">Volume: <strong>${count.toLocaleString()}</strong> (${pct}%)</div>
+                <div>Avg Compliance: <span style="color: var(--color-accent); font-family: var(--font-mono);">${avg.toFixed(2)}%</span></div>
+            `;
+            tooltip.style.display = "block";
+            tooltip.style.left = (e.pageX + 15) + "px";
+            tooltip.style.top = (e.pageY - 45) + "px";
+        }
+
+        function showRiskSliceTooltip(e, name, count, pct) {
+            let tooltip = document.getElementById("chart-tooltip");
+            if (!tooltip) {
+                showTrendTooltip(e, "", 0);
+            }
+            tooltip.innerHTML = `
+                <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; text-transform: uppercase;">distribution sector</div>
+                <div><strong>${name}</strong>: <span style="font-family: var(--font-mono);">${count.toLocaleString()}</span> devices (${pct}%)</div>
+            `;
+            tooltip.style.display = "block";
+            tooltip.style.left = (e.pageX + 15) + "px";
+            tooltip.style.top = (e.pageY - 35) + "px";
+        }
+
+        function hideTrendTooltip() {
+            const tooltip = document.getElementById("chart-tooltip");
+            if (tooltip) {
+                tooltip.style.display = "none";
+            }
+        }
+
+        function highlightDonutSlice(el) {
+            el.setAttribute("stroke-width", "28");
+        }
+
+        function restoreDonutSlice(el) {
+            el.setAttribute("stroke-width", "24");
+            hideTrendTooltip();
+        }
+
+
+        // Initialize aggregate stats
+        updateFleetWideMetrics();
+
+        if (fleetDataset.length > 0) {
+            showDeviceAuditDetails(fleetDataset[0].id);
+        }
+        populateFleetTable();
+        recalculateScores();
+        enforceRoleBasedControls();
+
+        // Dynamic operations for User Login and Settings sections
+        function simulateLogin() {
+            // Check lockout first
+            if (Date.now() < lockoutUntil) {
+                const waitSecs = Math.ceil((lockoutUntil - Date.now()) / 1000);
+                document.getElementById("portal-login-error-msg").innerText = `🔒 Vault Security lockout active. Please try again in ${waitSecs} seconds.`;
+                document.getElementById("portal-login-error-msg").style.display = "block";
+                logToTerminal(`[Auth Lockout] Access denied. Client is rate-limited.`, "error");
+                return;
+            }
+
+            const tenant = "Empire Corp".replace(/\s+/g, ' ');
+            const user = document.getElementById("portal-login-user").value.trim();
+            const pin = document.getElementById("portal-login-passcode").value;
+
+            const errorDiv = document.getElementById("portal-login-error-msg");
+            errorDiv.style.display = "none";
+
+            if (!user) {
+                errorDiv.innerText = "❌ Ingestion Failure: Username cannot be empty.";
+                errorDiv.style.display = "block";
+                logToTerminal("[Login Fail] Username cannot be empty.", "error");
+                return;
+            }
+
+            logToTerminal(`[Auth] Dispatching identity request to security gateway for "${user}"...`);
+
+            // Verify credentials
+            const creds = simulatedLDAPDirectory[user];
+            if (!creds || creds.pin !== pin) {
+                loginFailCount++;
+                logToTerminal(`[Auth Fail] Challenge rejection for "${user}" (Attempt ${loginFailCount}/3).`, "error");
+
+                if (loginFailCount >= 3) {
+                    lockoutUntil = Date.now() + 60000; // 60 seconds lockout
+                    loginFailCount = 0; // Reset fails after lock
+                    errorDiv.innerText = "🔒 Security Alert: Too many failed challenge matches. Vault locked for 60 seconds.";
+                } else {
+                    errorDiv.innerText = `❌ Authentication Failed: Invalid challenge PIN matched. (${3 - loginFailCount} attempts remaining)`;
+                }
+                errorDiv.style.display = "block";
+                return;
+            }
+
+            // Successful Login
+            loginFailCount = 0;
+            currentSession = {
+                isLoggedIn: true,
+                username: user,
+                role: creds.role,
+                roleLabel: creds.roleLabel,
+                tenant: tenant,
+                authorizations: creds.authorizations
+            };
+
+            logToTerminal(`[Vault] Authenticated session lease for tenant context: "${tenant}"`, "info");
+            logToTerminal(`[RBAC Guard] Loaded user profile. Assigned Role: ${creds.role.toUpperCase()}. Unlocking bounds...`, "info");
+
+            // Update user profile section details dynamically
+            document.getElementById("profile-analyst-name").innerText = user;
+            document.getElementById("profile-tenant-badge").innerText = tenant;
+
+            // Update role label in Profile view
+            const roleLabelEl = document.querySelector("#section-profile p strong");
+            if (roleLabelEl) {
+                roleLabelEl.innerText = creds.roleLabel;
+            }
+
+            // Update user profile authorizations badge list dynamically
+            const authListContainer = document.getElementById("profile-authorizations-list");
+            if (authListContainer) {
+                authListContainer.innerHTML = "";
+                creds.authorizations.forEach(auth => {
+                    authListContainer.innerHTML += `<span class="badge group-non-sift">${auth}</span> `;
+                });
+            }
+
+            // Enforce controls
+            enforceRoleBasedControls();
+
+            // Reveal App, hide portal login
+            document.getElementById("login-screen-canvas").style.display = "none";
+            document.getElementById("main-app-container").style.display = "flex";
+
+            // Switch to overview view
+            switchNavSection("analytics");
+            logToTerminal(`[Session Active] Successfully logged in. Session established for tenant: "${tenant}"`, "info");
+        }
+
+        function terminateSessionLease() {
+            logToTerminal(`[Auth Guard] Disposing session lease token for "${currentSession.username}"...`);
+            logToTerminal(`[Vault] Session context revoked. Key vault closed.`, "warn");
+
+            currentSession = {
+                isLoggedIn: false,
+                username: "",
+                role: "",
+                roleLabel: "",
+                tenant: "",
+                authorizations: []
+            };
+
+            // Enforce controls
+            enforceRoleBasedControls();
+
+            // Hide App, show portal login
+            document.getElementById("login-screen-canvas").style.display = "flex";
+            document.getElementById("main-app-container").style.display = "none";
+
+            // Clear inputs
+            document.getElementById("portal-login-user").value = "";
+            document.getElementById("portal-login-passcode").value = "";
+
+            // Reset profile displays
+            document.getElementById("profile-analyst-name").innerText = "-";
+            document.getElementById("profile-tenant-badge").innerText = "-";
+
+            logToTerminal(`[Session Closed] Vault lease revoked. Portal lock active.`, "info");
+            alert("Vault Lease Revoked: Session successfully disposed. Dashboard is locked.");
+        }
+
+        function saveSettings() {
+            const topic = document.getElementById("set-kafka-topic").value;
+            const partitions = document.getElementById("set-kafka-partitions").value;
+            const vaultAddr = document.getElementById("set-vault-addr").value;
+            const vaultEngine = document.getElementById("set-vault-engine").value;
+
+            logToTerminal("[Settings] Initiating dynamic environment configurations reload...");
+            logToTerminal(`[Settings] Kafka compliance raw topic committed to: "${topic}" (partitions: ${partitions})`, "info");
+            logToTerminal(`[Settings] Vault provider path synchronized with server: "${vaultAddr}" (mount: "${vaultEngine}")`, "info");
+            logToTerminal("[Settings] Configuration successfully committed and replicated to downstream gateway.", "info");
+
+            // Switch back to analytics overview as active view
+            switchNavSection("analytics");
+        }
+    </script>
+</body>
+
+</html>
