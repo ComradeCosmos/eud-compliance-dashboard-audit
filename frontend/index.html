@@ -579,7 +579,7 @@
                         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
                         <h2>Active Reconciled Fleet</h2>
 
-                        <!-- Import / Export Controls -->
+                        <!-- Import / Export / Clear Controls -->
                         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                             <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
                                 onclick="triggerCsvExport()">📥 Export CSV</button>
@@ -588,6 +588,8 @@
                                 Import Sheet</label>
                             <input type="file" id="csv-import-file" accept=".csv, .xlsx, .xls" style="display: none;"
                                 onchange="handleCsvImport(event)">
+                            <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 600;"
+                                onclick="triggerClearFleetData()">🗑️ Clear Fleet</button>
                         </div>
                     </div>
 
@@ -1473,9 +1475,16 @@
                 }
 
                 updateFleetWideMetrics();
-                logToTerminal(`[Import] Completed sheet processing. Registered ${newItems} new devices. Updated/merged ${mergedItems} entries.`, "info");
-
                 handleFleetQueryChange();
+
+                if (newItems === 0 && mergedItems === 0) {
+                    logToTerminal(`[Import] Ingestion failed: No valid assets found in your spreadsheet.`, "error");
+                    alert("Import failed: No valid device data found in the spreadsheet. Please verify headers and device entries.");
+                } else {
+                    const successMsg = `Success! Ingested ${newItems} new assets and updated/merged ${mergedItems} entries successfully.`;
+                    logToTerminal(`[Import] ${successMsg}`, "info");
+                    alert(successMsg);
+                }
             };
 
             if (isExcel) {
@@ -1483,6 +1492,25 @@
             } else {
                 reader.readAsText(file);
             }
+        }
+
+        function triggerClearFleetData() {
+            const confirmPurge = confirm("🚨 WARNING: Are you sure you want to clear the entire compliance database? All assets will be deleted.");
+            if (!confirmPurge) return;
+
+            fleetDataset = [];
+            filteredDataset = [];
+            selectedDevice = null;
+
+            // Clear selected device details panel
+            document.getElementById("details-default-msg").style.display = "block";
+            document.getElementById("details-content-box").style.display = "none";
+
+            updateFleetWideMetrics();
+            handleFleetQueryChange();
+
+            logToTerminal(`[Database] Fleet ledger purged successfully. Total active assets: 0.`, "warning");
+            alert("Database Purged: All assets have been cleared successfully.");
         }
 
         // Filtering & Search functions
