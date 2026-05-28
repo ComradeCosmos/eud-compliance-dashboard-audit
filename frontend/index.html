@@ -500,6 +500,17 @@
                                     </tbody>
                                 </table>
                             </div>
+                            
+                            <!-- Dynamic Custom Metadata Panel -->
+                            <div id="det-custom-params-section" style="display: none; margin-top: 1.25rem;">
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                    Custom Telemetry & Asset Properties</h4>
+                                <div id="det-custom-params-grid"
+                                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem;">
+                                    <!-- Dynamic elements go here -->
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Column 2: Sparkline & Controls -->
@@ -1086,6 +1097,7 @@
                 const min = 10 + (i % 45);
                 const lastLoginStr = `2026-05-${20 + (i % 7)} ${hour}:${min}`;
 
+                const deptList = ["Engineering", "Product", "Sales", "Human Resources", "Finance", "Legal", "Operations", "Marketing"];
                 const deviceName = `${man.substring(0, 3).toUpperCase()}-EUD-${1000 + i}`;
                 list.push({
                     id: `dev-${Math.abs(8000 + i).toString(16)}`,
@@ -1103,7 +1115,14 @@
                     last_login: lastLoginStr,
                     location: location,
                     location_group: locationGroup,
-                    is_isolated: false
+                    is_isolated: false,
+                    custom_properties: {
+                        "Department": deptList[i % deptList.length],
+                        "Asset Tag": `AT-${12000 + i}`,
+                        "Assigned Project": `Project-${["Titan", "Hermes", "Apollo", "Minerva", "Hyperion"][i % 5]}`,
+                        "Bios Version": `v${1 + (i % 3)}.${i % 9}.${i % 5}`,
+                        "Subnet IP": `10.23.${4 + (i % 20)}.${10 + (i % 240)}`
+                    }
                 });
             }
             return list;
@@ -1359,6 +1378,20 @@
 
                     if (!name || !serial) continue;
 
+                    // Dynamically capture any other custom columns as custom properties
+                    const customProperties = {};
+                    const standardKeys = [
+                        deviceNameIdx, serialIdx, macIdx, manufacturerIdx,
+                        conditionIdx, userIdx, lastLoginIdx, locationIdx, locationGroupIdx
+                    ];
+                    
+                    headers.forEach((header, idx) => {
+                        if (!standardKeys.includes(idx) && row[idx] !== undefined && String(row[idx]).trim() !== "") {
+                            const displayHeader = String(rows[0][idx]).trim();
+                            customProperties[displayHeader] = String(row[idx]).trim();
+                        }
+                    });
+
                     const normName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
                     let existing = fleetDataset.find(dev => dev.serial === serial || dev.canonical_name === normName);
 
@@ -1370,6 +1403,11 @@
                         existing.last_login = lastLogin;
                         existing.location = location;
                         existing.location_group = locationGroup;
+                        
+                        // Merge new custom properties
+                        if (!existing.custom_properties) existing.custom_properties = {};
+                        Object.assign(existing.custom_properties, customProperties);
+                        
                         mergedItems++;
                     } else {
                         fleetDataset.push({
@@ -1388,7 +1426,8 @@
                             location: location,
                             location_group: locationGroup,
                             is_isolated: false,
-                            software: sampleSoftwareCatalog.map(sw => ({ name: sw.name, installed: sw.required, required: sw.required, status: "COMPLIANT" }))
+                            software: sampleSoftwareCatalog.map(sw => ({ name: sw.name, installed: sw.required, required: sw.required, status: "COMPLIANT" })),
+                            custom_properties: customProperties
                         });
                         newItems++;
                     }
@@ -1529,6 +1568,26 @@
                 `;
                 tbody.appendChild(tr);
             });
+
+            // Populate custom dynamic parameters
+            const customSection = document.getElementById("det-custom-params-section");
+            const customGrid = document.getElementById("det-custom-params-grid");
+            
+            if (dev.custom_properties && Object.keys(dev.custom_properties).length > 0) {
+                customSection.style.display = "block";
+                customGrid.innerHTML = "";
+                
+                Object.entries(dev.custom_properties).forEach(([key, val]) => {
+                    const item = document.createElement("div");
+                    item.innerHTML = `
+                        <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">${escapeHTML(key)}</span>
+                        <strong style="font-size: 0.95rem; color: var(--text-primary);">${escapeHTML(val)}</strong>
+                    `;
+                    customGrid.appendChild(item);
+                });
+            } else {
+                customSection.style.display = "none";
+            }
 
             // Generate deterministic scoring trend sparkline points (6 historical intervals)
             const trendScores = [];
