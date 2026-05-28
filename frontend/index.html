@@ -1358,6 +1358,41 @@
                 // Fuzzy match column for pre-calculated score if it exists in the imported sheet
                 const scoreColIdx = findIndex(["score", "compliance score", "compliance_score", "risk score", "risk_score", "device score", "device_score"]);
 
+                // Analyze headers and classify them dynamically
+                const complianceKeywords = ["ad", "bitlocker", "bit locker", "zscaler", "z-scaler", "nessus", "sentinelone", "sentinel one", "s1", "sccm", "agent", "status", "compliance", "encryption", "protection", "security", "firewall", "mfa", "antivirus", "patch", "update", "state", "enrollment", "client", "connector", "scanner"];
+                const valueKeywords = ["compliant", "non-compliant", "non_compliant", "active", "inactive", "installed", "missing", "enabled", "disabled", "yes", "no", "true", "false", "offline", "online", "fail", "failed", "success", "warning", "critical"];
+
+                const headersCount = rows[0].length;
+                const isComplianceCol = new Array(headersCount).fill(false);
+
+                for (let colIdx = 0; colIdx < headersCount; colIdx++) {
+                    // Skip basic metadata columns
+                    if (colIdx === deviceNameIdx || colIdx === serialIdx || colIdx === macIdx || colIdx === manufacturerIdx ||
+                        colIdx === conditionIdx || colIdx === userIdx || colIdx === lastLoginIdx || colIdx === locationIdx ||
+                        colIdx === locationGroupIdx || colIdx === scoreColIdx) {
+                        continue;
+                    }
+
+                    const headerText = String(rows[0][colIdx]).trim().toLowerCase();
+                    let matchesHeader = complianceKeywords.some(kw => headerText.includes(kw));
+
+                    let matchesValue = false;
+                    for (let rIdx = 1; rIdx < rows.length; rIdx++) {
+                        const rowVal = rows[rIdx] && rows[rIdx][colIdx];
+                        if (rowVal !== undefined && rowVal !== null) {
+                            const valStr = String(rowVal).trim().toLowerCase();
+                            if (valueKeywords.includes(valStr)) {
+                                matchesValue = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (matchesHeader || matchesValue) {
+                        isComplianceCol[colIdx] = true;
+                    }
+                }
+
                 // Map the spreadsheet headers dynamically in original order
                 activeTableHeaders = rows[0].map(h => String(h).trim());
                 activeTableKeys = headers.map((header, idx) => {
@@ -1377,6 +1412,7 @@
                     if (idx === nessusColIdx) return "nessus";
                     if (idx === sentinelOneColIdx) return "sentinelone";
                     if (idx === sccmColIdx) return "sccm";
+                    if (isComplianceCol[idx]) return `compliance:${rows[0][idx].trim()}`;
                     return `custom:${rows[0][idx].trim()}`;
                 });
 
@@ -1430,26 +1466,40 @@
                     const location = (locationIdx !== -1 && row[locationIdx] !== undefined) ? String(row[locationIdx]).trim() : "Remote";
                     const locationGroup = (locationGroupIdx !== -1 && row[locationGroupIdx] !== undefined) ? String(row[locationGroupIdx]).trim() : "Non-Sift";
 
-                    // Parse spreadsheet values for each control, mapping presence to COMPLIANT
-                    const checkControl = (colIdx, fallbackCompliant) => {
+                    // Check control status based on cell values
+                    const checkControlVal = (colIdx, colName, fallbackCompliant) => {
                         if (colIdx !== -1 && row[colIdx] !== undefined) {
-                            const val = String(row[colIdx]).trim().toLowerCase();
-                            if (val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive") {
-                                return { installed: "MISSING", status: "NON_COMPLIANT" };
+                            const raw = String(row[colIdx]).trim();
+                            const val = raw.toLowerCase();
+                            if (val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive" || val === "disabled" || val === "fail" || val === "failed" || val === "non_compliant" || val === "non-compliant" || val === "offline" || val === "critical") {
+                                return { installed: raw || "MISSING", status: "NON_COMPLIANT" };
                             }
-                            return { installed: "INSTALLED", status: "COMPLIANT" };
+                            return { installed: raw || "INSTALLED", status: "COMPLIANT" };
                         }
                         return fallbackCompliant ? { installed: "INSTALLED", status: "COMPLIANT" } : { installed: "MISSING", status: "NON_COMPLIANT" };
                     };
 
                     const software = [
-                        { name: "Active Directory (AD) Enrollment", key: "ad", required: "REQUIRED", ...checkControl(adColIdx, true) },
-                        { name: "BitLocker Drive Encryption", key: "bitlocker", required: "REQUIRED", ...checkControl(bitlockerColIdx, true) },
-                        { name: "Zscaler Client Connector", key: "zscaler", required: "REQUIRED", ...checkControl(zscalerColIdx, true) },
-                        { name: "Nessus Vulnerability Agent", key: "nessus", required: "REQUIRED", ...checkControl(nessusColIdx, true) },
-                        { name: "SentinelOne Endpoint Protection", key: "sentinelone", required: "REQUIRED", ...checkControl(sentinelOneColIdx, true) },
-                        { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControl(sccmColIdx, true) }
+                        { name: "Active Directory (AD) Enrollment", key: "ad", required: "REQUIRED", ...checkControlVal(adColIdx, "Active Directory (AD) Enrollment", true) },
+                        { name: "BitLocker Drive Encryption", key: "bitlocker", required: "REQUIRED", ...checkControlVal(bitlockerColIdx, "BitLocker Drive Encryption", true) },
+                        { name: "Zscaler Client Connector", key: "zscaler", required: "REQUIRED", ...checkControlVal(zscalerColIdx, "Zscaler Client Connector", true) },
+                        { name: "Nessus Vulnerability Agent", key: "nessus", required: "REQUIRED", ...checkControlVal(nessusColIdx, "Nessus Vulnerability Agent", true) },
+                        { name: "SentinelOne Endpoint Protection", key: "sentinelone", required: "REQUIRED", ...checkControlVal(sentinelOneColIdx, "SentinelOne Endpoint Protection", true) },
+                        { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControlVal(sccmColIdx, "SCCM Management Agent", true) }
                     ];
+
+                    // Dynamically append any other dynamic compliance columns!
+                    headers.forEach((header, idx) => {
+                        if (isComplianceCol[idx] && idx !== adColIdx && idx !== bitlockerColIdx && idx !== zscalerColIdx && idx !== nessusColIdx && idx !== sentinelOneColIdx && idx !== sccmColIdx) {
+                            const colName = rows[0][idx].trim();
+                            software.push({
+                                name: colName,
+                                key: `compliance:${colName}`,
+                                required: "REQUIRED",
+                                ...checkControlVal(idx, colName, true)
+                            });
+                        }
+                    });
 
                     let finalScore = 100.00;
                     const hasNonCompliant = software.some(sw => sw.status === "NON_COMPLIANT");
@@ -1936,10 +1986,14 @@
                     activeTableKeys.forEach((key, headerIdx) => {
                         let val = "";
                         let isCustom = key.startsWith("custom:");
-                        let actualKey = isCustom ? key.substring(7) : key;
+                        let isCompliance = key.startsWith("compliance:");
+                        let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
                         
                         if (isCustom) {
                             val = (dev.custom_properties && dev.custom_properties[actualKey] !== undefined) ? dev.custom_properties[actualKey] : "-";
+                        } else if (isCompliance) {
+                            const swAgent = dev.software.find(sw => sw.name === actualKey || sw.key === key);
+                            val = swAgent ? swAgent.installed : "MISSING";
                         } else {
                             if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
                                 const swAgent = dev.software.find(sw => sw.key === actualKey);
@@ -1970,8 +2024,10 @@
                             rowHtml += `<td><span class="badge ${getConditionBadgeClass(val)}">${escapeHTML(String(val).replace("_", " "))}</span></td>`;
                         } else if (actualKey === "location_group") {
                             rowHtml += `<td><span class="badge ${val === 'Sift' ? 'group-sift' : 'group-non-sift'}">${escapeHTML(String(val))}</span></td>`;
-                        } else if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
-                            rowHtml += `<td><span class="badge ${val === 'INSTALLED' ? 'risk-low' : 'risk-critical'}">${escapeHTML(String(val))}</span></td>`;
+                        } else if (isCompliance || actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
+                            const swAgent = dev.software.find(sw => sw.name === actualKey || sw.key === key || sw.key === actualKey);
+                            const isCompliant = swAgent ? swAgent.status === 'COMPLIANT' : false;
+                            rowHtml += `<td><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}">${escapeHTML(String(val))}</span></td>`;
                         } else {
                             rowHtml += `<td>${escapeHTML(String(val))}</td>`;
                         }
