@@ -489,9 +489,9 @@
                                 <table class="fleet-table" style="font-size: 0.85rem;">
                                     <thead>
                                         <tr>
-                                            <th>Software Package Name</th>
-                                            <th>Installed Version</th>
-                                            <th>Required Version</th>
+                                            <th>Compliance Control Name</th>
+                                            <th>Control Status</th>
+                                            <th>Audit Requirement</th>
                                             <th>Audit Result</th>
                                         </tr>
                                     </thead>
@@ -1027,13 +1027,14 @@
             { os: "Ubuntu 22.04 LTS", family: "Linux" }
         ];
 
-        // Software catalogs
+        // Software catalogs (Core Enterprise Security Agents & Controls)
         const sampleSoftwareCatalog = [
-            { name: "SentinelOne Endpoint Agent", required: "v24.2.0" },
-            { name: "Zscaler Client Connector", required: "v4.2.0" },
-            { name: "Microsoft Defender ATP", required: "v10.1.2" },
-            { name: "Slack Desktop Client", required: "v4.36.0" },
-            { name: "Zoom Meetings Client", required: "v5.17.5" }
+            { name: "Active Directory (AD) Enrollment", key: "ad" },
+            { name: "BitLocker Drive Encryption", key: "bitlocker" },
+            { name: "Zscaler Client Connector", key: "zscaler" },
+            { name: "Nessus Vulnerability Agent", key: "nessus" },
+            { name: "SentinelOne Endpoint Protection", key: "sentinelone" },
+            { name: "SCCM Management Agent", key: "sccm" }
         ];
 
         // Corporate User Assigned and Office Locations catalogs
@@ -1074,15 +1075,15 @@
                 else if (score < 65) level = "HIGH";
                 else if (score < 85) level = "MEDIUM";
 
-                // Generate software audits
+                // Generate software audits (Base Compliance Checks)
                 const software = sampleSoftwareCatalog.map((sw, swIdx) => {
                     let status = "COMPLIANT";
-                    let installed = sw.required;
-                    if (score < 90 && (swIdx + i) % 2 === 0) {
+                    let installed = "INSTALLED";
+                    if (score < 85 && (swIdx + i) % 3 === 0) {
                         status = "NON_COMPLIANT";
-                        installed = "v" + (parseInt(sw.required.substring(1, 3)) - 1) + ".0.0";
+                        installed = "MISSING";
                     }
-                    return { name: sw.name, installed: installed, required: sw.required, status: status };
+                    return { name: sw.name, key: sw.key, installed: installed, required: "REQUIRED", status: status };
                 });
 
                 // Generate new corporate metadata fields
@@ -1326,6 +1327,14 @@
                 const locationIdx = findIndex(["location", "office", "site", "city"]);
                 const locationGroupIdx = findIndex(["locationgroup", "group", "region"]);
 
+                // Fuzzy match columns for the core compliance controls
+                const adColIdx = findIndex(["active directory", "ad", "active_directory", "domain", "enrollment"]);
+                const bitlockerColIdx = findIndex(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
+                const zscalerColIdx = findIndex(["zscaler", "z-scaler", "zscaler client connector", "vpn"]);
+                const nessusColIdx = findIndex(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
+                const sentinelOneColIdx = findIndex(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
+                const sccmColIdx = findIndex(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
+
                 let newItems = 0;
                 let mergedItems = 0;
 
@@ -1376,6 +1385,35 @@
                     const location = (locationIdx !== -1 && row[locationIdx] !== undefined) ? String(row[locationIdx]).trim() : "Remote";
                     const locationGroup = (locationGroupIdx !== -1 && row[locationGroupIdx] !== undefined) ? String(row[locationGroupIdx]).trim() : "Non-Sift";
 
+                    // Parse spreadsheet values for each control, mapping presence to COMPLIANT
+                    const checkControl = (colIdx, fallbackCompliant) => {
+                        if (colIdx !== -1 && row[colIdx] !== undefined) {
+                            const val = String(row[colIdx]).trim().toLowerCase();
+                            if (val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive") {
+                                return { installed: "MISSING", status: "NON_COMPLIANT" };
+                            }
+                            return { installed: "INSTALLED", status: "COMPLIANT" };
+                        }
+                        return fallbackCompliant ? { installed: "INSTALLED", status: "COMPLIANT" } : { installed: "MISSING", status: "NON_COMPLIANT" };
+                    };
+
+                    const software = [
+                        { name: "Active Directory (AD) Enrollment", key: "ad", required: "REQUIRED", ...checkControl(adColIdx, true) },
+                        { name: "BitLocker Drive Encryption", key: "bitlocker", required: "REQUIRED", ...checkControl(bitlockerColIdx, true) },
+                        { name: "Zscaler Client Connector", key: "zscaler", required: "REQUIRED", ...checkControl(zscalerColIdx, true) },
+                        { name: "Nessus Vulnerability Agent", key: "nessus", required: "REQUIRED", ...checkControl(nessusColIdx, true) },
+                        { name: "SentinelOne Endpoint Protection", key: "sentinelone", required: "REQUIRED", ...checkControl(sentinelOneColIdx, true) },
+                        { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControl(sccmColIdx, true) }
+                    ];
+
+                    const compliantCount = software.filter(sw => sw.status === "COMPLIANT").length;
+                    const finalScore = parseFloat(((compliantCount / 6) * 100).toFixed(2));
+                    
+                    let level = "LOW";
+                    if (finalScore < 40) level = "CRITICAL";
+                    else if (finalScore < 65) level = "HIGH";
+                    else if (finalScore < 85) level = "MEDIUM";
+
                     if (!name || !serial) continue;
 
                     // Dynamically capture any other custom columns as custom properties
@@ -1396,13 +1434,14 @@
                     let existing = fleetDataset.find(dev => dev.serial === serial || dev.canonical_name === normName);
 
                     if (existing) {
-                        existing.score = 100.00;
-                        existing.level = "LOW";
+                        existing.score = finalScore;
+                        existing.level = level;
                         existing.condition = condition;
                         existing.user_assigned = user;
                         existing.last_login = lastLogin;
                         existing.location = location;
                         existing.location_group = locationGroup;
+                        existing.software = software;
                         
                         // Merge new custom properties
                         if (!existing.custom_properties) existing.custom_properties = {};
@@ -1418,15 +1457,15 @@
                             manufacturer: manufacturer,
                             os: "Windows 10 Enterprise",
                             os_family: "Windows",
-                            score: 100.00,
-                            level: "LOW",
+                            score: finalScore,
+                            level: level,
                             condition: condition,
                             user_assigned: user,
                             last_login: lastLogin,
                             location: location,
                             location_group: locationGroup,
                             is_isolated: false,
-                            software: sampleSoftwareCatalog.map(sw => ({ name: sw.name, installed: sw.required, required: sw.required, status: "COMPLIANT" })),
+                            software: software,
                             custom_properties: customProperties
                         });
                         newItems++;
@@ -1664,12 +1703,12 @@
             dev.software.forEach(sw => {
                 if (sw.status === "NON_COMPLIANT") {
                     nonCompliantCount++;
-                    if (sw.name.includes("SentinelOne") || sw.name.includes("Defender")) {
-                        score -= 25.0; // Heavyweight critical security agent
-                    } else if (sw.name.includes("Zscaler")) {
-                        score -= 15.0; // Network proxy/gateway
+                    if (sw.name.includes("Active Directory") || sw.name.includes("SentinelOne")) {
+                        score -= 25.0; // Heavyweight core security control
+                    } else if (sw.name.includes("BitLocker") || sw.name.includes("Zscaler")) {
+                        score -= 15.0; // Encryption/Network gateway controls
                     } else {
-                        score -= 10.0; // Normal office package
+                        score -= 10.0; // Management/Vulnerability agents (Nessus/SCCM)
                     }
                 }
             });
@@ -1694,8 +1733,8 @@
 
             if (action === 'PATCH') {
                 buttonSelector = "PATCH";
-                prefix = "[WSUS PATCH]";
-                logToTerminal(`${prefix} Initiating remote WSUS policy sync & updates installation for host ${dev.canonical_name.toUpperCase()} (ID: ${dev.id})...`);
+                prefix = "[SCCM PATCH]";
+                logToTerminal(`${prefix} Initiating remote SCCM policy sync & updates installation for host ${dev.canonical_name.toUpperCase()} (ID: ${dev.id})...`);
             } else if (action === 'EDR') {
                 buttonSelector = "EDR";
                 prefix = "[SentinelOne EDR]";
@@ -1727,11 +1766,11 @@
                     if (action === 'PATCH') {
                         let patchesApplied = 0;
                         dev.software.forEach(sw => {
-                            if (sw.status === "NON_COMPLIANT" && !sw.name.includes("SentinelOne")) {
-                                sw.installed = sw.required;
+                            if (sw.status === "NON_COMPLIANT" && !sw.name.includes("SentinelOne") && !sw.name.includes("Active Directory")) {
+                                sw.installed = "INSTALLED";
                                 sw.status = "COMPLIANT";
                                 patchesApplied++;
-                                logToTerminal(`${prefix} Package "${sw.name}" successfully upgraded to ${sw.required}.`, "info");
+                                logToTerminal(`${prefix} Control agent "${sw.name}" successfully upgraded & verified.`, "info");
                             }
                         });
                         logToTerminal(`${prefix} Patch reconciliation completed. Applied ${patchesApplied} pending security updates.`, "info");
@@ -1739,7 +1778,7 @@
                         let threatsQuarantined = 0;
                         dev.software.forEach(sw => {
                             if (sw.name.includes("SentinelOne") && sw.status === "NON_COMPLIANT") {
-                                sw.installed = sw.required;
+                                sw.installed = "INSTALLED";
                                 sw.status = "COMPLIANT";
                                 threatsQuarantined++;
                                 logToTerminal(`${prefix} SentinelOne agent upgraded and quarantined threat nodes.`, "info");
@@ -1747,6 +1786,15 @@
                         });
                         logToTerminal(`${prefix} Active threat quarantine verified. Agent operational.`, "info");
                     } else if (action === 'VAULT') {
+                        let vaultRestored = 0;
+                        dev.software.forEach(sw => {
+                            if (sw.name.includes("BitLocker") && sw.status === "NON_COMPLIANT") {
+                                sw.installed = "INSTALLED";
+                                sw.status = "COMPLIANT";
+                                vaultRestored++;
+                                logToTerminal(`${prefix} Drive encrypted and keys escrowed to HashiCorp Vault.`, "info");
+                            }
+                        });
                         logToTerminal(`${prefix} Secure escrow verified. Transported AES-256 BitLocker recovery keys to vault mount "secret/data/tenants/${dev.id}". Key lease lease-id-${Math.random().toString(36).substring(7)} created.`, "info");
                     }
 
