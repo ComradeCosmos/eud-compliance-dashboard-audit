@@ -1078,15 +1078,29 @@
                 else if (score < 85) level = "MEDIUM";
 
                 // Generate software audits (Base Compliance Checks)
+                let hasMissing = false;
                 const software = sampleSoftwareCatalog.map((sw, swIdx) => {
                     let status = "COMPLIANT";
                     let installed = "INSTALLED";
                     if (score < 85 && (swIdx + i) % 3 === 0) {
                         status = "NON_COMPLIANT";
                         installed = "MISSING";
+                        hasMissing = true;
                     }
                     return { name: sw.name, key: sw.key, installed: installed, required: "REQUIRED", status: status };
                 });
+
+                // Apply strict binary compliance: 1 non-compliance drops the score to 0.00!
+                if (hasMissing || condition === "BROKEN" || condition === "DECOMMISSIONED") {
+                    score = 0.00;
+                    level = "CRITICAL";
+                } else if (condition === "IN_REPAIR") {
+                    score = 54.20;
+                    level = "HIGH";
+                } else {
+                    score = 100.00;
+                    level = "LOW";
+                }
 
                 // Generate new corporate metadata fields
                 const user = userAssignedCatalog[i % userAssignedCatalog.length];
@@ -1438,13 +1452,12 @@
                     ];
 
                     let finalScore = 100.00;
-                    if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
+                    const hasNonCompliant = software.some(sw => sw.status === "NON_COMPLIANT");
+                    if (hasNonCompliant) {
+                        finalScore = 0.00;
+                    } else if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
                         const parsed = parseFloat(row[scoreColIdx]);
                         if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
-                    } else {
-                        // Recalculate score based on agents
-                        const compliantCount = software.filter(sw => sw.status === "COMPLIANT").length;
-                        finalScore = parseFloat(((compliantCount / 6) * 100).toFixed(2));
                     }
                     
                     let level = "LOW";
@@ -1767,21 +1780,11 @@
             }
 
             let score = 100.00;
-            let nonCompliantCount = 0;
-            dev.software.forEach(sw => {
-                if (sw.status === "NON_COMPLIANT") {
-                    nonCompliantCount++;
-                    if (sw.name.includes("Active Directory") || sw.name.includes("SentinelOne")) {
-                        score -= 25.0; // Heavyweight core security control
-                    } else if (sw.name.includes("BitLocker") || sw.name.includes("Zscaler")) {
-                        score -= 15.0; // Encryption/Network gateway controls
-                    } else {
-                        score -= 10.0; // Management/Vulnerability agents (Nessus/SCCM)
-                    }
-                }
-            });
+            const hasNonCompliant = dev.software.some(sw => sw.status === "NON_COMPLIANT");
+            if (hasNonCompliant) {
+                score = 0.00;
+            }
 
-            score = Math.max(0, Math.min(100, score));
             dev.score = parseFloat(score.toFixed(2));
 
             if (dev.score < 40) dev.level = "CRITICAL";
