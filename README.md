@@ -171,3 +171,8 @@ To deliver streamlined SOC operations, the platform implements a tight feedback 
 *   **Control Performance Audits**: Audits pass/fail statistics, pass rate percentage, and displays visual compliance verification progress bars for every loaded mandate.
 *   **Click-to-Remediate Redirection**: Identifies the top 10 systems violating active mandates and lists their exact control gaps. Clicking the `Remediate` link immediately switches the dashboard view to the Compliance Ledger, auto-selects the endpoint, and focuses the detailed MECM/EDR remediation tools panel.
 
+### 3. 📥 Real-time Spreadsheet Ingestion & Export
+*   **Fuzzy Header Mapping**: Smart index mapping rules identify device names, serials, macs, locations, and condition keys automatically from imported Excel (`.xlsx`, `.xls`) or CSV sheets.
+*   **Dynamic Custom Columns Parsing**: Instantly detects and classifies miscellaneous columns (e.g. `mfa_status`, `agent_v3_active`) as dynamic compliance controls, automatically registering them on the **Security Policies Governance Board** and parsing them in the zero-tolerance engine.
+*   **Pristine CSV Export**: Compiles and downloads the current active filtered fleet ledger matching all active queries, searches, and status parameters cleanly.
+
