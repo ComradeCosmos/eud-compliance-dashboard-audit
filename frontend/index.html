@@ -197,221 +197,32 @@
                 </div>
             </div>
 
-            <!-- Section: Risk Management -->
+            <!-- Section: Scoring & Controls -->
             <div id="section-risk" class="section-view" style="display: none;">
-                <!-- Main Content Card -->
-                <div class="card">
-                    <div class="tabs">
-                        <button class="tab-btn active" id="tab-btn-reconciler"
-                            onclick="switchTab('reconciler')">Reconciliation Pipeline</button>
-                        <button class="tab-btn" id="tab-btn-scorer" onclick="switchTab('scorer')">Weighted Scoring
-                            Engine</button>
-                        <button class="tab-btn" id="tab-btn-drift" onclick="switchTab('drift')">AI Score Drift
-                            (LSTM)</button>
+                <div class="card" style="padding: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Security Policies Governance Board</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Configure active compliance mandates for the fleet. Toggling a security policy to <strong style="color: var(--color-accent);">Optional</strong> will exclude it from the zero-tolerance compliance engine. The fleet's composite scores, status badges, donut charts, and reporting audits will instantly recalculate in real-time.
+                        </p>
                     </div>
 
-                    <!-- Tab 1: Identity Reconciler -->
-                    <div id="tab-reconciler" class="tab-content">
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
-                            Simulate the 5-stage device identity reconciliation pipeline. Incoming records are
-                            normalized, verified via SHA256 hardware fingerprints, evaluated for Levenshtein name
-                            distance, or queued for MiniLM semantic similarity/human reviews.
-                        </p>
-                        <div style="display: grid; grid-template-columns: 1fr; gap: 2rem;">
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                                <div>
-                                    <div class="input-group">
-                                        <label for="recon-name">Incoming Device Name</label>
-                                        <input type="text" id="recon-name" value="DESKTOP-A1B2C3-S1">
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="recon-serial">Serial Number</label>
-                                        <input type="text" id="recon-serial" value="SN-DEL-992001">
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="input-group">
-                                        <label for="recon-mac">MAC Address (mac[0])</label>
-                                        <input type="text" id="recon-mac" value="00:1A:2B:3C:4D:5E">
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="recon-manufacturer">Manufacturer</label>
-                                        <select id="recon-manufacturer">
-                                            <option value="Dell Inc.">Dell Inc.</option>
-                                            <option value="Apple Inc.">Apple Inc.</option>
-                                            <option value="Lenovo">Lenovo</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                <button class="btn" onclick="runReconciliationSimulation()">Reconcile Device
-                                    Identity</button>
-                            </div>
-
-                            <div>
-                                <h3
-                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1rem; color: var(--text-primary);">
-                                    Resolution Outcomes</h3>
-                                <div id="recon-output-panel"
-                                    style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem;">
-                                    <div><strong>Fingerprint SHA256:</strong> <span id="out-fp"
-                                            style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem; word-break: break-all;">Not
-                                            calculated</span></div>
-                                    <div><strong>Pipeline Phase Resolved:</strong> <span id="out-stage"
-                                            style="color: var(--text-primary); font-weight: 700;">-</span></div>
-                                    <div><strong>Confidence Level:</strong> <span id="out-confidence"
-                                            style="color: var(--text-primary); font-weight: 700;">-</span></div>
-                                    <div><strong>Pipeline Action:</strong> <span id="out-action" class="badge">-</span>
-                                    </div>
-                                    <div id="out-desc"
-                                        style="color: var(--text-secondary); font-style: italic; margin-top: 0.5rem; font-size: 0.9rem;">
-                                        Fill fields and trigger reconciliation.</div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Admin-Only Config Alert -->
+                    <div id="policy-admin-alert" style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
+                        ⚠️ ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security) privileges are required to override compliance requirements.
                     </div>
 
-                    <!-- Tab 2: Scoring Engine -->
-                    <div id="tab-scorer" class="tab-content" style="display: none;">
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
-                            Adjust security control states to recalculate device scores using standard platform weights.
-                            Dimension scores undergo critical failure multipliers (BitLocker disabled or SentinelOne
-                            inactive result in critical 0.0 scores).
-                        </p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
-                            <div>
-                                <h3
-                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Dimension Controls</h3>
-                                <div class="input-group">
-                                    <label for="score-edr">SentinelOne Agent Status (EDR: 25%)</label>
-                                    <select id="score-edr" onchange="recalculateScores()">
-                                        <option value="compliant">Compliant (Active / 0 Threats)</option>
-                                        <option value="threats">Non-Compliant (Active Threats Detected)</option>
-                                        <option value="inactive">CRITICAL FAIL (Agent Disabled / Offline)</option>
-                                    </select>
-                                </div>
-                                <div class="input-group">
-                                    <label for="score-patch">OS Patch Currency (Patch: 20%)</label>
-                                    <select id="score-patch" onchange="recalculateScores()">
-                                        <option value="compliant">Compliant (Fully Patched)</option>
-                                        <option value="late">Non-Compliant (Patches > 30 Days Late)</option>
-                                        <option value="eol">CRITICAL FAIL (OS End-of-Life)</option>
-                                    </select>
-                                </div>
-                                <div class="input-group">
-                                    <label for="score-encryption">BitLocker Drive State (Encryption: 15%)</label>
-                                    <select id="score-encryption" onchange="recalculateScores()">
-                                        <option value="compliant">Compliant (AES-256 Encrypted / Keys Escrowed)</option>
-                                        <option value="disabled">CRITICAL FAIL (BitLocker Disabled)</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3
-                                    style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05rem; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Risk Engine Output</h3>
-                                <div
-                                    style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 2rem; display: flex; flex-direction: column; gap: 1rem; text-align: center;">
-                                    <div>
-                                        <span
-                                            style="font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Composite
-                                            Score</span>
-                                        <div id="out-calc-score"
-                                            style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.05em; margin: 0.5rem 0;">
-                                            100.00</div>
-                                        <div id="out-calc-level"
-                                            style="font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em; color: var(--status-low);">
-                                            LOW RISK</div>
-                                    </div>
-                                    <div
-                                        style="font-size: 0.85rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.5rem; text-align: left; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
-                                        <div><strong>Critical Failures:</strong> <span id="out-penalty-label"
-                                                style="color: var(--status-low); font-weight: 700;">None (0%
-                                                drop)</span></div>
-                                        <div><strong>NIST CSF 2.0 Compliance:</strong> <span id="out-nist"
-                                                style="color: var(--status-low); font-weight: 700;">100%
-                                                Compliant</span></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Tab 3: AI score drift (LSTM) -->
-                    <div id="tab-drift" class="tab-content" style="display: none;">
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.95rem;">
-                            The PyTorch LSTM microservice analyzes the preceding 90-day time-series compliance events
-                            hypertable logs and projects future device scoring curves at 7, 14, and 30-day horizons.
-                        </p>
-                        <div class="input-group">
-                            <label for="drift-scenario">Simulation Core Scenario</label>
-                            <select id="drift-scenario" onchange="runDriftSimulation()">
-                                <option value="stable">Stable Compliance State (Constant 98-100 score)</option>
-                                <option value="decaying">Declining Posture (Outdated EDR versions & late patches)
-                                </option>
-                                <option value="critical">Rapid Threat Intrusion (Active malware & offline controls)
-                                </option>
-                            </select>
-                        </div>
-
-                        <h3
-                            style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 1.5rem 0 1rem 0; color: var(--text-primary);">
-                            LSTM 30-Day Forecast Benchmarks</h3>
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean);">
-                                <span>7-Day Projected Score</span>
-                                <div class="val" id="drift-7" style="font-size: 1.75rem;">98.50</div>
-                            </div>
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean);">
-                                <span>14-Day Projected Score</span>
-                                <div class="val" id="drift-14" style="font-size: 1.75rem;">97.20</div>
-                            </div>
-                            <div class="metric-widget"
-                                style="border: 1px solid var(--border-clean); border-right: 1px solid var(--border-clean);">
-                                <span>30-Day Projected Score</span>
-                                <div class="val" id="drift-30" style="font-size: 1.75rem;">95.40</div>
-                            </div>
-                        </div>
+                    <!-- Dynamic Policies Grid -->
+                    <div id="policies-governance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                        <!-- Dynamic policy cards render here -->
                     </div>
                 </div>
             </div>
 
             <!-- Section: Reporting -->
             <div id="section-reporting" class="section-view" style="display: none;">
-                <div class="charts-grid">
-                    <!-- Outbound Integrations Card -->
-                    <div class="card" style="padding: 2rem;">
-                        <h2>Outbound Integrations</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
-                            Trigger real-time integrations using CloudEvents 1.0 specifications with secure HashiCorp
-                            Vault dynamic keys.
-                        </p>
-                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <button class="btn btn-secondary" onclick="triggerOutbound('SERVICENOW')">ServiceNow
-                                Incident</button>
-                            <button class="btn btn-secondary" onclick="triggerOutbound('JIRA')">Jira Ticket</button>
-                            <button class="btn btn-secondary" onclick="triggerOutbound('SPLUNK')">Splunk SIEM
-                                Forwarder</button>
-                        </div>
-                    </div>
-
-                    <!-- Live Audit Logs Card -->
-                    <div class="card" style="padding: 2rem; display: flex; flex-direction: column;">
-                        <h2>Audit Console</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary);">Real-time multi-tenant platform
-                            events.</p>
-                        <div class="terminal-console" id="audit-terminal" style="flex-grow: 1; min-height: 180px;">
-                            <div class="terminal-line info">[SYS] EUD Compliance Dashboard Platform Core Bootstrapped.
-                            </div>
-                            <div class="terminal-line info">[SYS] Postgres Schema and TimescaleDB hypertables loaded.
-                            </div>
-                            <div class="terminal-line info">[SYS] Dynamic schema paths locked. Ready.</div>
-                        </div>
-                    </div>
+                <div id="reporting-dashboard-content" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <!-- Dynamic Reporting Dashboard will be loaded here -->
                 </div>
             </div>
 
@@ -1130,6 +941,9 @@
         let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
         let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
 
+        // Global registry of enforced compliance policies (true = Required, false = Optional)
+        let enforcedPolicies = {};
+
         // Initialize with exactly 16,742 corporate assets
         let fleetDataset = generateStructuredAssets(16742);
         let filteredDataset = [...fleetDataset];
@@ -1226,6 +1040,13 @@
                     default:
                         titleEl.innerText = "Executive Overview";
                 }
+            }
+
+            // Trigger real-time dashboard renders on section load
+            if (target === "reporting") {
+                generateComplianceReport();
+            } else if (target === "risk") {
+                renderPoliciesGrid();
             }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1483,7 +1304,10 @@
                     });
 
                     let finalScore = 100.00;
-                    const hasNonCompliant = software.some(sw => sw.status === "NON_COMPLIANT");
+                    const hasNonCompliant = software.some(sw => {
+                        const isRequired = enforcedPolicies[sw.name] !== false;
+                        return isRequired && sw.status === "NON_COMPLIANT";
+                    });
                     if (hasNonCompliant) {
                         finalScore = 0.00;
                     } else if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
@@ -1786,7 +1610,7 @@
         function recalculateSingleDeviceScore(dev) {
             if (dev.is_isolated) {
                 dev.score = 10.00;
-                dev.level = "CRITICAL";
+                dev.level = "NON_COMPLIANT";
                 return;
             }
             if (dev.condition === "BROKEN" || dev.condition === "IN_REPAIR" || dev.condition === "DECOMMISSIONED") {
@@ -1796,7 +1620,12 @@
             }
 
             let score = 100.00;
-            const hasNonCompliant = dev.software.some(sw => sw.status === "NON_COMPLIANT");
+            // ONLY check software compliance policies that are REQUIRED!
+            const hasNonCompliant = dev.software.some(sw => {
+                // Resolve policy requirements from enforcedPolicies registry (Required by default)
+                const isRequired = enforcedPolicies[sw.name] !== false;
+                return isRequired && sw.status === "NON_COMPLIANT";
+            });
             if (hasNonCompliant) {
                 score = 0.00;
             }
@@ -2906,6 +2735,301 @@
 
             // Switch back to analytics overview as active view
             switchNavSection("analytics");
+        }
+
+        // --- Simplified Compliance & Policy Governance Scripting Blocks ---
+
+        function getAvailablePolicies() {
+            const policies = new Set();
+            sampleSoftwareCatalog.forEach(sw => policies.add(sw.name));
+            if (fleetDataset.length > 0) {
+                fleetDataset.forEach(dev => {
+                    if (dev.software) {
+                        dev.software.forEach(sw => {
+                            policies.add(sw.name);
+                        });
+                    }
+                });
+            }
+            return Array.from(policies);
+        }
+
+        function recalculateAllScores() {
+            fleetDataset.forEach(dev => {
+                recalculateSingleDeviceScore(dev);
+            });
+            updateFleetWideMetrics();
+            handleFleetQueryChange();
+            
+            // Re-render active views if open
+            const reportingSection = document.getElementById("section-reporting");
+            if (reportingSection && reportingSection.style.display !== "none") {
+                generateComplianceReport();
+            }
+            const riskSection = document.getElementById("section-risk");
+            if (riskSection && riskSection.style.display !== "none") {
+                renderPoliciesGrid();
+            }
+        }
+
+        function renderPoliciesGrid() {
+            const grid = document.getElementById("policies-governance-grid");
+            const alertEl = document.getElementById("policy-admin-alert");
+            if (!grid) return;
+
+            const isAdmin = (currentSession.role === "admin");
+            if (alertEl) {
+                alertEl.style.display = isAdmin ? "none" : "block";
+            }
+
+            const policies = getAvailablePolicies();
+            grid.innerHTML = "";
+
+            policies.forEach(name => {
+                const isRequired = enforcedPolicies[name] !== false; // default true
+                
+                // Count telemetry passes
+                let compliantCount = 0;
+                let totalCount = 0;
+                fleetDataset.forEach(dev => {
+                    if (dev.condition !== "IN_USE") return; // active devices
+                    const sw = dev.software.find(s => s.name === name);
+                    if (sw) {
+                        totalCount++;
+                        if (sw.status === "COMPLIANT") compliantCount++;
+                    }
+                });
+
+                const passRate = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
+                const card = document.createElement("div");
+                card.className = "metric-widget";
+                card.style.border = "1px solid var(--border-clean)";
+                card.style.display = "flex";
+                card.style.flexDirection = "column";
+                card.style.gap = "0.75rem";
+                card.style.padding = "1.25rem";
+                card.style.background = "var(--bg-card)";
+                card.style.borderRadius = "4px";
+
+                const badgeClass = isRequired ? "risk-low" : "group-non-sift";
+                const badgeLabel = isRequired ? "REQUIRED" : "OPTIONAL";
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
+                        <span style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary); text-transform: none; line-height: 1.3;">${escapeHTML(name)}</span>
+                        <span class="badge ${badgeClass}" style="font-size: 0.65rem; padding: 0.15rem 0.4rem; font-weight: 700;">${badgeLabel}</span>
+                    </div>
+                    
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Active Telemetry:</span>
+                            <strong style="color: var(--text-primary); font-family: var(--font-mono);">${compliantCount} / ${totalCount} Pass</strong>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Mandate Pass Rate:</span>
+                            <strong style="color: ${passRate === 100 ? 'var(--status-low)' : (isRequired ? 'var(--status-critical)' : 'var(--text-primary)')}; font-family: var(--font-mono);">${passRate.toFixed(1)}%</strong>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
+                        <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)'}; border: 1px solid ${isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)'}; color: ${isRequired ? '#ff6b6b' : '#15803d'}; font-weight: 700; cursor: ${isAdmin ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin ? 1 : 0.6};" 
+                            onclick="togglePolicyEnforcement('${escapeHTML(name)}')">
+                            ${isRequired ? '⚠️ Exclude Policy (Make Optional)' : '🛡️ Enforce Policy (Make Required)'}
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function togglePolicyEnforcement(name) {
+            if (currentSession.role !== "admin") {
+                logToTerminal(`[Security Alert] Policy override denied: User "${currentSession.username}" lacks Global Security Administrator clearance.`, "error");
+                alert("Access Denied: Only a Global Security Administrator (admin.security) is authorized to modify compliance policy enforcement parameters.");
+                return;
+            }
+
+            const current = enforcedPolicies[name] !== false; // default true
+            enforcedPolicies[name] = !current;
+
+            logToTerminal(`[Policy Board] Policy "${name}" enforcement status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL'}.`, enforcedPolicies[name] ? 'info' : 'warning');
+
+            recalculateAllScores();
+        }
+
+        function generateComplianceReport() {
+            const container = document.getElementById("reporting-dashboard-content");
+            if (!container) return;
+
+            const totalDevices = fleetDataset.length;
+            let compliantCount = 0;
+            let nonCompliantCount = 0;
+
+            fleetDataset.forEach(dev => {
+                if (dev.level === "COMPLIANT") compliantCount++;
+                else nonCompliantCount++;
+            });
+
+            const compliantPct = totalDevices > 0 ? (compliantCount / totalDevices) * 100 : 0;
+            const nonCompliantPct = totalDevices > 0 ? (nonCompliantCount / totalDevices) * 100 : 0;
+
+            let html = `
+                <!-- Health Summary cards -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                    <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.5rem; background: var(--bg-card); border-radius: 4px;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; letter-spacing: 0.05em;">Active Managed Fleet</span>
+                        <div class="val" style="font-size: 2.25rem; font-family: var(--font-mono); margin-top: 0.5rem; font-weight: 800; color: var(--text-primary);">${totalDevices.toLocaleString()}</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">Total reconciled endpoint nodes</p>
+                    </div>
+                    
+                    <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.5rem; background: var(--bg-card); border-radius: 4px;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--status-low); font-weight: 700; letter-spacing: 0.05em;">Compliant Fleet Assets</span>
+                        <div class="val" style="font-size: 2.25rem; font-family: var(--font-mono); margin-top: 0.5rem; font-weight: 800; color: var(--status-low);">${compliantCount.toLocaleString()}</div>
+                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700; margin-top: 0.25rem;">${compliantPct.toFixed(1)}% <span style="color: var(--text-muted); font-weight: 500;">meeting all required mandates</span></p>
+                    </div>
+                    
+                    <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.5rem; background: var(--bg-card); border-radius: 4px;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--status-critical); font-weight: 700; letter-spacing: 0.05em;">Non-Compliant Exceptions</span>
+                        <div class="val" style="font-size: 2.25rem; font-family: var(--font-mono); margin-top: 0.5rem; font-weight: 800; color: var(--status-critical);">${nonCompliantCount.toLocaleString()}</div>
+                        <p style="font-size: 0.75rem; color: var(--status-critical); font-weight: 700; margin-top: 0.25rem;">${nonCompliantPct.toFixed(1)}% <span style="color: var(--text-muted); font-weight: 500;">failing one or more policies</span></p>
+                    </div>
+                </div>
+            `;
+
+            const policies = getAvailablePolicies();
+            let controlRowsHtml = "";
+
+            if (policies.length === 0) {
+                controlRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No security policies loaded.</td></tr>`;
+            } else {
+                policies.forEach(name => {
+                    const isRequired = enforcedPolicies[name] !== false;
+                    let compliantCount = 0;
+                    let evaluatedCount = 0;
+
+                    fleetDataset.forEach(dev => {
+                        if (dev.condition !== "IN_USE") return;
+                        const sw = dev.software.find(s => s.name === name);
+                        if (sw) {
+                            evaluatedCount++;
+                            if (sw.status === "COMPLIANT") compliantCount++;
+                        }
+                    });
+
+                    const passPct = evaluatedCount > 0 ? (compliantCount / evaluatedCount) * 100 : 100;
+                    const barColor = isRequired ? (passPct === 100 ? 'var(--status-low)' : 'var(--status-critical)') : 'var(--text-muted)';
+                    const barBg = "rgba(255, 255, 255, 0.05)";
+
+                    controlRowsHtml += `
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">${escapeHTML(name)}</strong></td>
+                            <td><span class="badge ${isRequired ? 'risk-low' : 'group-non-sift'}" style="font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem;">${isRequired ? 'REQUIRED' : 'OPTIONAL'}</span></td>
+                            <td style="font-family: var(--font-mono); font-weight: 600; text-align: center;">${compliantCount} / ${evaluatedCount}</td>
+                            <td style="font-family: var(--font-mono); font-weight: 700; color: ${passPct === 100 ? 'var(--status-low)' : (isRequired ? 'var(--status-critical)' : 'var(--text-primary)')};">${passPct.toFixed(1)}%</td>
+                            <td style="width: 180px; vertical-align: middle;">
+                                <div style="width: 100%; height: 6px; background: ${barBg}; border-radius: 3px; overflow: hidden; position: relative;">
+                                    <div style="width: ${passPct}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean);">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
+                        <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700;">Global Security Policy Audit Summary</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time breakdown of control validation passes across active, reconciled endpoints.</p>
+                    </div>
+                    <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Compliance Policy mandated</th>
+                                <th style="text-align: left; width: 110px;">Status</th>
+                                <th style="text-align: center; width: 140px;">Verification Matches</th>
+                                <th style="text-align: left; width: 100px;">Pass Rate</th>
+                                <th style="text-align: left; width: 180px;">SLA Verification Bar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${controlRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            const nonCompliantDevices = fleetDataset.filter(dev => dev.level === "NON_COMPLIANT").slice(0, 10);
+            let exceptionsRowsHtml = "";
+
+            if (nonCompliantDevices.length === 0) {
+                exceptionsRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 No non-compliance exceptions detected! Active fleet is 100% compliant.</td></tr>`;
+            } else {
+                nonCompliantDevices.forEach(dev => {
+                    const failedControls = dev.software
+                        .filter(sw => {
+                            const isRequired = enforcedPolicies[sw.name] !== false;
+                            return isRequired && sw.status === "NON_COMPLIANT";
+                        })
+                        .map(sw => sw.name);
+
+                    let failedStr = failedControls.join(", ");
+                    if (dev.condition === "BROKEN" || dev.condition === "IN_REPAIR" || dev.condition === "DECOMMISSIONED") {
+                        failedStr = `Physical Condition (${dev.condition.replace("_", " ")})`;
+                    } else if (dev.is_isolated) {
+                        failedStr = "Host Isolated Containment";
+                    }
+                    if (!failedStr) failedStr = "Unknown Control (Bypassed Optional Control)";
+
+                    exceptionsRowsHtml += `
+                        <tr>
+                            <td><strong style="color: var(--text-primary);">${escapeHTML(dev.canonical_name.toUpperCase())}</strong></td>
+                            <td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem;">${escapeHTML(dev.id)}</td>
+                            <td style="color: var(--text-primary); font-size: 0.8rem;">${escapeHTML(dev.os)}</td>
+                            <td style="color: var(--status-critical); font-weight: 700; font-size: 0.8rem;">${escapeHTML(failedStr)}</td>
+                            <td style="text-align: right; width: 120px;">
+                                <button class="btn" style="font-size: 0.7rem; padding: 0.35rem 0.65rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 700; width: auto; cursor: pointer;"
+                                    onclick="goToRemediation('${dev.id}')">
+                                    🔧 Remediate
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            html += `
+                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean);">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--status-critical);">Top Fleet Compliance Exceptions</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Lists the top systems currently violating required security mandates. Direct action required.</p>
+                        </div>
+                        <span class="badge risk-critical" style="font-weight: 800; font-size: 0.7rem; padding: 0.25rem 0.5rem;">IMMEDIATE ACTIONS REQUIRED</span>
+                    </div>
+                    <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
+                        <thead>
+                            <tr>
+                                <th style="text-align: left;">Device Name</th>
+                                <th style="text-align: left; width: 100px;">Device ID</th>
+                                <th style="text-align: left; width: 150px;">OS Platform</th>
+                                <th style="text-align: left;">Policy Violation Gaps</th>
+                                <th style="text-align: right; width: 120px;">Remediation Path</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${exceptionsRowsHtml}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function goToRemediation(deviceId) {
+            switchNavSection("compliance");
+            showDeviceAuditDetails(deviceId);
         }
     </script>
 </body>

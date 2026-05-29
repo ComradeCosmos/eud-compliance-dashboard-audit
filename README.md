@@ -153,3 +153,21 @@ The platform enforces a zero-tolerance, high-fidelity binary status framework to
 | :--- | :--- | :--- | :--- |
 | 🟢 **COMPLIANT** | **100.00** | All core and custom dynamic controls are active and verified. | Normal operations, continuous background telemetry collection. |
 | 🔴 **NON_COMPLIANT** | **0.00** | One or more control agents are missing, disabled, or isolated. | **Zero-Trust Network Containment Triggered**: Immediate routes block, automated remote patch deployment initiated. |
+
+---
+
+## 🏛️ Policy Governance & Simplified Reporting
+
+To deliver streamlined SOC operations, the platform implements a tight feedback loop between active policies and executive report telemetry:
+
+### 1. 🛡️ Security Policies Governance Board
+*   **Dynamic Policies Registry**: scans both core enterprise policies and any custom columns imported from uploaded spreadsheets to register them as active fleet controls dynamically.
+*   **Enforcement Toggles (Required vs Optional)**: Administrators can globally toggle a control's verification mandate. Optional controls are excluded from zero-compliance penalty calculations.
+*   **Instant Recalculation**: Toggling a policy's status automatically recalculates scores across the entire fleet grid ledger, metric widgets, pie/donut charts, and reporting audits in real-time.
+*   **RBAC Protected**: Modification of global policy constraints is strictly gated to the Global Security Administrator (`admin.security`). Other operators/auditors are restricted to read-only views.
+
+### 2. 📊 Compliance Telemetry Reporting Center
+*   **Real-time Fleet Audits**: Summarizes aggregate managed endpoint counts, perfect compliance rates, and exception metrics dynamically across whatever dataset has been loaded.
+*   **Control Performance Audits**: Audits pass/fail statistics, pass rate percentage, and displays visual compliance verification progress bars for every loaded mandate.
+*   **Click-to-Remediate Redirection**: Identifies the top 10 systems violating active mandates and lists their exact control gaps. Clicking the `Remediate` link immediately switches the dashboard view to the Compliance Ledger, auto-selects the endpoint, and focuses the detailed MECM/EDR remediation tools panel.
+
