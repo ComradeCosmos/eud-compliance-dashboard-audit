@@ -63,9 +63,10 @@ graph TD
     *   `ENCRYPTION` (BitLocker / FileVault storage locks)
     *   `NETWORK` (Zero Trust network isolation & VPN)
     *   `IDENTITY` (MFA, Active Directory status)
-*   **Composite Risk Engine**:
-    *   Computes weighted compliance scores ($0.0$ to $100.0$).
-    *   Applies a severe **Critical Failure Penalty** multiplier ($1 - \min(C \times 0.25, 0.75)$ where $C$ is the count of critical failures) to penalize systems with complete gaps in protection.
+*   **Dynamic Multi-Parameter Ingestion**: Automatically detects compliance and security columns from any imported Excel/CSV spreadsheet (using fuzzy-matching and presence validations), appending them dynamically to the device's monitored controls in the ledger and selection widgets.
+*   **Composite Compliance Engine**:
+    *   Computes normalized compliance scores ($0.00$ or $100.00$).
+    *   Applies a **Zero-Tolerance Binary Compliance Model**: If even a single core or dynamic control agent evaluates as non-compliant/missing, the entire asset's score instantly drops to `0.00` and its state is set to `NON_COMPLIANT`.
 
 ### 3. 🧠 PyTorch & SentenceTransformers AI Services (`/ai`)
 *   **Compliance Score Drift Prediction**: Uses a 2-layer Recurrent LSTM Network trained on PyTorch to ingest a 90-day time-series trajectory of device daily scores and forecast future compliance drift at **7-day**, **14-day**, and **30-day** milestones.
@@ -144,13 +145,11 @@ python test_ai_services.py
 
 ---
 
-## 🛡️ Operational Compliance Tiers
+## 🛡️ Binary Compliance Model
 
-The composite risk score translates into four corporate threat vectors:
+The platform enforces a zero-tolerance, high-fidelity binary status framework to maximize fleet security:
 
-| Score Range | Risk Level | Operational Response |
-| :--- | :--- | :--- |
-| **85 - 100** | 🟢 **LOW** | Normal operations, continuous remote collection. |
-| **65 - 84** | 🟡 **MEDIUM** | Warn user, queue low-priority patches for next maintenance window. |
-| **40 - 64** | 🟠 **HIGH** | Immediate notification, enforce VPN-only access. |
-| **0 - 39** | 🔴 **CRITICAL** | Zero-trust isolation enforced: restrict network access until remediated. |
+| Compliance State | Score | Description | Operational Response |
+| :--- | :--- | :--- | :--- |
+| 🟢 **COMPLIANT** | **100.00** | All core and custom dynamic controls are active and verified. | Normal operations, continuous background telemetry collection. |
+| 🔴 **NON_COMPLIANT** | **0.00** | One or more control agents are missing, disabled, or isolated. | **Zero-Trust Network Containment Triggered**: Immediate routes block, automated remote patch deployment initiated. |
