@@ -440,13 +440,6 @@
                             <option value="macOS">macOS</option>
                             <option value="Linux">Linux</option>
                         </select>
-
-                        <select id="fleet-filter-score-range" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-                            <option value="ALL">All Scores</option>
-                            <option value="COMPLIANT">Perfect Compliant (100.00)</option>
-                            <option value="NON_COMPLIANT">Non-Compliant (0.00)</option>
-                        </select>
                     </div>
 
                     <div class="fleet-table-container">
@@ -1066,21 +1059,35 @@
         function triggerCsvExport() {
             logToTerminal(`[Export] Extracting active query records for export...`);
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Device ID,Device Name,OS,Serial And Manufacturer,User Assigned,Last Login,Location,Location Group,Condition,Compliance Score,Compliance Status\n";
+            
+            // Dynamically compile CSV headers from activeTableHeaders
+            const headerLine = activeTableHeaders.map(h => `"${sanitizeCSVCell(h)}"`).join(",");
+            csvContent += headerLine + "\n";
 
             filteredDataset.forEach(row => {
-                const idSanitized = sanitizeCSVCell(row.id);
-                const nameSanitized = sanitizeCSVCell(row.canonical_name);
-                const osSanitized = sanitizeCSVCell(row.os);
-                const serialMfgSanitized = sanitizeCSVCell(`${row.serial} / ${row.manufacturer}`);
-                const userSanitized = sanitizeCSVCell(row.user_assigned);
-                const loginSanitized = sanitizeCSVCell(row.last_login);
-                const locSanitized = sanitizeCSVCell(row.location);
-                const locGrpSanitized = sanitizeCSVCell(row.location_group);
-                const condSanitized = sanitizeCSVCell(row.condition);
-                const levelSanitized = sanitizeCSVCell(row.level);
-
-                const line = `"${idSanitized}","${nameSanitized}","${osSanitized}","${serialMfgSanitized}","${userSanitized}","${loginSanitized}","${locSanitized}","${locGrpSanitized}","${condSanitized}",${row.score},"${levelSanitized}"`;
+                const lineValues = activeTableKeys.map((key, headerIdx) => {
+                    let val = "";
+                    let isCustom = key.startsWith("custom:");
+                    let isCompliance = key.startsWith("compliance:");
+                    let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
+                    
+                    if (isCustom) {
+                        val = (row.custom_properties && row.custom_properties[actualKey] !== undefined) ? row.custom_properties[actualKey] : "-";
+                    } else if (isCompliance) {
+                        const swAgent = row.software.find(sw => sw.name === actualKey || sw.key === key);
+                        val = swAgent ? swAgent.installed : "MISSING";
+                    } else {
+                        if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
+                            const swAgent = row.software.find(sw => sw.key === actualKey);
+                            val = swAgent ? swAgent.installed : "MISSING";
+                        } else {
+                            val = row[actualKey] !== undefined ? row[actualKey] : "-";
+                        }
+                    }
+                    return val;
+                });
+                
+                const line = lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",");
                 csvContent += line + "\n";
             });
 
@@ -1425,7 +1432,6 @@
             const conditionFilter = document.getElementById("fleet-filter-condition").value;
             const locGroupFilter = document.getElementById("fleet-filter-loc-group").value;
             const osPlatformFilter = document.getElementById("fleet-filter-os-platform").value;
-            const scoreRangeFilter = document.getElementById("fleet-filter-score-range").value;
 
             filteredDataset = fleetDataset.filter(item => {
                 const matchesSearch =
@@ -1446,15 +1452,7 @@
                     (item.os_family && item.os_family.toLowerCase() === osPlatformFilter.toLowerCase()) ||
                     (item.os && item.os.toLowerCase().includes(osPlatformFilter.toLowerCase()));
 
-                // Score range match
-                let matchesScore = true;
-                if (scoreRangeFilter === "COMPLIANT") {
-                    matchesScore = (item.score === 100);
-                } else if (scoreRangeFilter === "NON_COMPLIANT") {
-                    matchesScore = (item.score < 100);
-                }
-
-                return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS && matchesScore;
+                return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS;
             });
 
             currentPage = 1;
