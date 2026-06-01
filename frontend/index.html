@@ -1139,7 +1139,14 @@
                 // Helper to find column index by multiple fuzzy keywords
                 function findIndex(keywords) {
                     for (let kw of keywords) {
-                        const idx = headers.findIndex(h => h.includes(kw));
+                        const idx = headers.findIndex(h => {
+                            if (kw.length <= 3) {
+                                // Short keywords like "ad", "s1", "mac", "sn" require matching as a whole word
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
                         if (idx !== -1) return idx;
                     }
                     return -1;
@@ -1183,7 +1190,14 @@
                     }
 
                     const headerText = String(rows[0][colIdx]).trim().toLowerCase();
-                    let matchesHeader = complianceKeywords.some(kw => headerText.includes(kw));
+                    const words = headerText.split(/[^a-z0-9]+/);
+                    let matchesHeader = complianceKeywords.some(kw => {
+                        if (kw.length <= 3) {
+                            // Avoid substring matching for short keywords (e.g. "ad" in "ip_address")
+                            return words.includes(kw);
+                        }
+                        return headerText.includes(kw);
+                    });
 
                     let matchesValue = false;
                     for (let rIdx = 1; rIdx < rows.length; rIdx++) {
