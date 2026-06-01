@@ -1,17 +1,15 @@
 # 🛡️ EUD Compliance Dashboard
 
 [![Go Version](https://img.shields.io/badge/Go-1.22-00ADD8?style=flat-square&logo=go&logoColor=white)](https://golang.org)
-[![Python Version](https://img.shields.io/badge/Python-3.14-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![PyTorch](https://img.shields.io/badge/PyTorch-Deep%20Learning-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org)
 [![Database](https://img.shields.io/badge/Database-PostgreSQL%20%26%20Timescale-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://timescale.com)
 
-A premium, enterprise-grade **End-User Device (EUD) Compliance & Risk Management Platform**. It aggregates security logs, evaluates endpoint controls against strict operational frameworks (EDR, Zero Trust, Patching), calculates normalized device risk scores using an advanced penalty-based risk engine, and applies deep learning models to predict compliance score drift and resolve device duplicates.
+A premium, enterprise-grade **End-User Device (EUD) Compliance & Risk Management Platform**. It aggregates security logs, evaluates endpoint controls against strict operational frameworks (EDR, Zero Trust, Patching), calculates normalized device risk scores using an advanced penalty-based risk engine, and resolves device identities through multi-stage cryptographic and edit-distance reconciliation.
 
 ---
 
 ## 🏛️ System Architecture
 
-The platform is designed as a modular, container-ready multi-layered microservices system:
+The platform is designed as a modular, multi-layered system:
 
 ```mermaid
 graph TD
@@ -27,19 +25,16 @@ graph TD
         DB[(PostgreSQL & TimescaleDB)]
     end
 
-    subgraph AI [Deep Learning Services]
-        LSTM[Score Drift LSTM Forecaster]
-        MiniLM[Semantic Similarity Device Matcher]
+    subgraph Reconciler [Reconciliation Workspace]
+        Matcher[Exact / Fingerprint / Levenshtein Reconciler]
     end
 
     UI -->|Role Authorization| RBAC
     Collector -->|Raw Logs| Evaluator
     Evaluator -->|Dimension Scoring| RiskEngine
     RiskEngine -->|Timeseries Logs| DB
-    RiskEngine -->|90-Day Trajectory| LSTM
-    Collector -->|Ingest Aliases| MiniLM
-    LSTM -->|7/14/30d Forecast| UI
-    MiniLM -->|Auto-Merge / Queue Action| UI
+    Collector -->|Ingest Assets| Matcher
+    Matcher -->|Auto-Merge / Queue Action| UI
 ```
 
 ---
@@ -68,12 +63,14 @@ graph TD
     *   Computes normalized compliance scores ($0.00$ or $100.00$).
     *   Applies a **Zero-Tolerance Binary Compliance Model**: If even a single core or dynamic control agent evaluates as non-compliant/missing, the entire asset's score instantly drops to `0.00` and its state is set to `NON_COMPLIANT`.
 
-### 3. 🧠 PyTorch & SentenceTransformers AI Services (`/ai`)
-*   **Compliance Score Drift Prediction**: Uses a 2-layer Recurrent LSTM Network trained on PyTorch to ingest a 90-day time-series trajectory of device daily scores and forecast future compliance drift at **7-day**, **14-day**, and **30-day** milestones.
-*   **Semantic Similarity Reconciler**: Implements a `SentenceTransformer` sentence embedding model (`all-MiniLM-L6-v2`) to compare incoming device telemetry names with existing records.
-    *   `Score > 0.88` $\rightarrow$ **AUTO_MERGE** (Resolves host aliases, e.g. `DESKTOP-A1B2C3` vs `desktop-a1b2c3-main`).
-    *   `Score 0.75 - 0.88` $\rightarrow$ **HUMAN_QUEUE** (Dispatches to a manual verification queue for audit review).
-    *   `Score < 0.75` $\rightarrow$ **NEW_DEVICE** (Registers a completely new physical endpoint).
+### 3. 🛡️ Cryptographic & Edit-Distance Reconciler
+*   **Cryptographic Hardware Fingerprinting**: Calculates deterministic SHA-256 signatures from serials, MAC addresses, and manufacturer profiles to uniquely identify physical endpoints.
+*   **Levenshtein Edit-Distance Comparison**: Performs programmatic string distance matching to compare incoming host telemetries with active directory records, automatically aligning close matches (e.g. `DESKTOP-A1B2` vs `desktop-a1b2-corp`) within high-fidelity threshold parameters.
+*   **Multi-Stage Alignment Pipelines**:
+    *   **Stage 1: Exact Match**: Automated name matching (100% confidence).
+    *   **Stage 2: Cryptographic Match**: Hardware fingerprint matching (95% confidence).
+    *   **Stage 3: Edit-Distance Match**: Dynamic Levenshtein alignments (calculated trust boundaries).
+    *   **Stage 5: Review Queue**: Programmatically routes untrusted records to the manual verification queue.
 
 ### 4. 🗄️ Timeseries Database Schemas (`/schemas`)
 *   Optimized PostgreSQL schema blueprints.
@@ -85,13 +82,6 @@ graph TD
 
 ```
 .
-├── ai/
-│   ├── drift_predictor/       # PyTorch LSTM forecasting models
-│   │   └── drift.py           
-│   ├── semantic_matcher/      # SentenceTransformer MiniLM matcher
-│   │   └── similarity.py      
-│   ├── requirements.txt       # Python environment specifications
-│   └── test_ai_services.py    # Unit tests for the AI services
 ├── backend/
 │   ├── go.mod                 # Go module definition
 │   └── pkg/
@@ -126,21 +116,6 @@ Navigate to `/backend` and compile or test the core evaluation packages:
 cd backend
 # Run core evaluator & risk engine tests
 go test ./pkg/evaluator/...
-```
-
-### 3. AI Services (Python)
-Setup the virtual environment and test the PyTorch & SentenceTransformer capabilities:
-```bash
-cd ai
-# Setup virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Execute validation tests (drift prediction & semantic mapping)
-python test_ai_services.py
 ```
 
 ---
