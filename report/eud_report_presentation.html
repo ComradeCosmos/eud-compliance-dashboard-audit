@@ -1,0 +1,2173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EUD Compliance Dashboard — Comprehensive Technical Report & Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070d1a;
+    --bg2: #0d1526;
+    --bg3: #111d33;
+    --border: #1e2d4a;
+    --accent: #3b82f6;
+    --accent2: #6366f1;
+    --accent3: #8b5cf6;
+    --green: #10b981;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+    --orange: #f97316;
+    --text: #f0f4ff;
+    --text2: #94a3b8;
+    --text3: #475569;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ─── MODES ──────────────────────────────────────── */
+  body.report-mode { overflow: auto; height: auto; }
+  body.report-mode #slide-shell { display: none; }
+  body.report-mode #report-shell { display: block; }
+  body.slide-mode #slide-shell { display: flex; }
+  body.slide-mode #report-shell { display: none; }
+
+  /* ─── TOP BAR ─────────────────────────────────────── */
+  #top-bar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    height: 44px;
+    background: rgba(7,13,26,0.96);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.5rem;
+    backdrop-filter: blur(12px);
+  }
+  #top-bar .brand { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text2); }
+  #top-bar .brand span { color: var(--accent); }
+  #top-bar .controls { display: flex; gap: 0.5rem; align-items: center; }
+  .mode-btn {
+    padding: 0.3rem 0.9rem; font-size: 0.7rem; font-weight: 700;
+    border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.05em;
+    border: 1px solid var(--border); background: var(--bg3); color: var(--text2);
+    transition: all 0.2s;
+  }
+  .mode-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .mode-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
+
+  #slide-counter { font-size: 0.7rem; font-family: var(--mono); color: var(--text3); margin: 0 0.75rem; }
+
+  .nav-btn {
+    width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--bg3); color: var(--text2); cursor: pointer; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+  }
+  .nav-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ─── SLIDE SHELL ─────────────────────────────────── */
+  #slide-shell {
+    position: fixed; top: 44px; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: stretch;
+  }
+
+  /* Slide thumbnails sidebar */
+  #slide-rail {
+    width: 160px; flex-shrink: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 0.75rem 0.5rem;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  .rail-thumb {
+    border-radius: 4px; border: 1px solid var(--border);
+    background: var(--bg3); padding: 0.5rem 0.6rem;
+    cursor: pointer; transition: all 0.15s;
+    font-size: 0.6rem; font-weight: 700; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.04em;
+    line-height: 1.3;
+  }
+  .rail-thumb:hover { border-color: var(--accent2); color: var(--text2); }
+  .rail-thumb.active { border-color: var(--accent); background: rgba(59,130,246,0.1); color: var(--accent); }
+  .rail-thumb .num { font-size: 0.55rem; color: var(--text3); display: block; margin-bottom: 0.15rem; }
+
+  /* Main slide viewport */
+  #slide-viewport {
+    flex: 1; overflow: hidden; position: relative;
+    background: var(--bg);
+  }
+
+  .slide {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; flex-direction: column;
+    padding: 2.5rem 3rem;
+    overflow: hidden;
+    animation: fadeSlide 0.3s ease;
+  }
+  .slide.active { display: flex; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── SLIDE COMPONENTS ───────────────────────────── */
+  .slide-tag {
+    font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--accent); margin-bottom: 0.5rem;
+  }
+  .slide-title {
+    font-size: 2rem; font-weight: 900; color: var(--text); line-height: 1.15;
+    margin-bottom: 0.4rem;
+  }
+  .slide-subtitle {
+    font-size: 0.82rem; color: var(--text2); font-weight: 500; margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border); padding-bottom: 1rem;
+  }
+  .slide-body { flex: 1; display: flex; flex-direction: column; gap: 1rem; min-height: 0; }
+  .slide-grid { display: grid; gap: 1rem; flex: 1; min-height: 0; }
+  .slide-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem; overflow: hidden;
+  }
+  .card-label {
+    font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text3); margin-bottom: 0.5rem;
+  }
+  .card-value {
+    font-family: var(--mono); font-size: 1.8rem; font-weight: 700;
+    color: var(--text); line-height: 1;
+  }
+  .card-sub { font-size: 0.72rem; color: var(--text2); margin-top: 0.3rem; }
+
+  /* ─── REPORT SHELL ───────────────────────────────── */
+  #report-shell {
+    display: none;
+    padding-top: 44px;
+    max-width: 1100px; margin: 0 auto;
+    padding-left: 2rem; padding-right: 2rem;
+    padding-bottom: 4rem;
+  }
+  .r-section { margin-bottom: 3rem; }
+  .r-section-title {
+    font-size: 1.35rem; font-weight: 800; color: var(--text);
+    border-left: 3px solid var(--accent); padding-left: 0.75rem;
+    margin-bottom: 1.25rem; margin-top: 2rem;
+  }
+  .r-grid { display: grid; gap: 1rem; }
+  .r-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.5rem;
+  }
+  .r-card h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); margin-bottom: 0.75rem; }
+
+  /* ─── BADGE ──────────────────────────────────────── */
+  .badge {
+    display: inline-block; font-size: 0.6rem; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.15rem 0.45rem; border-radius: 3px;
+  }
+  .badge-green { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: var(--green); }
+  .badge-red { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: var(--red); }
+  .badge-blue { background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.35); color: var(--accent); }
+  .badge-yellow { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: var(--yellow); }
+  .badge-purple { background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.35); color: var(--accent3); }
+
+  /* ─── SVG HELPERS ────────────────────────────────── */
+  svg text { user-select: none; }
+
+  /* ─── COVER SLIDE SPECIFICS ──────────────────────── */
+  #slide-cover {
+    background: radial-gradient(ellipse at 30% 50%, rgba(59,130,246,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                var(--bg);
+    justify-content: center; align-items: flex-start;
+  }
+  .cover-eyebrow {
+    font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--accent); margin-bottom: 1rem;
+  }
+  .cover-title {
+    font-size: 3rem; font-weight: 900; line-height: 1.1;
+    background: linear-gradient(135deg, #f0f4ff 0%, #94a3b8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 0.75rem;
+  }
+  .cover-subtitle {
+    font-size: 1rem; color: var(--text2); font-weight: 400; margin-bottom: 2rem;
+    max-width: 600px;
+  }
+  .cover-pills { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .cover-pill {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.35rem 0.9rem; border-radius: 100px;
+    border: 1px solid var(--border); color: var(--text2);
+  }
+  .cover-meta {
+    margin-top: auto; font-size: 0.7rem; color: var(--text3);
+    border-top: 1px solid var(--border); padding-top: 1rem;
+    display: flex; gap: 2rem;
+  }
+  .cover-meta span { font-weight: 600; color: var(--text2); }
+
+  /* ─── FLOWCHART ──────────────────────────────────── */
+  .flow-node {
+    rx: 6; ry: 6;
+  }
+  .flow-label { font-size: 10px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
+  .flow-sublabel { font-size: 8px; text-anchor: middle; dominant-baseline: middle; }
+
+  /* ─── TABLE ──────────────────────────────────────── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  .data-table th {
+    text-align: left; padding: 0.5rem 0.75rem;
+    font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--text3); font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+  .data-table td {
+    padding: 0.55rem 0.75rem; color: var(--text2);
+    border-bottom: 1px solid rgba(30,45,74,0.5);
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table td:first-child { color: var(--text); font-weight: 600; }
+
+  /* ─── PROGRESS BAR ───────────────────────────────── */
+  .progress-track {
+    height: 6px; background: var(--bg3); border-radius: 100px; overflow: hidden;
+    margin-top: 0.4rem;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 100px;
+    transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── SLIDE PROGRESS ─────────────────────────────── */
+  #slide-progress-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 2px;
+    background: var(--border); z-index: 9998;
+  }
+  #slide-progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent3));
+    transition: width 0.3s ease;
+  }
+
+  /* ─── RADIAL CHART ───────────────────────────────── */
+  .radar-container { display: flex; align-items: center; justify-content: center; }
+
+  /* ─── ARCHITECTURE FLOW ──────────────────────────── */
+  .arch-layer {
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.75rem 1rem; background: var(--bg3);
+  }
+  .arch-layer-label {
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--accent); font-weight: 800; margin-bottom: 0.5rem;
+  }
+  .arch-nodes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .arch-node {
+    font-size: 0.68rem; font-weight: 700; padding: 0.35rem 0.75rem;
+    border-radius: 5px; border: 1px solid; white-space: nowrap;
+  }
+
+  /* ─── KEYBOARD SHORTCUTS ─────────────────────────── */
+</style>
+</head>
+<body class="slide-mode">
+
+<!-- TOP BAR -->
+<div id="top-bar">
+  <div class="brand">Thrawn <span>EUD.</span> &nbsp;— Compliance Report & Presentation</div>
+  <div class="controls">
+    <button class="mode-btn active" id="btn-slide-mode" onclick="setMode('slide')">🖥 Slide View</button>
+    <button class="mode-btn" id="btn-report-mode" onclick="setMode('report')">📄 Full Report</button>
+    <span id="slide-counter">1 / 20</span>
+    <button class="nav-btn" id="btn-prev" onclick="prevSlide()" title="Previous (←)">‹</button>
+    <button class="nav-btn" id="btn-next" onclick="nextSlide()" title="Next (→)">›</button>
+  </div>
+</div>
+
+<!-- SLIDE SHELL -->
+<div id="slide-shell">
+  <!-- Sidebar Rail -->
+  <div id="slide-rail"></div>
+
+  <!-- Main Viewport -->
+  <div id="slide-viewport">
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 1 · COVER
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide active" id="slide-1">
+      <div style="max-width:760px;">
+        <div class="cover-eyebrow">Comprehensive Technical Report · Q2 2026</div>
+        <div class="cover-title">EUD Compliance<br>Dashboard</div>
+        <div class="cover-subtitle">Enterprise End-User Device Risk Management Platform — Full-Stack Architecture, Fleet Analytics, AI Services & Security Controls Analysis</div>
+        <div class="cover-pills">
+          <div class="cover-pill" style="border-color:rgba(59,130,246,0.4);color:var(--accent);">Go Backend</div>
+          <div class="cover-pill" style="border-color:rgba(139,92,246,0.4);color:var(--accent3);">PyTorch AI</div>
+          <div class="cover-pill" style="border-color:rgba(16,185,129,0.4);color:var(--green);">TimescaleDB</div>
+          <div class="cover-pill" style="border-color:rgba(245,158,11,0.4);color:var(--yellow);">Zero-Trust</div>
+          <div class="cover-pill">NIST CSF 2.0</div>
+          <div class="cover-pill">SOC-Grade UI</div>
+        </div>
+      </div>
+      <div class="cover-meta">
+        <div>Fleet Scale <span>16,742 Devices</span></div>
+        <div>Avg Fleet Score <span style="color:var(--green);">87.50</span></div>
+        <div>Active Alerts <span style="color:var(--red);">234</span></div>
+        <div>Daily Ingest <span>142.4 M Events</span></div>
+        <div>Compliance SLA <span>85.0%</span></div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 2 · EXECUTIVE SUMMARY
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-2">
+      <div class="slide-tag">01 · Executive Summary</div>
+      <div class="slide-title">Platform Overview</div>
+      <div class="slide-subtitle">Enterprise-grade EUD compliance & risk management for 16,742 managed endpoints</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns: repeat(4,1fr);">
+          <div class="slide-card" style="border-top:3px solid var(--accent);">
+            <div class="card-label">Total Managed Devices</div>
+            <div class="card-value" style="color:var(--accent);">16,742</div>
+            <div class="card-sub">+8.2% QoQ Growth</div>
+          </div>
+          <div class="slide-card" style="border-top:3px solid var(--green);">
+            <div class="card-label">Fleet Avg Score</div>
+            <div class="card-value" style="color:var(--green);">87.50</div>
+            <div class="card-sub">+2.4% vs prior period</div>
+          </div>
+          <div class="slide-card" style="border-top:3px solid var(--red);">
+            <div class="card-label">Active Threat Alerts</div>
+            <div class="card-value" style="color:var(--red);">234</div>
+            <div class="card-sub">−12.5% improvement</div>
+          </div>
+          <div class="slide-card" style="border-top:3px solid var(--yellow);">
+            <div class="card-label">Daily Ingest Volume</div>
+            <div class="card-value" style="color:var(--yellow);">142.4M</div>
+            <div class="card-sub">Kafka pipeline SLA met</div>
+          </div>
+        </div>
+        <div class="slide-grid" style="grid-template-columns:1.4fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card">
+            <div class="card-label">Platform Capabilities</div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+              <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                <span style="color:var(--accent);font-size:1rem;margin-top:-1px;">◈</span>
+                <div><div style="font-size:0.78rem;font-weight:700;color:var(--text);">Premium SOC Frontend</div><div style="font-size:0.68rem;color:var(--text2);">Dark-mode dashboard with granular RBAC, real-time charts, fleet ledger, and context-isolated security actions</div></div>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                <span style="color:var(--green);font-size:1rem;margin-top:-1px;">◈</span>
+                <div><div style="font-size:0.78rem;font-weight:700;color:var(--text);">Go Compliance Engine</div><div style="font-size:0.68rem;color:var(--text2);">Multi-dimension evaluator across 6 control domains with binary zero-tolerance scoring model</div></div>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                <span style="color:var(--accent3);font-size:1rem;margin-top:-1px;">◈</span>
+                <div><div style="font-size:0.78rem;font-weight:700;color:var(--text);">PyTorch AI Services</div><div style="font-size:0.68rem;color:var(--text2);">LSTM drift forecaster (7/14/30-day) and SentenceTransformer semantic device reconciler</div></div>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:flex-start;">
+                <span style="color:var(--yellow);font-size:1rem;margin-top:-1px;">◈</span>
+                <div><div style="font-size:0.78rem;font-weight:700;color:var(--text);">TimescaleDB Timeseries</div><div style="font-size:0.68rem;color:var(--text2);">Hypertable compliance event log with 90-day retention, 7-day compression, S3 cold archival</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-label">SLA Status</div>
+            <svg viewBox="0 0 200 160" width="100%" style="max-height:140px;display:block;margin:0 auto;">
+              <!-- Gauge background -->
+              <circle cx="100" cy="100" r="70" fill="none" stroke="#1e2d4a" stroke-width="14"/>
+              <!-- Gauge fill: 87.5% -->
+              <circle cx="100" cy="100" r="70" fill="none" stroke="#10b981" stroke-width="14"
+                stroke-dasharray="384.85" stroke-dashoffset="48.1"
+                stroke-linecap="round" transform="rotate(-90 100 100)"/>
+              <!-- SLA line at 85% -->
+              <circle cx="100" cy="100" r="70" fill="none" stroke="#f59e0b" stroke-width="2"
+                stroke-dasharray="3.7 436.8" stroke-dashoffset="-371.05"
+                transform="rotate(-90 100 100)"/>
+              <text x="100" y="94" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="22" font-weight="800" fill="#f0f4ff">87.5</text>
+              <text x="100" y="112" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#94a3b8" letter-spacing="1">FLEET AVG</text>
+              <text x="100" y="148" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#10b981">▲ ABOVE SLA TARGET (85.0%)</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 3 · SYSTEM ARCHITECTURE
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-3">
+      <div class="slide-tag">02 · Architecture</div>
+      <div class="slide-title">System Architecture</div>
+      <div class="slide-subtitle">Modular, container-ready multi-layered microservices platform</div>
+      <div class="slide-body">
+        <svg viewBox="0 0 900 400" width="100%" style="flex:1;min-height:0;max-height:420px;" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#3b82f6" opacity="0.7"/>
+            </marker>
+            <marker id="arr-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#10b981" opacity="0.7"/>
+            </marker>
+            <marker id="arr-p" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#8b5cf6" opacity="0.7"/>
+            </marker>
+          </defs>
+
+          <!-- LAYER BACKGROUNDS -->
+          <!-- Frontend layer -->
+          <rect x="20" y="20" width="260" height="160" rx="8" fill="rgba(59,130,246,0.05)" stroke="rgba(59,130,246,0.3)" stroke-width="1"/>
+          <text x="30" y="38" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#3b82f6" letter-spacing="1.5">PRESENTATION LAYER</text>
+
+          <!-- Backend layer -->
+          <rect x="320" y="20" width="280" height="370" rx="8" fill="rgba(16,185,129,0.04)" stroke="rgba(16,185,129,0.25)" stroke-width="1"/>
+          <text x="330" y="38" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#10b981" letter-spacing="1.5">CORE COMPLIANCE ENGINE</text>
+
+          <!-- AI layer -->
+          <rect x="640" y="20" width="245" height="160" rx="8" fill="rgba(139,92,246,0.05)" stroke="rgba(139,92,246,0.3)" stroke-width="1"/>
+          <text x="650" y="38" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#8b5cf6" letter-spacing="1.5">AI DEEP LEARNING SERVICES</text>
+
+          <!-- DB layer -->
+          <rect x="640" y="220" width="245" height="170" rx="8" fill="rgba(245,158,11,0.04)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+          <text x="650" y="238" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f59e0b" letter-spacing="1.5">DATA PERSISTENCE</text>
+
+          <!-- NODES: Frontend -->
+          <rect x="40" y="55" width="110" height="40" rx="6" fill="#0d1526" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="95" y="73" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Dashboard UI</text>
+          <text x="95" y="86" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">HTML/CSS/JS · SOC Dark Mode</text>
+
+          <rect x="165" y="55" width="100" height="40" rx="6" fill="#0d1526" stroke="#3b82f6" stroke-width="1.5"/>
+          <text x="215" y="73" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">RBAC Gate</text>
+          <text x="215" y="86" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">4-Role LDAP Personas</text>
+
+          <rect x="40" y="115" width="225" height="40" rx="6" fill="#0d1526" stroke="rgba(59,130,246,0.4)" stroke-width="1"/>
+          <text x="152" y="133" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">XLSX/CSV Ingest · Export Engine</text>
+          <text x="152" y="146" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Fuzzy Header Mapping · Dynamic Controls Parser</text>
+
+          <!-- NODES: Backend -->
+          <rect x="338" y="55" width="118" height="40" rx="6" fill="#0d1526" stroke="#10b981" stroke-width="1.5"/>
+          <text x="397" y="73" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">CSV/API Collector</text>
+          <text x="397" y="86" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Multi-source log ingestion</text>
+
+          <rect x="338" y="115" width="118" height="40" rx="6" fill="#0d1526" stroke="#10b981" stroke-width="1.5"/>
+          <text x="397" y="133" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">6D Control Evaluator</text>
+          <text x="397" y="146" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">EDR·PATCH·VULN·ENC·NET·ID</text>
+
+          <rect x="338" y="175" width="118" height="40" rx="6" fill="#0d1526" stroke="#10b981" stroke-width="1.5"/>
+          <text x="397" y="193" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Risk Scoring Engine</text>
+          <text x="397" y="206" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Penalty-Based · Binary Model</text>
+
+          <rect x="338" y="235" width="118" height="40" rx="6" fill="#0d1526" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+          <text x="397" y="253" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Policy Governance</text>
+          <text x="397" y="266" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Dynamic Toggle · Real-time Recalc</text>
+
+          <rect x="338" y="295" width="118" height="40" rx="6" fill="#0d1526" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+          <text x="397" y="313" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Tenant Isolation</text>
+          <text x="397" y="326" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Schema-per-Tenant Context</text>
+
+          <rect x="468" y="55" width="118" height="100" rx="6" fill="#0d1526" stroke="rgba(16,185,129,0.4)" stroke-width="1"/>
+          <text x="527" y="98" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Integration</text>
+          <text x="527" y="113" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Alert Dispatchers</text>
+          <text x="527" y="126" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">CloudEvents 1.0</text>
+          <text x="527" y="139" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Kafka · Kong Gateway</text>
+
+          <!-- NODES: AI -->
+          <rect x="658" y="55" width="210" height="42" rx="6" fill="#0d1526" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="763" y="73" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">LSTM Drift Forecaster</text>
+          <text x="763" y="87" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">PyTorch · 2-Layer · 7/14/30-day horizons</text>
+
+          <rect x="658" y="113" width="210" height="42" rx="6" fill="#0d1526" stroke="#8b5cf6" stroke-width="1.5"/>
+          <text x="763" y="131" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">Semantic Device Reconciler</text>
+          <text x="763" y="145" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">all-MiniLM-L6-v2 · Alias Resolution</text>
+
+          <!-- NODES: DB -->
+          <rect x="658" y="252" width="100" height="42" rx="6" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="708" y="271" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">PostgreSQL 16</text>
+          <text x="708" y="284" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Core Relational Store</text>
+
+          <rect x="768" y="252" width="105" height="42" rx="6" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="820" y="271" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">TimescaleDB</text>
+          <text x="820" y="284" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8" text-anchor="middle">Compliance Hypertable</text>
+
+          <rect x="658" y="308" width="215" height="70" rx="6" fill="rgba(245,158,11,0.05)" stroke="rgba(245,158,11,0.2)" stroke-width="1"/>
+          <text x="765" y="335" font-family="Inter,sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">90-day hot retention → S3/MinIO cold</text>
+          <text x="765" y="350" font-family="Inter,sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">7-day compression (~90% footprint reduction)</text>
+          <text x="765" y="365" font-family="Inter,sans-serif" font-size="8" fill="#94a3b8" text-anchor="middle">Partitioned: device_id + dimension</text>
+
+          <!-- ARROWS -->
+          <!-- UI → RBAC -->
+          <line x1="150" y1="75" x2="164" y2="75" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#arr)" opacity="0.7"/>
+          <!-- Frontend → Collector -->
+          <line x1="265" y1="115" x2="337" y2="85" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#arr)" opacity="0.6" stroke-dasharray="4,3"/>
+          <!-- Collector → Evaluator -->
+          <line x1="397" y1="95" x2="397" y2="114" stroke="#10b981" stroke-width="1.2" marker-end="url(#arr-g)" opacity="0.7"/>
+          <!-- Evaluator → RiskEngine -->
+          <line x1="397" y1="155" x2="397" y2="174" stroke="#10b981" stroke-width="1.2" marker-end="url(#arr-g)" opacity="0.7"/>
+          <!-- RiskEngine → DB -->
+          <line x1="456" y1="195" x2="656" y2="260" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#arr)" stroke-dasharray="4,3" opacity="0.5"/>
+          <!-- RiskEngine → LSTM -->
+          <line x1="456" y1="190" x2="656" y2="76" stroke="#8b5cf6" stroke-width="1.2" marker-end="url(#arr-p)" stroke-dasharray="4,3" opacity="0.5"/>
+          <!-- Collector → MiniLM -->
+          <line x1="456" y1="65" x2="656" y2="130" stroke="#8b5cf6" stroke-width="1.2" marker-end="url(#arr-p)" stroke-dasharray="4,3" opacity="0.5"/>
+          <!-- LSTM → Frontend -->
+          <line x1="658" y1="66" x2="285" y2="66" stroke="#8b5cf6" stroke-width="1" marker-end="url(#arr-p)" stroke-dasharray="3,3" opacity="0.4"/>
+          <!-- Integration → arrows -->
+          <line x1="527" y1="55" x2="527" y2="50" stroke="rgba(16,185,129,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 4 · FLEET KPI METRICS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-4">
+      <div class="slide-tag">03 · Fleet Analytics</div>
+      <div class="slide-title">Fleet KPI Metrics</div>
+      <div class="slide-subtitle">Real-time telemetry summary for Q2 2026 across 16,742 managed endpoints</div>
+      <div class="slide-body">
+        <!-- KPI row -->
+        <div class="slide-grid" style="grid-template-columns:repeat(5,1fr);">
+          <div class="slide-card" style="text-align:center;">
+            <div class="card-label">In Use</div>
+            <div class="card-value" style="font-size:1.4rem;color:var(--accent);">15,406</div>
+            <div class="card-sub">92.0% of fleet</div>
+            <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:92%;background:var(--accent);"></div></div>
+          </div>
+          <div class="slide-card" style="text-align:center;">
+            <div class="card-label">In Repair</div>
+            <div class="card-value" style="font-size:1.4rem;color:var(--yellow);">670</div>
+            <div class="card-sub">4.0% of fleet</div>
+            <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:4%;background:var(--yellow);"></div></div>
+          </div>
+          <div class="slide-card" style="text-align:center;">
+            <div class="card-label">Broken</div>
+            <div class="card-value" style="font-size:1.4rem;color:var(--red);">335</div>
+            <div class="card-sub">2.0% of fleet</div>
+            <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:2%;background:var(--red);"></div></div>
+          </div>
+          <div class="slide-card" style="text-align:center;">
+            <div class="card-label">Decommissioned</div>
+            <div class="card-value" style="font-size:1.4rem;color:var(--text3);">331</div>
+            <div class="card-sub">2.0% of fleet</div>
+            <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:2%;background:var(--text3);"></div></div>
+          </div>
+          <div class="slide-card" style="text-align:center;">
+            <div class="card-label">Isolated Hosts</div>
+            <div class="card-value" style="font-size:1.4rem;color:var(--red);">0</div>
+            <div class="card-sub">Zero-Trust contained</div>
+            <div class="progress-track" style="margin-top:0.75rem;"><div class="progress-fill" style="width:0%;background:var(--red);"></div></div>
+          </div>
+        </div>
+
+        <!-- Compliance trend mini-chart -->
+        <div class="slide-card" style="flex:1;min-height:0;">
+          <div class="card-label">6-Month Compliance Score Trend — Fleet Average</div>
+          <svg viewBox="0 0 860 160" width="100%" height="100%" style="max-height:160px;" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#10b981" stop-opacity="0.25"/>
+                <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- Grid lines -->
+            <line x1="50" y1="20" x2="840" y2="20" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <line x1="50" y1="50" x2="840" y2="50" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <line x1="50" y1="80" x2="840" y2="80" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <line x1="50" y1="110" x2="840" y2="110" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <line x1="50" y1="140" x2="840" y2="140" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+            <!-- Y labels -->
+            <text x="42" y="23" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">100%</text>
+            <text x="42" y="53" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">92%</text>
+            <text x="42" y="83" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">88%</text>
+            <text x="42" y="113" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">84%</text>
+            <text x="42" y="143" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">80%</text>
+            <!-- SLA line -->
+            <line x1="50" y1="80" x2="840" y2="80" stroke="#f59e0b" stroke-width="1" stroke-dasharray="5,4" opacity="0.6"/>
+            <text x="842" y="77" font-family="Inter,sans-serif" font-size="7" fill="#f59e0b" font-weight="700">SLA 85%</text>
+            <!-- Data: Dec=83, Jan=84.3, Feb=85.8, Mar=85, Apr=86.8, May=87.5 -->
+            <!-- mapY: (100-val)/(100-80) * 120 + 20 = (100-val)*6+20 -->
+            <!-- Dec:83→ y=122, Jan:84.3→ y=113.8, Feb:85.8→ y=104.8, Mar:85→ y=110, Apr:86.8→ y=99.2, May:87.5→ y=95 -->
+            <path d="M 50,122 L 208,114 L 366,105 L 524,110 L 682,99 L 840,95" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M 50,122 L 208,114 L 366,105 L 524,110 L 682,99 L 840,95 L 840,140 L 50,140 Z" fill="url(#trendGrad)"/>
+            <!-- Dots -->
+            <circle cx="50" cy="122" r="4" fill="#0d1526" stroke="#10b981" stroke-width="2"/>
+            <circle cx="208" cy="114" r="4" fill="#0d1526" stroke="#10b981" stroke-width="2"/>
+            <circle cx="366" cy="105" r="4" fill="#0d1526" stroke="#10b981" stroke-width="2"/>
+            <circle cx="524" cy="110" r="4" fill="#0d1526" stroke="#10b981" stroke-width="2"/>
+            <circle cx="682" cy="99" r="4" fill="#0d1526" stroke="#10b981" stroke-width="2"/>
+            <circle cx="840" cy="95" r="5" fill="#10b981" stroke="#0d1526" stroke-width="2"/>
+            <!-- X labels -->
+            <text x="50" y="155" font-family="Inter,sans-serif" font-size="8" fill="#475569" text-anchor="middle" font-weight="700">Dec 25</text>
+            <text x="208" y="155" font-family="Inter,sans-serif" font-size="8" fill="#475569" text-anchor="middle" font-weight="700">Jan 26</text>
+            <text x="366" y="155" font-family="Inter,sans-serif" font-size="8" fill="#475569" text-anchor="middle" font-weight="700">Feb 26</text>
+            <text x="524" y="155" font-family="Inter,sans-serif" font-size="8" fill="#475569" text-anchor="middle" font-weight="700">Mar 26</text>
+            <text x="682" y="155" font-family="Inter,sans-serif" font-size="8" fill="#475569" text-anchor="middle" font-weight="700">Apr 26</text>
+            <text x="840" y="155" font-family="Inter,sans-serif" font-size="8" fill="#10b981" text-anchor="middle" font-weight="800">May 26 ▲</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 5 · COMPLIANCE STATUS DISTRIBUTION
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-5">
+      <div class="slide-tag">04 · Compliance Analytics</div>
+      <div class="slide-title">Fleet Compliance Distribution</div>
+      <div class="slide-subtitle">Binary zero-tolerance model: devices score either 100.00 (COMPLIANT) or 0.00 (NON_COMPLIANT)</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <!-- Donut: Compliance Status -->
+          <div class="slide-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;">
+            <div class="card-label" style="align-self:flex-start;">Compliance Status (16,742 Devices)</div>
+            <div style="display:flex;align-items:center;gap:2.5rem;width:100%;">
+              <svg viewBox="0 0 200 200" width="160" height="160" style="flex-shrink:0;">
+                <!-- Compliant: 82.83% = 363.7 of 440 -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#10b981" stroke-width="28"
+                  stroke-dasharray="363.7 76.3" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                <!-- Non-Compliant: 17.17% -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#ef4444" stroke-width="28"
+                  stroke-dasharray="76.3 363.7" stroke-dashoffset="-363.7" transform="rotate(-90 100 100)"/>
+                <text x="100" y="95" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="20" font-weight="800" fill="#f0f4ff">82.8%</text>
+                <text x="100" y="112" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#94a3b8">COMPLIANT</text>
+              </svg>
+              <div style="display:flex;flex-direction:column;gap:1rem;flex:1;">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+                    <span style="font-size:0.75rem;font-weight:700;color:var(--green);">● Compliant</span>
+                    <span style="font-family:var(--mono);font-size:0.85rem;font-weight:700;color:var(--text);">13,862</span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width:82.83%;background:var(--green);"></div></div>
+                  <div style="font-size:0.65rem;color:var(--text3);margin-top:0.2rem;">82.83% · Score = 100.00</div>
+                </div>
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;">
+                    <span style="font-size:0.75rem;font-weight:700;color:var(--red);">● Non-Compliant</span>
+                    <span style="font-family:var(--mono);font-size:0.85rem;font-weight:700;color:var(--text);">2,880</span>
+                  </div>
+                  <div class="progress-track"><div class="progress-fill" style="width:17.17%;background:var(--red);"></div></div>
+                  <div style="font-size:0.65rem;color:var(--text3);margin-top:0.2rem;">17.17% · Score = 0.00</div>
+                </div>
+                <div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:5px;padding:0.6rem;margin-top:0.25rem;">
+                  <div style="font-size:0.65rem;font-weight:700;color:var(--red);margin-bottom:0.25rem;">⚠ ZERO-TOLERANCE MODEL</div>
+                  <div style="font-size:0.62rem;color:var(--text2);">Any single control failure triggers immediate score collapse to 0.00 and Zero-Trust network containment</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donut: Physical Conditions -->
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Physical Device Condition States</div>
+            <div style="display:flex;align-items:center;gap:2rem;flex:1;">
+              <svg viewBox="0 0 200 200" width="150" height="150" style="flex-shrink:0;">
+                <!-- IN_USE: 92% = 404.8 -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#3b82f6" stroke-width="28"
+                  stroke-dasharray="404.8 35.2" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                <!-- IN_REPAIR: 4% = 17.6 -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#f59e0b" stroke-width="28"
+                  stroke-dasharray="17.6 422.4" stroke-dashoffset="-404.8" transform="rotate(-90 100 100)"/>
+                <!-- BROKEN: 2% = 8.8 -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#ef4444" stroke-width="28"
+                  stroke-dasharray="8.8 431.2" stroke-dashoffset="-422.4" transform="rotate(-90 100 100)"/>
+                <!-- DECOM: 2% = 8.8 -->
+                <circle cx="100" cy="100" r="70" fill="none" stroke="#475569" stroke-width="28"
+                  stroke-dasharray="8.8 431.2" stroke-dashoffset="-431.2" transform="rotate(-90 100 100)"/>
+                <text x="100" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#94a3b8">ASSET</text>
+                <text x="100" y="110" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">STATES</text>
+              </svg>
+              <div style="display:flex;flex-direction:column;gap:0.65rem;flex:1;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">
+                  <span style="font-size:0.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:0.35rem;"><span style="width:8px;height:8px;border-radius:2px;background:var(--accent);display:inline-block;"></span>In Use</span>
+                  <span style="font-family:var(--mono);font-size:0.78rem;font-weight:700;color:var(--text);">15,406 <span style="color:var(--text3);font-size:0.65rem;">(92.0%)</span></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">
+                  <span style="font-size:0.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:0.35rem;"><span style="width:8px;height:8px;border-radius:2px;background:var(--yellow);display:inline-block;"></span>In Repair</span>
+                  <span style="font-family:var(--mono);font-size:0.78rem;font-weight:700;color:var(--text);">670 <span style="color:var(--text3);font-size:0.65rem;">(4.0%)</span></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">
+                  <span style="font-size:0.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:0.35rem;"><span style="width:8px;height:8px;border-radius:2px;background:var(--red);display:inline-block;"></span>Broken</span>
+                  <span style="font-family:var(--mono);font-size:0.78rem;font-weight:700;color:var(--text);">335 <span style="color:var(--text3);font-size:0.65rem;">(2.0%)</span></span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:0.72rem;font-weight:600;color:var(--text2);display:flex;align-items:center;gap:0.35rem;"><span style="width:8px;height:8px;border-radius:2px;background:#475569;display:inline-block;"></span>Decommissioned</span>
+                  <span style="font-family:var(--mono);font-size:0.78rem;font-weight:700;color:var(--text);">331 <span style="color:var(--text3);font-size:0.65rem;">(2.0%)</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 6 · OS PLATFORM DISTRIBUTION
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-6">
+      <div class="slide-tag">05 · Platform Breakdown</div>
+      <div class="slide-title">OS Platform Distribution</div>
+      <div class="slide-subtitle">Fleet segmented by operating system family — Windows, macOS, Linux</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1.4fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="card-label">Device Count by OS Family</div>
+            <svg viewBox="0 0 500 260" width="100%" style="flex:1;max-height:240px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Grid lines -->
+              <line x1="60" y1="20" x2="490" y2="20" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="70" x2="490" y2="70" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="120" x2="490" y2="120" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="170" x2="490" y2="170" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="220" x2="490" y2="220" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <!-- Y axis labels -->
+              <text x="52" y="23" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">10K</text>
+              <text x="52" y="73" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">7.5K</text>
+              <text x="52" y="123" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">5K</text>
+              <text x="52" y="173" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">2.5K</text>
+              <text x="52" y="223" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">0</text>
+              <!-- Windows bar: 8,371 = 83.7% of 10K → y=20+(0.163*200)=52.6 → height=200-52.6=167.4 → cy=20, h=167.4 -->
+              <!-- Actually mapY: (10000-val)/10000 * 200 + 20; val=8371 → (1629/10000)*200+20=52.6 → h from 52.6 to 220 = 167.4 -->
+              <rect x="90" y="52" width="80" height="168" rx="5" fill="#334155" opacity="0.9"/>
+              <rect x="90" y="52" width="80" height="4" rx="2" fill="#64748b"/>
+              <text x="130" y="43" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">8,371</text>
+              <text x="130" y="238" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#94a3b8" text-anchor="middle">Windows</text>
+              <text x="130" y="250" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">50.0%</text>
+              <!-- macOS bar: 4,185 = 41.9% → (5815/10000)*200+20=136.3 → h=220-136.3=83.7 -->
+              <rect x="220" y="136" width="80" height="84" rx="5" fill="#1e40af" opacity="0.8"/>
+              <rect x="220" y="136" width="80" height="4" rx="2" fill="#3b82f6"/>
+              <text x="260" y="127" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">4,185</text>
+              <text x="260" y="238" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#94a3b8" text-anchor="middle">macOS</text>
+              <text x="260" y="250" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">25.0%</text>
+              <!-- Linux bar: 4,186 → same ~136 → h=84 -->
+              <rect x="350" y="136" width="80" height="84" rx="5" fill="#064e3b" opacity="0.9"/>
+              <rect x="350" y="136" width="80" height="4" rx="2" fill="#10b981"/>
+              <text x="390" y="127" font-family="JetBrains Mono,monospace" font-size="9" font-weight="700" fill="#f0f4ff" text-anchor="middle">4,186</text>
+              <text x="390" y="238" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#94a3b8" text-anchor="middle">Linux</text>
+              <text x="390" y="250" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">25.0%</text>
+            </svg>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">OS Versions Breakdown</div>
+            <table class="data-table">
+              <thead><tr><th>OS Version</th><th>Family</th><th>Count</th><th>%</th></tr></thead>
+              <tbody>
+                <tr><td>Windows 11 (22631)</td><td><span class="badge badge-blue">Windows</span></td><td style="font-family:var(--mono);">4,185</td><td style="font-family:var(--mono);color:var(--text2);">25.0%</td></tr>
+                <tr><td>Windows 10 Enterprise</td><td><span class="badge badge-blue">Windows</span></td><td style="font-family:var(--mono);">4,186</td><td style="font-family:var(--mono);color:var(--text2);">25.0%</td></tr>
+                <tr><td>macOS 14.4 (Sonoma)</td><td><span class="badge badge-purple">macOS</span></td><td style="font-family:var(--mono);">4,185</td><td style="font-family:var(--mono);color:var(--text2);">25.0%</td></tr>
+                <tr><td>Ubuntu 22.04 LTS</td><td><span class="badge badge-green">Linux</span></td><td style="font-family:var(--mono);">4,186</td><td style="font-family:var(--mono);color:var(--text2);">25.0%</td></tr>
+              </tbody>
+            </table>
+            <div class="card-label" style="margin-top:0.5rem;">Key Insight</div>
+            <div style="font-size:0.72rem;color:var(--text2);line-height:1.5;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15);border-radius:5px;padding:0.75rem;">
+              Windows dominates at <strong style="color:var(--text);">50%</strong> of the fleet, making it the primary target for SCCM patch compliance and BitLocker enforcement policies. The Linux and macOS combined share of 50% requires cross-platform EDR agent validation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 7 · LOCATION GROUP ANALYSIS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-7">
+      <div class="slide-tag">06 · Location Intelligence</div>
+      <div class="slide-title">Location Group Analysis</div>
+      <div class="slide-subtitle">Sift (secure zone) vs Non-Sift (generic) device distribution across 6 office locations</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card" style="display:flex;flex-direction:column;">
+            <div class="card-label">Sift vs Non-Sift Distribution</div>
+            <svg viewBox="0 0 380 260" width="100%" style="flex:1;max-height:250px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Grid -->
+              <line x1="60" y1="20" x2="360" y2="20" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="70" x2="360" y2="70" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="120" x2="360" y2="120" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="170" x2="360" y2="170" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <line x1="60" y1="220" x2="360" y2="220" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="3,3"/>
+              <!-- Y labels -->
+              <text x="52" y="23" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">12K</text>
+              <text x="52" y="73" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">9K</text>
+              <text x="52" y="123" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">6K</text>
+              <text x="52" y="173" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">3K</text>
+              <text x="52" y="223" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569" text-anchor="end">0</text>
+              <!-- Sift: 5,580 / 12000 = 46.5% → y=20+(0.535*200)=127 → h=93 -->
+              <rect x="100" y="127" width="80" height="93" rx="5" fill="#1e40af" opacity="0.9"/>
+              <text x="140" y="118" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700" fill="#f0f4ff" text-anchor="middle">5,580</text>
+              <text x="140" y="240" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#3b82f6" text-anchor="middle">Sift Secure</text>
+              <text x="140" y="252" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">33.3%</text>
+              <!-- Non-Sift: 11,162 / 12000 = 93% → y=20+(0.07*200)=34 → h=186 -->
+              <rect x="220" y="34" width="80" height="186" rx="5" fill="#475569" opacity="0.9"/>
+              <text x="260" y="25" font-family="JetBrains Mono,monospace" font-size="10" font-weight="700" fill="#f0f4ff" text-anchor="middle">11,162</text>
+              <text x="260" y="240" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#94a3b8" text-anchor="middle">Non-Sift</text>
+              <text x="260" y="252" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">66.7%</text>
+            </svg>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Office Location Distribution</div>
+            <table class="data-table">
+              <thead><tr><th>Location</th><th>Devices</th><th>Avg Score</th></tr></thead>
+              <tbody>
+                <tr><td>New York HQs</td><td style="font-family:var(--mono);">2,795</td><td style="font-family:var(--mono);color:var(--green);">88.2</td></tr>
+                <tr><td>London Office</td><td style="font-family:var(--mono);">2,790</td><td style="font-family:var(--mono);color:var(--green);">87.8</td></tr>
+                <tr><td>Singapore Hub</td><td style="font-family:var(--mono);">2,789</td><td style="font-family:var(--mono);color:var(--green);">87.6</td></tr>
+                <tr><td>Remote — US</td><td style="font-family:var(--mono);">2,793</td><td style="font-family:var(--mono);color:var(--yellow);">85.1</td></tr>
+                <tr><td>Munich Lab</td><td style="font-family:var(--mono);">2,788</td><td style="font-family:var(--mono);color:var(--yellow);">84.9</td></tr>
+                <tr><td>Tokyo Branch</td><td style="font-family:var(--mono);">2,787</td><td style="font-family:var(--mono);color:var(--yellow);">86.3</td></tr>
+              </tbody>
+            </table>
+            <div style="background:rgba(30,64,175,0.1);border:1px solid rgba(30,64,175,0.3);border-radius:5px;padding:0.75rem;font-size:0.7rem;color:var(--text2);">
+              <strong style="color:var(--accent);">Sift Secure Zone</strong> devices undergo stricter Zero-Trust network controls. They are segmented from the broader corporate network and require additional MFA + VPN policy verification at the compliance engine level.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 8 · RISK SCORING ENGINE
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-8">
+      <div class="slide-tag">07 · Risk Engine</div>
+      <div class="slide-title">Risk Scoring Engine</div>
+      <div class="slide-subtitle">Go-based penalty-weighted composite scoring model with 6 security dimensions</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1.2fr; flex:1; min-height:0;">
+          <!-- Radar / Weight chart -->
+          <div class="slide-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="card-label" style="align-self:flex-start;">Dimension Weights (Risk Engine)</div>
+            <svg viewBox="0 0 300 280" width="100%" style="max-height:270px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Polar grid -->
+              <g transform="translate(150,145)">
+                <!-- Background circles -->
+                <circle r="80" fill="none" stroke="#1e2d4a" stroke-width="0.7"/>
+                <circle r="60" fill="none" stroke="#1e2d4a" stroke-width="0.7"/>
+                <circle r="40" fill="none" stroke="#1e2d4a" stroke-width="0.7"/>
+                <circle r="20" fill="none" stroke="#1e2d4a" stroke-width="0.7"/>
+                <!-- 6 axes (EDR=0°, VULN=60°, PATCH=120°, ENC=180°, NET=240°, ID=300°) -->
+                <!-- EDR: 25% → r=80, angle=270 → x=0, y=-80 -->
+                <!-- VULN: 20% → r=64, angle=330 → x=32, y=-55.4 -->
+                <!-- PATCH: 20% → r=64, angle=30 → x=32, y=55.4 -->
+                <!-- ENC: 15% → r=48, angle=90 → x=0, y=48 -->
+                <!-- NET: 10% → r=32, angle=150 → x=-27.7, y=16 -->
+                <!-- ID: 10% → r=32, angle=210 → x=-27.7, y=-16 -->
+                <polygon points="0,-80 32,-55.4 32,55.4 0,48 -27.7,16 -27.7,-16"
+                  fill="rgba(59,130,246,0.15)" stroke="#3b82f6" stroke-width="1.5"/>
+                <!-- Axis lines -->
+                <line x1="0" y1="0" x2="0" y2="-95" stroke="#1e2d4a" stroke-width="0.7"/>
+                <line x1="0" y1="0" x2="82" y2="-47" stroke="#1e2d4a" stroke-width="0.7"/>
+                <line x1="0" y1="0" x2="82" y2="47" stroke="#1e2d4a" stroke-width="0.7"/>
+                <line x1="0" y1="0" x2="0" y2="95" stroke="#1e2d4a" stroke-width="0.7"/>
+                <line x1="0" y1="0" x2="-82" y2="47" stroke="#1e2d4a" stroke-width="0.7"/>
+                <line x1="0" y1="0" x2="-82" y2="-47" stroke="#1e2d4a" stroke-width="0.7"/>
+                <!-- Dots on polygon -->
+                <circle cx="0" cy="-80" r="4" fill="#3b82f6"/>
+                <circle cx="32" cy="-55.4" r="4" fill="#3b82f6"/>
+                <circle cx="32" cy="55.4" r="4" fill="#3b82f6"/>
+                <circle cx="0" cy="48" r="4" fill="#3b82f6"/>
+                <circle cx="-27.7" cy="16" r="4" fill="#3b82f6"/>
+                <circle cx="-27.7" cy="-16" r="4" fill="#3b82f6"/>
+                <!-- Labels -->
+                <text x="0" y="-105" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">EDR</text>
+                <text x="0" y="-95" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">25%</text>
+                <text x="98" y="-44" text-anchor="start" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">VULN</text>
+                <text x="98" y="-33" text-anchor="start" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">20%</text>
+                <text x="98" y="50" text-anchor="start" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">PATCH</text>
+                <text x="98" y="61" text-anchor="start" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">20%</text>
+                <text x="0" y="112" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">ENCRYPT</text>
+                <text x="0" y="123" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">15%</text>
+                <text x="-98" y="50" text-anchor="end" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">NETWORK</text>
+                <text x="-98" y="61" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">10%</text>
+                <text x="-98" y="-44" text-anchor="end" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">IDENTITY</text>
+                <text x="-98" y="-33" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="#3b82f6">10%</text>
+              </g>
+            </svg>
+          </div>
+          <!-- Scoring formula + table -->
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Composite Scoring Formula</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:1rem;font-family:var(--mono);font-size:0.72rem;line-height:1.8;color:var(--text2);">
+              <div style="color:var(--text3);font-size:0.65rem;margin-bottom:0.35rem;">// Base Score</div>
+              <div><span style="color:var(--accent);">baseScore</span> = <span style="color:var(--green);">Σ</span>(weight × dimScore)</div>
+              <div style="color:var(--text3);font-size:0.65rem;margin:0.5rem 0 0.35rem;">// Critical Failure Penalty</div>
+              <div><span style="color:var(--yellow);">penalty</span> = min(criticals × 0.25, 0.75)</div>
+              <div><span style="color:var(--accent);">finalScore</span> = baseScore × (1 − penalty)</div>
+              <div style="color:var(--text3);font-size:0.65rem;margin:0.5rem 0 0.35rem;">// Frontend Binary Override</div>
+              <div><span style="color:var(--red);">if</span> any REQUIRED control = FAIL:</div>
+              <div style="padding-left:1rem;"><span style="color:var(--accent);">score</span> → <span style="color:var(--red);">0.00</span>, level → NON_COMPLIANT</div>
+            </div>
+            <div class="card-label">Risk Tier Mapping</div>
+            <table class="data-table">
+              <thead><tr><th>Score Range</th><th>Risk Tier</th><th>Response</th></tr></thead>
+              <tbody>
+                <tr><td style="font-family:var(--mono);">0 – 39</td><td><span class="badge badge-red">CRITICAL</span></td><td>Immediate containment</td></tr>
+                <tr><td style="font-family:var(--mono);">40 – 64</td><td><span class="badge badge-yellow">HIGH</span></td><td>Priority remediation</td></tr>
+                <tr><td style="font-family:var(--mono);">65 – 84</td><td><span class="badge badge-purple">MEDIUM</span></td><td>Scheduled patching</td></tr>
+                <tr><td style="font-family:var(--mono);">85 – 100</td><td><span class="badge badge-green">LOW</span></td><td>Continuous monitoring</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 9 · COMPLIANCE CONTROLS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-9">
+      <div class="slide-tag">08 · Security Controls</div>
+      <div class="slide-title">6-Dimension Control Policy Status</div>
+      <div class="slide-subtitle">Core enterprise security mandates evaluated per device — all required by default</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1.2fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card">
+            <div class="card-label">Control Pass Rates — Active Fleet (IN_USE Only)</div>
+            <div style="display:flex;flex-direction:column;gap:0.85rem;margin-top:0.5rem;">
+              <!-- Control bars -->
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">Active Directory (AD) Enrollment</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--green);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">BitLocker Drive Encryption</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--green);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">Zscaler Client Connector (ZTA VPN)</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--green);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">Nessus Vulnerability Agent</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--green);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">SentinelOne Endpoint Protection (EDR)</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--yellow);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:0.3rem;">
+                  <span style="font-size:0.75rem;font-weight:700;color:var(--text);">SCCM/MECM Management Agent</span>
+                  <span style="font-family:var(--mono);font-size:0.72rem;color:var(--green);font-weight:700;">90.9%</span>
+                </div>
+                <div class="progress-track" style="height:8px;"><div class="progress-fill" style="width:90.9%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Control Catalog Details</div>
+            <table class="data-table">
+              <thead><tr><th>Control</th><th>Engine Dim</th><th>Weight</th><th>Mandate</th></tr></thead>
+              <tbody>
+                <tr><td>SentinelOne</td><td style="font-family:var(--mono);font-size:0.68rem;">EDR</td><td style="font-family:var(--mono);">25%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+                <tr><td>Nessus</td><td style="font-family:var(--mono);font-size:0.68rem;">VULNERABILITY</td><td style="font-family:var(--mono);">20%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+                <tr><td>SCCM</td><td style="font-family:var(--mono);font-size:0.68rem;">PATCH</td><td style="font-family:var(--mono);">20%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+                <tr><td>BitLocker</td><td style="font-family:var(--mono);font-size:0.68rem;">ENCRYPTION</td><td style="font-family:var(--mono);">15%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+                <tr><td>Zscaler</td><td style="font-family:var(--mono);font-size:0.68rem;">NETWORK</td><td style="font-family:var(--mono);">10%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+                <tr><td>AD Enrollment</td><td style="font-family:var(--mono);font-size:0.68rem;">IDENTITY</td><td style="font-family:var(--mono);">10%</td><td><span class="badge badge-red">REQUIRED</span></td></tr>
+              </tbody>
+            </table>
+            <div style="background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:5px;padding:0.75rem;font-size:0.7rem;color:var(--text2);">
+              <strong style="color:var(--green);">Dynamic Extension:</strong> Uploaded spreadsheets automatically register new columns as compliance controls on the Policy Governance Board, extending the evaluation model in real-time without code changes.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 10 · EDR EVALUATOR RULES
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-10">
+      <div class="slide-tag">09 · EDR Evaluator</div>
+      <div class="slide-title">EDR Evaluation Logic</div>
+      <div class="slide-subtitle">SentinelOne endpoint protection assessment — Control ID: CTRL-EDR-S1-001</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <!-- Flowchart -->
+          <div class="slide-card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div class="card-label" style="align-self:flex-start;">Decision Flowchart</div>
+            <svg viewBox="0 0 300 400" width="100%" style="max-height:380px;" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <marker id="a2" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+                  <polygon points="0 0, 7 2.5, 0 5" fill="#94a3b8"/>
+                </marker>
+              </defs>
+              <!-- Input box -->
+              <rect x="90" y="10" width="120" height="36" rx="5" fill="#0d1526" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="150" y="25" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#f0f4ff">SentinelOne JSON</text>
+              <text x="150" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" fill="#94a3b8">Raw Telemetry Payload</text>
+              <!-- Arrow -->
+              <line x1="150" y1="46" x2="150" y2="66" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- Parse check -->
+              <polygon points="150,67 220,90 150,113 80,90" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="150" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">Valid JSON?</text>
+              <!-- No branch -->
+              <line x1="220" y1="90" x2="270" y2="90" stroke="#ef4444" stroke-width="1" marker-end="url(#a2)"/>
+              <rect x="271" y="75" width="25" height="28" rx="3" fill="rgba(239,68,68,0.2)" stroke="#ef4444" stroke-width="1"/>
+              <text x="283" y="92" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#ef4444">ERR</text>
+              <!-- Yes arrow -->
+              <line x1="150" y1="113" x2="150" y2="133" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- Agent Active? -->
+              <polygon points="150,134 220,157 150,180 80,157" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="150" y="155" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">Agent Active?</text>
+              <!-- No: CRITICAL -->
+              <line x1="80" y1="157" x2="30" y2="157" stroke="#ef4444" stroke-width="1" marker-end="url(#a2)"/>
+              <rect x="4" y="143" width="25" height="28" rx="3" fill="rgba(239,68,68,0.2)" stroke="#ef4444" stroke-width="1"/>
+              <text x="17" y="155" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#ef4444">CRIT</text>
+              <text x="17" y="165" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#ef4444">0.00</text>
+              <!-- Yes -->
+              <line x1="150" y1="180" x2="150" y2="200" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- Threats > 0? -->
+              <polygon points="150,201 220,224 150,247 80,224" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="150" y="222" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">Active Threats?</text>
+              <!-- Yes: HIGH -->
+              <line x1="220" y1="224" x2="270" y2="224" stroke="#ef4444" stroke-width="1" marker-end="url(#a2)"/>
+              <rect x="271" y="210" width="25" height="28" rx="3" fill="rgba(239,68,68,0.15)" stroke="#ef4444" stroke-width="1"/>
+              <text x="283" y="222" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#ef4444">HIGH</text>
+              <text x="283" y="232" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#ef4444">40.0</text>
+              <!-- No -->
+              <line x1="150" y1="247" x2="150" y2="267" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- Policy mismatch? -->
+              <polygon points="150,268 220,291 150,314 80,291" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="150" y="289" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">Policy Mismatch?</text>
+              <!-- Yes: MEDIUM -->
+              <line x1="80" y1="291" x2="30" y2="291" stroke="#f59e0b" stroke-width="1" marker-end="url(#a2)"/>
+              <rect x="4" y="277" width="25" height="28" rx="3" fill="rgba(245,158,11,0.15)" stroke="#f59e0b" stroke-width="1"/>
+              <text x="17" y="289" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#f59e0b">MED</text>
+              <text x="17" y="299" text-anchor="middle" font-family="Inter,sans-serif" font-size="6" fill="#f59e0b">70.0</text>
+              <!-- No: Compliant -->
+              <line x1="150" y1="314" x2="150" y2="340" stroke="#10b981" stroke-width="1.5" marker-end="url(#a2)"/>
+              <rect x="100" y="341" width="100" height="34" rx="5" fill="rgba(16,185,129,0.15)" stroke="#10b981" stroke-width="1.5"/>
+              <text x="150" y="356" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#10b981">COMPLIANT</text>
+              <text x="150" y="369" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#10b981">Score = 100.0</text>
+            </svg>
+          </div>
+          <!-- Table -->
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Evaluation Rules Summary</div>
+            <table class="data-table">
+              <thead><tr><th>Rule</th><th>Condition</th><th>Severity</th><th>Score</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td>R1</td>
+                  <td>Agent Inactive / Disabled</td>
+                  <td><span class="badge badge-red">CRITICAL</span></td>
+                  <td style="font-family:var(--mono);color:var(--red);">0.00</td>
+                </tr>
+                <tr>
+                  <td>R2</td>
+                  <td>Active Threat Count &gt; 0</td>
+                  <td><span class="badge badge-yellow">HIGH</span></td>
+                  <td style="font-family:var(--mono);color:var(--yellow);">40.00</td>
+                </tr>
+                <tr>
+                  <td>R3</td>
+                  <td>Policy Version Mismatch</td>
+                  <td><span class="badge badge-purple">MEDIUM</span></td>
+                  <td style="font-family:var(--mono);color:var(--accent3);">70.00</td>
+                </tr>
+                <tr>
+                  <td>R4</td>
+                  <td>All checks pass</td>
+                  <td><span class="badge badge-green">NONE</span></td>
+                  <td style="font-family:var(--mono);color:var(--green);">100.00</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="card-label" style="margin-top:0.5rem;">SentinelOne Payload Schema</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:0.9rem;font-family:var(--mono);font-size:0.68rem;color:var(--text2);line-height:1.7;">
+              <span style="color:var(--accent3);">type</span> <span style="color:var(--accent);">SentinelOneData</span> {<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">agent_active</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;bool<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">threat_active_count</span> int<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">policy_version</span> &nbsp;&nbsp;&nbsp;&nbsp;string<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">required_policy_ver</span> string<br>
+              &nbsp;&nbsp;<span style="color:var(--green);">last_seen_time</span> &nbsp;&nbsp;&nbsp;&nbsp;time.Time<br>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 11 · RBAC ACCESS MODEL
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-11">
+      <div class="slide-tag">10 · Identity & Access</div>
+      <div class="slide-title">RBAC Access Control Matrix</div>
+      <div class="slide-subtitle">4-tier role-based privilege model enforced across all dashboard modules and API operations</div>
+      <div class="slide-body">
+        <div class="slide-card" style="flex:1;min-height:0;overflow:auto;">
+          <div class="card-label">Permission Matrix — All Modules</div>
+          <table class="data-table" style="margin-top:0.75rem;">
+            <thead>
+              <tr>
+                <th>Capability / Action</th>
+                <th style="text-align:center;">Admin<br><span style="font-size:0.55rem;color:var(--accent);">admin.security</span></th>
+                <th style="text-align:center;">Security Analyst<br><span style="font-size:0.55rem;color:var(--accent);">analyst.fleet</span></th>
+                <th style="text-align:center;">Sys Operator<br><span style="font-size:0.55rem;color:var(--accent);">operator.contain</span></th>
+                <th style="text-align:center;">Auditor<br><span style="font-size:0.55rem;color:var(--accent);">auditor.compliance</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>View Fleet Ledger</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓ Read-Only</td></tr>
+              <tr><td>Import CSV/Excel Sheets</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Export Fleet CSV</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Push SCCM Patch Updates</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Run EDR Threat Scan</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Escrow BitLocker Keys</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Isolate Network Host</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Toggle Policy Enforcement</td><td style="text-align:center;color:var(--green);">✓ Admin Only</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>View Reporting Center</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Access Settings Panel</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>Multi-Sheet Reconciliation</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--red);">✗</td><td style="text-align:center;color:var(--red);">✗</td></tr>
+              <tr><td>View AI Drift Forecasts</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td><td style="text-align:center;color:var(--green);">✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 12 · AI LSTM DRIFT PREDICTOR
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-12">
+      <div class="slide-tag">11 · AI Services</div>
+      <div class="slide-title">LSTM Compliance Drift Forecaster</div>
+      <div class="slide-subtitle">PyTorch 2-layer recurrent network — 90-day trajectory → 7/14/30-day compliance forecasts</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1.2fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Model Architecture</div>
+            <svg viewBox="0 0 440 220" width="100%" style="max-height:200px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Input -->
+              <rect x="10" y="80" width="70" height="60" rx="5" fill="#0d1526" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="45" y="104" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">Input</text>
+              <text x="45" y="116" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8">90-day</text>
+              <text x="45" y="127" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8">scores</text>
+              <text x="45" y="152" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#3b82f6">[1,90,1]</text>
+              <!-- Arrow -->
+              <line x1="80" y1="110" x2="100" y2="110" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- LSTM Layer 1 -->
+              <rect x="101" y="65" width="95" height="90" rx="5" fill="#0d1526" stroke="#8b5cf6" stroke-width="1.5"/>
+              <text x="148" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">LSTM</text>
+              <text x="148" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#8b5cf6">Layer 1</text>
+              <text x="148" y="115" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#94a3b8">hidden=64</text>
+              <text x="148" y="127" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#94a3b8">dropout=0.2</text>
+              <text x="148" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#475569">batch_first=True</text>
+              <!-- Arrow -->
+              <line x1="196" y1="110" x2="216" y2="110" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- LSTM Layer 2 -->
+              <rect x="217" y="65" width="95" height="90" rx="5" fill="#0d1526" stroke="#8b5cf6" stroke-width="1.5"/>
+              <text x="264" y="88" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="800" fill="#f0f4ff">LSTM</text>
+              <text x="264" y="100" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#8b5cf6">Layer 2</text>
+              <text x="264" y="115" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#94a3b8">hidden=64</text>
+              <text x="264" y="127" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#94a3b8">dropout=0.2</text>
+              <text x="264" y="143" text-anchor="middle" font-family="Inter,sans-serif" font-size="6.5" fill="#475569">last step only</text>
+              <!-- Arrow -->
+              <line x1="312" y1="110" x2="332" y2="110" stroke="#94a3b8" stroke-width="1" marker-end="url(#a2)"/>
+              <!-- FC Output -->
+              <rect x="333" y="80" width="95" height="60" rx="5" fill="#0d1526" stroke="#10b981" stroke-width="1.5"/>
+              <text x="380" y="102" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#f0f4ff">FC Output</text>
+              <text x="380" y="114" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="7" fill="#10b981">dim: 64→3</text>
+              <text x="380" y="129" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#94a3b8">Linear layer</text>
+              <!-- Output labels -->
+              <text x="380" y="157" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" fill="#10b981" font-weight="700">7d | 14d | 30d</text>
+              <text x="380" y="168" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569">forecasts</text>
+              <!-- Normalize annotation -->
+              <text x="45" y="30" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569">÷100 normalize</text>
+              <text x="45" y="40" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569">→ [0.0, 1.0]</text>
+              <text x="380" y="30" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569">×100 · clip[0,100]</text>
+              <text x="380" y="40" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#475569">denormalize</text>
+            </svg>
+            <div class="card-label">Drift Scenario Simulations</div>
+            <table class="data-table">
+              <thead><tr><th>Scenario</th><th>7-Day</th><th>14-Day</th><th>30-Day</th><th>Trend</th></tr></thead>
+              <tbody>
+                <tr><td>Stable Fleet</td><td style="font-family:var(--mono);color:var(--green);">98.40</td><td style="font-family:var(--mono);color:var(--green);">98.10</td><td style="font-family:var(--mono);color:var(--green);">97.80</td><td><span class="badge badge-green">STABLE</span></td></tr>
+                <tr><td>Decaying Fleet</td><td style="font-family:var(--mono);color:var(--yellow);">84.10</td><td style="font-family:var(--mono);color:var(--yellow);">76.50</td><td style="font-family:var(--mono);color:var(--red);">58.20</td><td><span class="badge badge-yellow">DECAYING</span></td></tr>
+                <tr><td>Critical Collapse</td><td style="font-family:var(--mono);color:var(--red);">52.00</td><td style="font-family:var(--mono);color:var(--red);">38.50</td><td style="font-family:var(--mono);color:var(--red);">12.00</td><td><span class="badge badge-red">CRITICAL</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="card-label">30-Day Drift Forecast Chart</div>
+            <svg viewBox="0 0 300 200" width="100%" style="flex:1;max-height:200px;" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="stableGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.2"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="decayGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="critGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#ef4444" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#ef4444" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid -->
+              <line x1="40" y1="15" x2="290" y2="15" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="2,2"/>
+              <line x1="40" y1="52" x2="290" y2="52" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="2,2"/>
+              <line x1="40" y1="89" x2="290" y2="89" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="2,2"/>
+              <line x1="40" y1="126" x2="290" y2="126" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="2,2"/>
+              <line x1="40" y1="163" x2="290" y2="163" stroke="#1e2d4a" stroke-width="0.5" stroke-dasharray="2,2"/>
+              <!-- Y labels -->
+              <text x="35" y="18" font-family="JetBrains Mono,monospace" font-size="7" fill="#475569" text-anchor="end">100</text>
+              <text x="35" y="55" font-family="JetBrains Mono,monospace" font-size="7" fill="#475569" text-anchor="end">75</text>
+              <text x="35" y="92" font-family="JetBrains Mono,monospace" font-size="7" fill="#475569" text-anchor="end">50</text>
+              <text x="35" y="129" font-family="JetBrains Mono,monospace" font-size="7" fill="#475569" text-anchor="end">25</text>
+              <text x="35" y="166" font-family="JetBrains Mono,monospace" font-size="7" fill="#475569" text-anchor="end">0</text>
+              <!-- X labels -->
+              <text x="40" y="178" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">Now</text>
+              <text x="165" y="178" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">7d</text>
+              <text x="227" y="178" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">14d</text>
+              <text x="290" y="178" font-family="Inter,sans-serif" font-size="7" fill="#475569" text-anchor="middle">30d</text>
+              <!-- SLA line -->
+              <line x1="40" y1="73" x2="290" y2="73" stroke="#f59e0b" stroke-width="0.8" stroke-dasharray="3,3" opacity="0.5"/>
+              <!-- Stable: now=87.5→y=57, 7d=98.4→y=18, 14d=98.1→y=19, 30d=97.8→y=20 -->
+              <!-- mapY: 163 - (val/100)*148 -->
+              <!-- stable: 87.5→33.5, 98.4→17.6, 98.1→18, 97.8→18.4 -->
+              <path d="M 40,33 L 165,18 L 227,18 L 290,19" fill="none" stroke="#10b981" stroke-width="1.8"/>
+              <!-- Decaying: 87.5→33, 84.1→38, 76.5→50, 58.2→77 -->
+              <path d="M 40,33 L 165,38 L 227,50 L 290,77" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5,3"/>
+              <!-- Critical: 87.5→33, 52→86, 38.5→107, 12→145 -->
+              <path d="M 40,33 L 165,86 L 227,107 L 290,145" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="3,3"/>
+              <!-- Dots -->
+              <circle cx="40" cy="33" r="3" fill="#0d1526" stroke="#94a3b8" stroke-width="1.5"/>
+              <circle cx="165" cy="18" r="3" fill="#10b981"/>
+              <circle cx="165" cy="38" r="3" fill="#f59e0b"/>
+              <circle cx="165" cy="86" r="3" fill="#ef4444"/>
+              <circle cx="290" cy="19" r="3" fill="#10b981"/>
+              <circle cx="290" cy="77" r="3" fill="#f59e0b"/>
+              <circle cx="290" cy="145" r="3" fill="#ef4444"/>
+              <!-- Legend -->
+              <line x1="50" y1="190" x2="68" y2="190" stroke="#10b981" stroke-width="2"/>
+              <text x="70" y="193" font-family="Inter,sans-serif" font-size="7" fill="#10b981">Stable</text>
+              <line x1="108" y1="190" x2="126" y2="190" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,2"/>
+              <text x="128" y="193" font-family="Inter,sans-serif" font-size="7" fill="#f59e0b">Decaying</text>
+              <line x1="178" y1="190" x2="196" y2="190" stroke="#ef4444" stroke-width="2" stroke-dasharray="2,2"/>
+              <text x="198" y="193" font-family="Inter,sans-serif" font-size="7" fill="#ef4444">Critical</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 13 · SEMANTIC DEVICE RECONCILER
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-13">
+      <div class="slide-tag">12 · AI Services</div>
+      <div class="slide-title">Semantic Device Reconciler</div>
+      <div class="slide-subtitle">SentenceTransformer all-MiniLM-L6-v2 for device alias resolution and duplicate suppression</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">5-Stage Reconciliation Pipeline</div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;flex:1;justify-content:center;">
+              <!-- Stages -->
+              <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.8rem;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:5px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;">1</div>
+                <div><div style="font-size:0.75rem;font-weight:700;color:var(--text);">Exact Name Match</div><div style="font-size:0.65rem;color:var(--text2);">Normalized canonical_name comparison → Confidence: 100%</div></div>
+                <span class="badge badge-green" style="margin-left:auto;white-space:nowrap;">AUTO_MERGE</span>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.8rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:5px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;">2</div>
+                <div><div style="font-size:0.75rem;font-weight:700;color:var(--text);">Hardware Fingerprint</div><div style="font-size:0.65rem;color:var(--text2);">SHA256(serial + MAC[0] + manufacturer) → Confidence: 95%</div></div>
+                <span class="badge badge-green" style="margin-left:auto;white-space:nowrap;">AUTO_MERGE</span>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.8rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);border-radius:5px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:var(--accent3);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;">3</div>
+                <div><div style="font-size:0.75rem;font-weight:700;color:var(--text);">Levenshtein Edit Distance</div><div style="font-size:0.65rem;color:var(--text2);">Fuzzy string matching → ≥90% AUTO_MERGE, else HUMAN_QUEUE</div></div>
+                <span class="badge badge-purple" style="margin-left:auto;white-space:nowrap;">FUZZY</span>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.8rem;background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.2);border-radius:5px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:var(--accent3);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;">4</div>
+                <div><div style="font-size:0.75rem;font-weight:700;color:var(--text);">Semantic Similarity (MiniLM)</div><div style="font-size:0.65rem;color:var(--text2);">&gt;0.88 → AUTO_MERGE · 0.75-0.88 → HUMAN_QUEUE · &lt;0.75 → NEW</div></div>
+                <span class="badge badge-blue" style="margin-left:auto;white-space:nowrap;">SEMANTIC</span>
+              </div>
+              <div style="display:flex;gap:0.75rem;align-items:center;padding:0.6rem 0.8rem;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:5px;">
+                <div style="width:22px;height:22px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0;">5</div>
+                <div><div style="font-size:0.75rem;font-weight:700;color:var(--text);">Human Review Queue</div><div style="font-size:0.65rem;color:var(--text2);">No baseline match found → Routes to security analyst queue</div></div>
+                <span class="badge badge-red" style="margin-left:auto;white-space:nowrap;">HUMAN</span>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Decision Thresholds</div>
+            <svg viewBox="0 0 320 140" width="100%" style="max-height:140px;" preserveAspectRatio="xMidYMid meet">
+              <!-- Horizontal bar -->
+              <rect x="20" y="55" width="280" height="30" rx="5" fill="#1e2d4a"/>
+              <!-- Critical zone: 0-0.75 = 210px -->
+              <rect x="20" y="55" width="210" height="30" rx="5" fill="rgba(239,68,68,0.2)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+              <!-- Human queue: 0.75-0.88 = 36.4px -->
+              <rect x="230" y="55" width="36" height="30" fill="rgba(245,158,11,0.2)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+              <!-- Auto merge: 0.88-1.0 = 33.6px -->
+              <rect x="266" y="55" width="34" height="30" rx="0" fill="rgba(16,185,129,0.2)" stroke="rgba(16,185,129,0.3)" stroke-width="1"/>
+              <!-- Labels on bar -->
+              <text x="115" y="73" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#ef4444">NEW_DEVICE</text>
+              <text x="248" y="73" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#f59e0b">QUEUE</text>
+              <text x="283" y="73" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" font-weight="700" fill="#10b981">MERGE</text>
+              <!-- Tick marks -->
+              <line x1="20" y1="85" x2="20" y2="95" stroke="#475569" stroke-width="1"/>
+              <line x1="230" y1="85" x2="230" y2="95" stroke="#f59e0b" stroke-width="1.5"/>
+              <line x1="266" y1="85" x2="266" y2="95" stroke="#10b981" stroke-width="1.5"/>
+              <line x1="300" y1="85" x2="300" y2="95" stroke="#475569" stroke-width="1"/>
+              <text x="20" y="106" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569">0.0</text>
+              <text x="230" y="106" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#f59e0b">0.75</text>
+              <text x="266" y="106" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#10b981">0.88</text>
+              <text x="300" y="106" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#475569">1.0</text>
+              <text x="160" y="130" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" fill="#475569">Cosine Similarity Score</text>
+            </svg>
+            <div class="card-label">Multi-Sheet Reconciliation Metrics</div>
+            <div class="slide-grid" style="grid-template-columns:1fr 1fr;">
+              <div style="text-align:center;padding:0.75rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:5px;">
+                <div style="font-size:0.65rem;color:var(--text3);text-transform:uppercase;font-weight:700;">Reconciled Matches</div>
+                <div style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--green);">—</div>
+                <div style="font-size:0.62rem;color:var(--text3);">All-sheet alignment</div>
+              </div>
+              <div style="text-align:center;padding:0.75rem;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:5px;">
+                <div style="font-size:0.65rem;color:var(--red);text-transform:uppercase;font-weight:700;">Coverage Gaps</div>
+                <div style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--red);">—</div>
+                <div style="font-size:0.62rem;color:var(--text3);">Missing from sheets</div>
+              </div>
+              <div style="text-align:center;padding:0.75rem;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.2);border-radius:5px;">
+                <div style="font-size:0.65rem;color:var(--yellow);text-transform:uppercase;font-weight:700;">Rogue Assets</div>
+                <div style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--yellow);">—</div>
+                <div style="font-size:0.62rem;color:var(--text3);">Not in corp directory</div>
+              </div>
+              <div style="text-align:center;padding:0.75rem;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-radius:5px;">
+                <div style="font-size:0.65rem;color:var(--accent);text-transform:uppercase;font-weight:700;">SLA Goal</div>
+                <div style="font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--accent);">100%</div>
+                <div style="font-size:0.62rem;color:var(--text3);">Directory alignment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 14 · DATABASE SCHEMA
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-14">
+      <div class="slide-tag">13 · Data Layer</div>
+      <div class="slide-title">Database Schema Design</div>
+      <div class="slide-subtitle">PostgreSQL 16 core schema + TimescaleDB hypertable for compliance event timeseries</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1.2fr 1fr; flex:1; min-height:0;">
+          <!-- ER-style diagram -->
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="card-label">Core Tables — Entity Relationship</div>
+            <svg viewBox="0 0 420 310" width="100%" style="flex:1;max-height:310px;" preserveAspectRatio="xMidYMid meet">
+              <!-- devices table -->
+              <rect x="20" y="20" width="175" height="260" rx="6" fill="#0d1526" stroke="#f59e0b" stroke-width="1.5"/>
+              <rect x="20" y="20" width="175" height="28" rx="6" fill="#f59e0b" fill-opacity="0.2"/>
+              <text x="107" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="800" fill="#f59e0b">devices</text>
+              <!-- Fields -->
+              <text x="30" y="65" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#94a3b8">🔑 id UUID PK</text>
+              <text x="30" y="80" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">canonical_name VARCHAR(255)</text>
+              <text x="30" y="95" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">aliases VARCHAR[]</text>
+              <text x="30" y="110" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">serial_number VARCHAR UNIQUE</text>
+              <text x="30" y="125" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">fingerprint CHAR(64) UNIQUE</text>
+              <text x="30" y="140" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">os_family / version / build</text>
+              <text x="30" y="155" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">user_assigned VARCHAR</text>
+              <text x="30" y="170" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">location / location_group</text>
+              <text x="30" y="185" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">source_records JSONB</text>
+              <text x="30" y="200" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#3b82f6">risk_score NUMERIC(5,2)</text>
+              <text x="30" y="215" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#3b82f6">risk_level ENUM</text>
+              <text x="30" y="230" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#3b82f6">physical_state ENUM</text>
+              <text x="30" y="245" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">last_seen TIMESTAMPTZ</text>
+              <text x="30" y="260" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">created_at / updated_at</text>
+              <text x="30" y="275" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">stale_flags VARCHAR[]</text>
+
+              <!-- reconciliation_audit_log table -->
+              <rect x="240" y="20" width="175" height="165" rx="6" fill="#0d1526" stroke="#8b5cf6" stroke-width="1.5"/>
+              <rect x="240" y="20" width="175" height="28" rx="6" fill="#8b5cf6" fill-opacity="0.2"/>
+              <text x="327" y="38" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="800" fill="#8b5cf6">reconciliation_audit_log</text>
+              <text x="250" y="63" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#94a3b8">🔑 id UUID PK</text>
+              <text x="250" y="78" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">event_timestamp TIMESTAMPTZ</text>
+              <text x="250" y="93" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">source_device_name VARCHAR</text>
+              <text x="250" y="108" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#8b5cf6">🔗 target_device_id UUID FK</text>
+              <text x="250" y="123" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">stage_matched INT</text>
+              <text x="250" y="138" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#3b82f6">confidence_score NUMERIC</text>
+              <text x="250" y="153" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">decision VARCHAR</text>
+              <text x="250" y="168" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">metadata JSONB</text>
+
+              <!-- compliance_events hypertable -->
+              <rect x="240" y="210" width="175" height="130" rx="6" fill="#0d1526" stroke="#10b981" stroke-width="1.5"/>
+              <rect x="240" y="210" width="175" height="28" rx="6" fill="#10b981" fill-opacity="0.2"/>
+              <text x="327" y="228" text-anchor="middle" font-family="Inter,sans-serif" font-size="8.5" font-weight="800" fill="#10b981">compliance_events</text>
+              <text x="250" y="251" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#10b981">⏱ time TIMESTAMPTZ PK</text>
+              <text x="250" y="266" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#8b5cf6">🔗 device_id UUID</text>
+              <text x="250" y="281" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">dimension VARCHAR(64)</text>
+              <text x="250" y="296" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#475569">old/new_status, old/new_score</text>
+              <text x="250" y="311" font-family="JetBrains Mono,monospace" font-size="7.5" fill="#3b82f6">delta NUMERIC · evidence JSONB</text>
+              <text x="250" y="328" font-family="JetBrains Mono,monospace" font-size="7" fill="#10b981">HYPERTABLE → partition by 'time'</text>
+
+              <!-- Relationship lines -->
+              <line x1="195" y1="120" x2="240" y2="108" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>
+              <line x1="195" y1="200" x2="240" y2="270" stroke="#10b981" stroke-width="1" stroke-dasharray="4,3" opacity="0.7"/>
+            </svg>
+          </div>
+          <!-- TimescaleDB details -->
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">TimescaleDB Hypertable Config</div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;">
+              <div style="padding:0.65rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:5px;">
+                <div style="font-size:0.68rem;font-weight:700;color:var(--green);margin-bottom:0.25rem;">Partition Strategy</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Partitioned on <code style="font-family:var(--mono);color:var(--accent);">time</code> column · Segment by <code style="font-family:var(--mono);color:var(--accent);">device_id + dimension</code></div>
+              </div>
+              <div style="padding:0.65rem;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:5px;">
+                <div style="font-size:0.68rem;font-weight:700;color:var(--yellow);margin-bottom:0.25rem;">Retention Policy</div>
+                <div style="font-size:0.65rem;color:var(--text2);">90-day hot tier → S3/MinIO cold Parquet archival for long-term audit trails</div>
+              </div>
+              <div style="padding:0.65rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:5px;">
+                <div style="font-size:0.68rem;font-weight:700;color:var(--accent);margin-bottom:0.25rem;">Compression Policy</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Chunks older than 7 days compressed · ~90% storage footprint reduction · ORDER BY time DESC</div>
+              </div>
+            </div>
+            <div class="card-label">Performance Indexes</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:0.75rem;font-family:var(--mono);font-size:0.65rem;color:var(--text2);line-height:1.8;">
+              idx_devices_risk_level<br>
+              idx_devices_last_seen DESC<br>
+              idx_devices_fingerprint<br>
+              idx_devices_canonical_name_lower<br>
+              idx_devices_matching_fields<br>
+              idx_devices_location_group<br>
+              idx_compliance_events_device_dim<br>
+              idx_recon_audit_timestamp DESC
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 15 · TECHNOLOGY STACK
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-15">
+      <div class="slide-tag">14 · Technology</div>
+      <div class="slide-title">Technology Stack</div>
+      <div class="slide-subtitle">Full-stack enterprise platform with Go, Python, PostgreSQL, and vanilla JS</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:repeat(3,1fr); flex:1; min-height:0;">
+          <!-- Frontend -->
+          <div class="slide-card" style="border-top:3px solid var(--accent);">
+            <div class="card-label">Frontend · Presentation Layer</div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;margin-top:0.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">HTML/CSS/JavaScript</span>
+                <span class="badge badge-blue">Core UI</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">SheetJS (XLSX 0.18.5)</span>
+                <span class="badge badge-blue">Ingest</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">SVG Charts (native)</span>
+                <span class="badge badge-blue">Visual</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">4 RBAC Personas</span>
+                <span class="badge badge-blue">Auth</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">16,742 Device Dataset</span>
+                <span class="badge badge-blue">Scale</span>
+              </div>
+              <div style="font-size:0.65rem;color:var(--text3);line-height:1.5;margin-top:0.3rem;">241 KB single-file SPA · 4,110 LOC · Zero framework dependency · XSS + CSV injection mitigated</div>
+            </div>
+          </div>
+          <!-- Backend -->
+          <div class="slide-card" style="border-top:3px solid var(--green);">
+            <div class="card-label">Backend · Compliance Engine</div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;margin-top:0.5rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">Go 1.22</span>
+                <span class="badge badge-green">Runtime</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">EDR Evaluator Package</span>
+                <span class="badge badge-green">Control</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">Patch Evaluator Package</span>
+                <span class="badge badge-green">Control</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">Risk Engine (Penalty)</span>
+                <span class="badge badge-green">Scoring</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:0.5rem;background:var(--bg3);border-radius:4px;">
+                <span style="font-size:0.72rem;font-weight:700;color:var(--text);">CloudEvents 1.0 / Kafka</span>
+                <span class="badge badge-green">Events</span>
+              </div>
+              <div style="font-size:0.65rem;color:var(--text3);line-height:1.5;margin-top:0.3rem;">Schema-per-tenant isolation · Kong API Gateway · HashiCorp Vault secret management</div>
+            </div>
+          </div>
+          <!-- AI + DB -->
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="slide-card" style="border-top:3px solid var(--accent3);">
+              <div class="card-label">AI Services · Deep Learning</div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.35rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">Python 3.14</span>
+                  <span class="badge badge-purple">Runtime</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">PyTorch (LSTM)</span>
+                  <span class="badge badge-purple">AI</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">SentenceTransformers</span>
+                  <span class="badge badge-purple">NLP</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">NumPy / CUDA</span>
+                  <span class="badge badge-purple">Compute</span>
+                </div>
+              </div>
+            </div>
+            <div class="slide-card" style="border-top:3px solid var(--yellow);">
+              <div class="card-label">Database · Persistence</div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.35rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">PostgreSQL 16</span>
+                  <span class="badge badge-yellow">Core DB</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">TimescaleDB 2.x</span>
+                  <span class="badge badge-yellow">Timeseries</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0.5rem;background:var(--bg3);border-radius:4px;">
+                  <span style="font-size:0.7rem;font-weight:700;color:var(--text);">S3/MinIO Parquet</span>
+                  <span class="badge badge-yellow">Cold Store</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 16 · DATA INGEST PIPELINE
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-16">
+      <div class="slide-tag">15 · Data Pipeline</div>
+      <div class="slide-title">Dynamic Data Ingest Pipeline</div>
+      <div class="slide-subtitle">Fuzzy header mapping + binary compliance recalculation on every spreadsheet import</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div class="card-label">Ingest Workflow</div>
+            <div style="display:flex;flex-direction:column;gap:0.5rem;justify-content:center;flex:1;">
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--accent);flex-shrink:0;">1</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:var(--bg3);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--text);">Upload CSV/XLSX</strong> — accepts .csv, .xlsx, .xls via SheetJS
+                </div>
+              </div>
+              <div style="width:2px;height:16px;background:var(--border);margin-left:14px;"></div>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--accent);flex-shrink:0;">2</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:var(--bg3);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--text);">Fuzzy Header Matching</strong> — 8+ keywords per field, short-word exact matching
+                </div>
+              </div>
+              <div style="width:2px;height:16px;background:var(--border);margin-left:14px;"></div>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--accent);flex-shrink:0;">3</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:var(--bg3);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--text);">Dynamic Column Classifier</strong> — detects compliance vs. custom metadata columns
+                </div>
+              </div>
+              <div style="width:2px;height:16px;background:var(--border);margin-left:14px;"></div>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(59,130,246,0.2);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--accent);flex-shrink:0;">4</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:var(--bg3);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--text);">Policy Auto-Registration</strong> — new compliance columns → Policy Governance Board
+                </div>
+              </div>
+              <div style="width:2px;height:16px;background:var(--border);margin-left:14px;"></div>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--green);flex-shrink:0;">5</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:var(--bg3);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--text);">Merge / New Device</strong> — serial or normalized name match → upsert or insert
+                </div>
+              </div>
+              <div style="width:2px;height:16px;background:var(--border);margin-left:14px;"></div>
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div style="width:28px;height:28px;border-radius:50%;background:rgba(16,185,129,0.2);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:800;color:var(--green);flex-shrink:0;">6</div>
+                <div style="flex:1;padding:0.5rem 0.75rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:5px;font-size:0.72rem;color:var(--text2);">
+                  <strong style="color:var(--green);">Real-time Recalculation</strong> — metrics, charts, compliance scores all refreshed instantly
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card" style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="card-label">Fuzzy Header Detection Keywords</div>
+            <table class="data-table">
+              <thead><tr><th>Field</th><th>Keywords Matched</th></tr></thead>
+              <tbody>
+                <tr><td>Device Name</td><td style="font-size:0.65rem;color:var(--text3);">devicename, hostname, host, computer, machine, system</td></tr>
+                <tr><td>Serial</td><td style="font-size:0.65rem;color:var(--text3);">serialnumber, serial, s/n, sn, uuid, servicetag</td></tr>
+                <tr><td>SentinelOne</td><td style="font-size:0.65rem;color:var(--text3);">sentinelone, sentinel one, s1, endpoint agent, edr</td></tr>
+                <tr><td>BitLocker</td><td style="font-size:0.65rem;color:var(--text3);">bitlocker, encryption, drive_encryption, disk encryption</td></tr>
+                <tr><td>Zscaler</td><td style="font-size:0.65rem;color:var(--text3);">zscaler, z-scaler, client connector, vpn</td></tr>
+                <tr><td>SCCM</td><td style="font-size:0.65rem;color:var(--text3);">sccm, mecm, management agent, patch agent</td></tr>
+              </tbody>
+            </table>
+            <div class="card-label">Value Classification Logic</div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:0.75rem;font-family:var(--mono);font-size:0.65rem;color:var(--text2);line-height:1.7;">
+              <span style="color:var(--text3);">// NON_COMPLIANT values:</span><br>
+              <span style="color:var(--red);">"missing" | "no" | "false" | "0"</span><br>
+              <span style="color:var(--red);">"inactive" | "disabled" | "fail"</span><br>
+              <span style="color:var(--red);">"non_compliant" | "offline" | "critical"</span><br>
+              <span style="color:var(--text3);margin-top:0.3rem;display:block;">// COMPLIANT values: all else</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 17 · SECURITY FEATURES
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-17">
+      <div class="slide-tag">16 · Security</div>
+      <div class="slide-title">Security & Hardening Features</div>
+      <div class="slide-subtitle">Defense-in-depth applied at frontend, authentication, and data layers</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:repeat(3,1fr); flex:1; min-height:0;">
+          <div class="slide-card">
+            <div class="card-label">Authentication Controls</div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+              <div style="padding:0.6rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Rate Limiting / Lockout</div>
+                <div style="font-size:0.65rem;color:var(--text2);">3 failed challenge attempts triggers 60-second vault lockout with counter reset</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Session Lease Tokens</div>
+                <div style="font-size:0.65rem;color:var(--text2);">HashiCorp Vault-style session keys with explicit terminateSessionLease() revocation</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Multi-Factor Vault PIN</div>
+                <div style="font-size:0.65rem;color:var(--text2);">LDAP Username + MFA Vault PIN dual-factor challenge per NIST CSF 2.0</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">RBAC Session Guards</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Every navigation route validates currentSession.role before rendering target section</div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-label">XSS & Injection Mitigation</div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+              <div style="padding:0.6rem;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">escapeHTML() Function</div>
+                <div style="font-size:0.65rem;color:var(--text2);">All device data HTML-escaped before DOM insertion: &amp; &lt; &gt; ' " → entities</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">CSV Formula Injection Block</div>
+                <div style="font-size:0.65rem;color:var(--text2);">sanitizeCSVCell() prefixes cells starting with = + - @ \t \r with a single-quote</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Zero-Trust Network Isolation</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Compromised device isolation triggers immediate EDR port block + ingress/egress constraint</div>
+              </div>
+            </div>
+          </div>
+          <div class="slide-card">
+            <div class="card-label">Zero-Trust Controls</div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;margin-top:0.5rem;">
+              <div style="padding:0.6rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Binary Compliance Model</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Any single required control failure → score=0.00, Zero-Trust containment triggered immediately</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Isolated Host Score</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Isolated devices receive score=10.00 override (NON_COMPLIANT) regardless of control status</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">Broken/Decom Override</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Devices in BROKEN, IN_REPAIR, DECOMMISSIONED states receive score=0.00 automatically</div>
+              </div>
+              <div style="padding:0.6rem;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:4px;">
+                <div style="font-size:0.72rem;font-weight:700;color:var(--text);margin-bottom:0.2rem;">CloudEvents Alerting</div>
+                <div style="font-size:0.65rem;color:var(--text2);">Compliance events dispatched as CloudEvents 1.0 to Kafka via Kong API Gateway webhook</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 18 · REPORTING CENTER
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-18">
+      <div class="slide-tag">17 · Reporting</div>
+      <div class="slide-title">Compliance Reporting Center</div>
+      <div class="slide-subtitle">Real-time fleet audits, per-control telemetry, click-to-remediate top violations</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr 1fr; flex:0 0 auto;">
+          <div class="slide-card">
+            <div class="card-label">Fleet Compliance SLA Gauge</div>
+            <div style="font-size:0.7rem;color:var(--text2);line-height:1.5;margin-top:0.5rem;">Circular SVG dial gauge displays real-time compliant percentage vs 85% SLA target. Color transitions: green (≥85%), amber (65-84%), red (&lt;65%)</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-label">Per-Control Audit</div>
+            <div style="font-size:0.7rem;color:var(--text2);line-height:1.5;margin-top:0.5rem;">Pass/fail counts + visual progress bars per mandate. Shows exact pass rate %, auto-calculates across all active fleet devices in IN_USE state.</div>
+          </div>
+          <div class="slide-card">
+            <div class="card-label">Top Violators Panel</div>
+            <div style="font-size:0.7rem;color:var(--text2);line-height:1.5;margin-top:0.5rem;">Lists top 10 non-compliant devices with specific control gaps. Click "Remediate" → automatically switches to Compliance Ledger + auto-selects the device.</div>
+          </div>
+        </div>
+        <div class="slide-card" style="flex:1;min-height:0;">
+          <div class="card-label">Compliance Status at a Glance — Simulated Report Data</div>
+          <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:0.75rem;margin-top:0.75rem;">
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">Total Assets</div>
+              <div style="font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--text);">16,742</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">Compliant</div>
+              <div style="font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--green);">13,862</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">Non-Compliant</div>
+              <div style="font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--red);">2,880</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">Compliance %</div>
+              <div style="font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--green);">82.83%</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">SLA Target</div>
+              <div style="font-family:var(--mono);font-size:1.15rem;font-weight:800;color:var(--yellow);">85.0%</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.6rem;color:var(--text3);text-transform:uppercase;margin-bottom:0.35rem;">SLA Status</div>
+              <div style="font-family:var(--mono);font-size:0.85rem;font-weight:800;color:var(--red);">▼ VIOLATION</div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;display:grid;grid-template-columns:repeat(6,1fr);gap:0.5rem;">
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>AD Enrollment</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>BitLocker</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>Zscaler</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>Nessus</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>SentinelOne</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.2rem;">
+              <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);"><span>SCCM</span><span style="color:var(--green);">90.9%</span></div>
+              <div class="progress-track" style="height:5px;"><div class="progress-fill" style="width:90.9%;background:var(--green);"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 19 · KEY FINDINGS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-19">
+      <div class="slide-tag">18 · Findings</div>
+      <div class="slide-title">Key Findings & Risks</div>
+      <div class="slide-subtitle">Critical observations from the comprehensive platform analysis</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:1fr 1fr; flex:1; min-height:0;">
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div style="padding:0.85rem 1rem;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-left:3px solid var(--red);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--red);margin-bottom:0.3rem;">⚠ CRITICAL — SLA Violation</div>
+              <div style="font-size:0.7rem;color:var(--text2);">Fleet compliance at 82.83% is <strong>2.17 points below</strong> the 85% SLA mandate. 2,880 devices are currently non-compliant and require immediate remediation prioritization.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);border-left:3px solid var(--yellow);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--yellow);margin-bottom:0.3rem;">⚡ HIGH — Device Lifecycle Risk</div>
+              <div style="font-size:0.7rem;color:var(--text2);">1,336 devices in BROKEN/IN_REPAIR/DECOMMISSIONED states auto-score to 0.00. Without formal lifecycle decommission, they distort compliance metrics.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.25);border-left:3px solid var(--yellow);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--yellow);margin-bottom:0.3rem;">⚡ HIGH — EDR Coverage Gap</div>
+              <div style="font-size:0.7rem;color:var(--text2);">10% of active (IN_USE) devices have at least one missing SentinelOne or control agent, directly triggering the zero-tolerance score collapse rule.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.2);border-left:3px solid var(--accent);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--accent);margin-bottom:0.3rem;">ℹ INFO — BROKEN Score Bug</div>
+              <div style="font-size:0.7rem;color:var(--text2);">The device condition generator has a logic issue: the BROKEN branch (i%50===0) is unreachable since multiples of 50 are always caught by i%25===0 (IN_REPAIR) first.</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.75rem;">
+            <div style="padding:0.85rem 1rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-left:3px solid var(--green);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--green);margin-bottom:0.3rem;">✓ STRENGTH — Trend Improving</div>
+              <div style="font-size:0.7rem;color:var(--text2);">6-month trend shows consistent upward trajectory from 83.0% (Dec 2025) to 87.5% (May 2026). +2.4% QoQ demonstrates effective remediation programs.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-left:3px solid var(--green);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--green);margin-bottom:0.3rem;">✓ STRENGTH — AI Forecasting</div>
+              <div style="font-size:0.7rem;color:var(--text2);">LSTM drift predictor provides 7/14/30-day early warning capability, enabling proactive remediation before SLA violations materialize.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-left:3px solid var(--green);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--green);margin-bottom:0.3rem;">✓ STRENGTH — Dynamic Extensibility</div>
+              <div style="font-size:0.7rem;color:var(--text2);">Fuzzy column detection auto-registers new compliance telemetries without code changes, enabling rapid policy expansion from any data team's spreadsheet output.</div>
+            </div>
+            <div style="padding:0.85rem 1rem;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);border-left:3px solid var(--accent3);border-radius:5px;">
+              <div style="font-size:0.75rem;font-weight:800;color:var(--accent3);margin-bottom:0.3rem;">↗ OPPORTUNITY — Semantic Reconciler</div>
+              <div style="font-size:0.7rem;color:var(--text2);">MiniLM-based device deduplication can reduce ghost/duplicate records currently inflating the non-compliant count and distorting fleet accuracy metrics.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════
+         SLIDE 20 · RECOMMENDATIONS
+    ══════════════════════════════════════════════════════════ -->
+    <div class="slide" id="slide-20">
+      <div class="slide-tag">19 · Recommendations</div>
+      <div class="slide-title">Strategic Recommendations</div>
+      <div class="slide-subtitle">Prioritized action items to close the SLA gap and harden the platform</div>
+      <div class="slide-body">
+        <div class="slide-grid" style="grid-template-columns:repeat(3,1fr); flex:1; min-height:0;">
+          <div class="slide-card" style="border-top:3px solid var(--red);">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <span style="background:var(--red);color:#fff;font-size:0.65rem;font-weight:800;padding:0.15rem 0.5rem;border-radius:3px;">P0 · IMMEDIATE</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);">1. EDR Agent Rollout Campaign</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Deploy SentinelOne to the ~1,540 active devices missing it. Use SCCM automated deployment packages. Target: close 50% within 14 days.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">2. Lifecycle Audit</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Formally decommission or exclude BROKEN/DECOM devices from SLA calculations using the Optional policy toggle to reflect true in-use fleet health.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">3. Fix BROKEN Logic Bug</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Reorder condition checks: check i%50 before i%25 in generateStructuredAssets() to restore intended 2% broken device representation.</div>
+            </div>
+          </div>
+          <div class="slide-card" style="border-top:3px solid var(--yellow);">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <span style="background:var(--yellow);color:#000;font-size:0.65rem;font-weight:800;padding:0.15rem 0.5rem;border-radius:3px;">P1 · 30 DAYS</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);">4. Enable AI Drift Monitoring</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Train LSTM on real 90-day device compliance history. Schedule weekly drift forecasts. Set automated alerts for Decaying/Critical projections.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">5. Semantic Reconciler Deploy</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Run MiniLM reconciler on full fleet to identify duplicate/alias records inflating non-compliant count. Merge confirmed duplicates via AUTO_MERGE.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">6. Patch Compliance Drive</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Use SCCM push remediation for PATCH-failing devices. Prioritize Windows 10 to Windows 11 upgrade path for EOL OS risk reduction.</div>
+            </div>
+          </div>
+          <div class="slide-card" style="border-top:3px solid var(--accent);">
+            <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;">
+              <span style="background:var(--accent);color:#fff;font-size:0.65rem;font-weight:800;padding:0.15rem 0.5rem;border-radius:3px;">P2 · 90 DAYS</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem;">
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);">7. Backend API Completion</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Complete Go backend: implement Vulnerability, Encryption, Network and Identity dimension evaluators. Connect REST API to live device telemetry sources.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">8. Kafka Event Pipeline</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Stand up Kafka compliance.events topic and configure Kong API Gateway. Enable real-time score push to TimescaleDB hypertable for trend tracking.</div>
+              <div style="font-size:0.75rem;font-weight:700;color:var(--text);border-top:1px solid var(--border);padding-top:0.6rem;">9. Sift Zone Deep Audit</div>
+              <div style="font-size:0.68rem;color:var(--text2);">Commission independent audit of 5,580 Sift-zone devices for Zero-Trust policy gaps. Higher criticality warrants dedicated remediation sprints.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slide-viewport -->
+</div><!-- /slide-shell -->
+
+<!-- SLIDE PROGRESS BAR -->
+<div id="slide-progress-bar"><div id="slide-progress-fill"></div></div>
+
+<!-- REPORT SHELL (Full Report Mode) -->
+<div id="report-shell">
+  <div style="padding-top:2rem;padding-bottom:2rem;">
+    <div style="font-size:0.65rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);margin-bottom:0.5rem;">Thrawn EUD · Comprehensive Technical Report · Q2 2026</div>
+    <h1 style="font-size:2.2rem;font-weight:900;line-height:1.15;margin-bottom:0.5rem;">EUD Compliance Dashboard<br>Full-Stack Platform Analysis</h1>
+    <p style="color:var(--text2);font-size:0.9rem;">Enterprise End-User Device Risk Management · 16,742 Managed Endpoints · June 2026</p>
+    <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;">
+      <span class="badge badge-blue">Go 1.22 Backend</span>
+      <span class="badge badge-purple">PyTorch AI</span>
+      <span class="badge badge-green">TimescaleDB</span>
+      <span class="badge badge-yellow">NIST CSF 2.0</span>
+      <span class="badge" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--green);">16,742 Devices</span>
+    </div>
+  </div>
+  <hr style="border-color:var(--border);margin-bottom:2rem;">
+
+  <!-- Executive Summary -->
+  <div class="r-section">
+    <div class="r-section-title">01 — Executive Summary</div>
+    <div class="r-grid" style="grid-template-columns:repeat(4,1fr);">
+      <div class="r-card" style="text-align:center;border-top:2px solid var(--accent);">
+        <h4>Total Fleet</h4>
+        <div style="font-family:var(--mono);font-size:1.75rem;font-weight:800;color:var(--accent);">16,742</div>
+        <div style="font-size:0.7rem;color:var(--text2);">+8.2% QoQ</div>
+      </div>
+      <div class="r-card" style="text-align:center;border-top:2px solid var(--green);">
+        <h4>Avg Fleet Score</h4>
+        <div style="font-family:var(--mono);font-size:1.75rem;font-weight:800;color:var(--green);">87.50</div>
+        <div style="font-size:0.7rem;color:var(--text2);">+2.4% vs prior</div>
+      </div>
+      <div class="r-card" style="text-align:center;border-top:2px solid var(--red);">
+        <h4>Threat Alerts</h4>
+        <div style="font-family:var(--mono);font-size:1.75rem;font-weight:800;color:var(--red);">234</div>
+        <div style="font-size:0.7rem;color:var(--text2);">−12.5% improvement</div>
+      </div>
+      <div class="r-card" style="text-align:center;border-top:2px solid var(--yellow);">
+        <h4>Daily Ingest</h4>
+        <div style="font-family:var(--mono);font-size:1.75rem;font-weight:800;color:var(--yellow);">142.4M</div>
+        <div style="font-size:0.7rem;color:var(--text2);">Kafka SLA met</div>
+      </div>
+    </div>
+    <div class="r-card" style="margin-top:1rem;">
+      <h4>Platform Description</h4>
+      <p style="font-size:0.82rem;color:var(--text2);line-height:1.7;">The <strong style="color:var(--text);">Thrawn EUD Compliance Dashboard</strong> is a premium, enterprise-grade End-User Device (EUD) Compliance & Risk Management Platform. It aggregates security logs, evaluates endpoint controls against strict operational frameworks (EDR, Zero Trust, Patching), calculates normalized device risk scores using an advanced penalty-based risk engine, and applies deep learning models to predict compliance score drift and resolve device duplicates. The platform is built as a modular, container-ready multi-layered microservices system spanning a high-fidelity SOC-grade HTML/JavaScript frontend, a Go-based compliance engine, Python-based PyTorch AI services, and PostgreSQL/TimescaleDB persistence.</p>
+    </div>
+  </div>
+
+  <!-- Fleet Stats -->
+  <div class="r-section">
+    <div class="r-section-title">02 — Fleet Distribution Analysis</div>
+    <div class="r-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="r-card">
+        <h4>Device State Breakdown</h4>
+        <table class="data-table">
+          <thead><tr><th>State</th><th>Count</th><th>Percentage</th><th>Score Impact</th></tr></thead>
+          <tbody>
+            <tr><td>IN_USE</td><td style="font-family:var(--mono);">15,406</td><td style="font-family:var(--mono);">92.0%</td><td style="color:var(--text2);">Score calculated normally</td></tr>
+            <tr><td>IN_REPAIR</td><td style="font-family:var(--mono);">670</td><td style="font-family:var(--mono);">4.0%</td><td style="color:var(--red);">Auto: score = 0.00</td></tr>
+            <tr><td>BROKEN</td><td style="font-family:var(--mono);">335</td><td style="font-family:var(--mono);">2.0%</td><td style="color:var(--red);">Auto: score = 0.00</td></tr>
+            <tr><td>DECOMMISSIONED</td><td style="font-family:var(--mono);">331</td><td style="font-family:var(--mono);">2.0%</td><td style="color:var(--red);">Auto: score = 0.00</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="r-card">
+        <h4>OS Platform Distribution</h4>
+        <table class="data-table">
+          <thead><tr><th>OS</th><th>Family</th><th>Count</th><th>Share</th></tr></thead>
+          <tbody>
+            <tr><td>Windows 11 (22631)</td><td><span class="badge badge-blue">Windows</span></td><td style="font-family:var(--mono);">4,185</td><td style="font-family:var(--mono);">25.0%</td></tr>
+            <tr><td>Windows 10 Enterprise</td><td><span class="badge badge-blue">Windows</span></td><td style="font-family:var(--mono);">4,186</td><td style="font-family:var(--mono);">25.0%</td></tr>
+            <tr><td>macOS 14.4 (Sonoma)</td><td><span class="badge badge-purple">macOS</span></td><td style="font-family:var(--mono);">4,185</td><td style="font-family:var(--mono);">25.0%</td></tr>
+            <tr><td>Ubuntu 22.04 LTS</td><td><span class="badge badge-green">Linux</span></td><td style="font-family:var(--mono);">4,186</td><td style="font-family:var(--mono);">25.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Risk Engine -->
+  <div class="r-section">
+    <div class="r-section-title">03 — Risk Scoring Engine</div>
+    <div class="r-card">
+      <h4>Dimension Weights & Risk Tier Mapping</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.75rem;">
+        <table class="data-table">
+          <thead><tr><th>Dimension</th><th>Weight</th><th>Evaluated By</th></tr></thead>
+          <tbody>
+            <tr><td>EDR (Endpoint Protection)</td><td style="font-family:var(--mono);color:var(--accent);">25%</td><td>SentinelOne Agent</td></tr>
+            <tr><td>VULNERABILITY</td><td style="font-family:var(--mono);color:var(--accent);">20%</td><td>Nessus Agent</td></tr>
+            <tr><td>PATCH</td><td style="font-family:var(--mono);color:var(--accent);">20%</td><td>SCCM/MECM</td></tr>
+            <tr><td>ENCRYPTION</td><td style="font-family:var(--mono);color:var(--accent);">15%</td><td>BitLocker/FileVault</td></tr>
+            <tr><td>NETWORK (Zero Trust)</td><td style="font-family:var(--mono);color:var(--accent);">10%</td><td>Zscaler Connector</td></tr>
+            <tr><td>IDENTITY</td><td style="font-family:var(--mono);color:var(--accent);">10%</td><td>AD Enrollment</td></tr>
+          </tbody>
+        </table>
+        <table class="data-table">
+          <thead><tr><th>Score Range</th><th>Risk Tier</th><th>Operational Response</th></tr></thead>
+          <tbody>
+            <tr><td style="font-family:var(--mono);">0 – 39</td><td><span class="badge badge-red">CRITICAL</span></td><td>Immediate network containment</td></tr>
+            <tr><td style="font-family:var(--mono);">40 – 64</td><td><span class="badge badge-yellow">HIGH</span></td><td>Priority remediation queue</td></tr>
+            <tr><td style="font-family:var(--mono);">65 – 84</td><td><span class="badge badge-purple">MEDIUM</span></td><td>Scheduled patch window</td></tr>
+            <tr><td style="font-family:var(--mono);">85 – 100</td><td><span class="badge badge-green">LOW</span></td><td>Continuous monitoring</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RBAC -->
+  <div class="r-section">
+    <div class="r-section-title">04 — RBAC Access Control</div>
+    <div class="r-card">
+      <h4>Role Permission Matrix</h4>
+      <table class="data-table" style="margin-top:0.75rem;">
+        <thead><tr><th>Capability</th><th>Admin</th><th>Security Analyst</th><th>Sys Operator</th><th>Auditor</th></tr></thead>
+        <tbody>
+          <tr><td>View Fleet Ledger</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓ Read-Only</td></tr>
+          <tr><td>Import CSV/Excel</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Export Fleet CSV</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Push Patch Updates</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Run EDR Threat Scan</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Isolate Network Host</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Toggle Policy Enforcement</td><td style="color:var(--green);">✓ Admin Only</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>View Reporting Center</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+          <tr><td>Access Settings Panel</td><td style="color:var(--green);">✓</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td><td style="color:var(--red);">✗</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Findings & Recommendations -->
+  <div class="r-section">
+    <div class="r-section-title">05 — Key Findings & Recommendations</div>
+    <div class="r-grid" style="grid-template-columns:1fr 1fr;">
+      <div class="r-card" style="border-left:3px solid var(--red);">
+        <h4>🔴 Critical Findings</h4>
+        <ul style="font-size:0.78rem;color:var(--text2);line-height:1.8;padding-left:1.2rem;">
+          <li>Fleet compliance (82.83%) is <strong style="color:var(--red);">2.17% below SLA target</strong> of 85%</li>
+          <li>2,880 devices are actively non-compliant</li>
+          <li>~1,540 IN_USE devices missing at least one required control agent</li>
+          <li>BROKEN condition logic is unreachable (i%50 never triggers after i%25 check)</li>
+          <li>234 active threat alerts unresolved in current period</li>
+        </ul>
+      </div>
+      <div class="r-card" style="border-left:3px solid var(--green);">
+        <h4>✅ Strengths</h4>
+        <ul style="font-size:0.78rem;color:var(--text2);line-height:1.8;padding-left:1.2rem;">
+          <li>6-month upward compliance trend (+4.5 points since Dec 2025)</li>
+          <li>LSTM AI provides proactive 30-day drift warning capability</li>
+          <li>Dynamic column ingestion enables rapid policy extension</li>
+          <li>Semantic MiniLM reconciler eliminates ghost/duplicate records</li>
+          <li>XSS + CSV injection mitigated at frontend layer</li>
+          <li>TimescaleDB provides 90% storage reduction via compression</li>
+        </ul>
+      </div>
+    </div>
+    <div class="r-card" style="margin-top:1rem;">
+      <h4>Prioritized Recommendations</h4>
+      <table class="data-table" style="margin-top:0.75rem;">
+        <thead><tr><th>Priority</th><th>Action</th><th>Timeline</th><th>Expected Impact</th></tr></thead>
+        <tbody>
+          <tr><td><span class="badge badge-red">P0</span></td><td>Deploy SentinelOne to ~1,540 unprotected active devices</td><td>14 days</td><td>+5-7% compliance rate</td></tr>
+          <tr><td><span class="badge badge-red">P0</span></td><td>Fix BROKEN device condition logic (reorder i%50 before i%25)</td><td>1 day</td><td>Accurate lifecycle reporting</td></tr>
+          <tr><td><span class="badge badge-yellow">P1</span></td><td>Deploy MiniLM reconciler to deduplicate fleet ghost records</td><td>30 days</td><td>Accurate SLA baseline</td></tr>
+          <tr><td><span class="badge badge-yellow">P1</span></td><td>Train LSTM on real 90-day compliance history for live forecasting</td><td>30 days</td><td>Proactive SLA protection</td></tr>
+          <tr><td><span class="badge badge-blue">P2</span></td><td>Complete Go backend evaluator packages (VULN, ENC, NET, ID)</td><td>90 days</td><td>Real telemetry integration</td></tr>
+          <tr><td><span class="badge badge-blue">P2</span></td><td>Stand up Kafka event pipeline + Kong Gateway integration</td><td>90 days</td><td>Real-time TimescaleDB logging</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div><!-- /report-shell -->
+
+<script>
+  // ─── STATE ──────────────────────────────────────────
+  let currentSlide = 1;
+  const totalSlides = 20;
+  const slideLabels = [
+    "Cover", "Exec Summary", "Architecture", "Fleet KPIs",
+    "Compliance Dist.", "OS Breakdown", "Location Groups", "Risk Engine",
+    "Control Policies", "EDR Evaluator", "RBAC Matrix", "LSTM Forecaster",
+    "Semantic Reconciler", "DB Schema", "Tech Stack", "Data Pipeline",
+    "Security Features", "Reporting", "Key Findings", "Recommendations"
+  ];
+
+  // ─── INIT RAIL ──────────────────────────────────────
+  function initRail() {
+    const rail = document.getElementById('slide-rail');
+    rail.innerHTML = '';
+    for (let i = 1; i <= totalSlides; i++) {
+      const thumb = document.createElement('div');
+      thumb.className = 'rail-thumb' + (i === 1 ? ' active' : '');
+      thumb.id = `rail-${i}`;
+      thumb.innerHTML = `<span class="num">Slide ${i}</span>${slideLabels[i-1]}`;
+      thumb.onclick = () => goToSlide(i);
+      rail.appendChild(thumb);
+    }
+  }
+
+  function goToSlide(n) {
+    if (n < 1 || n > totalSlides) return;
+    document.querySelector('.slide.active')?.classList.remove('active');
+    document.getElementById(`slide-${currentSlide}`)?.classList.remove('active');
+    document.getElementById(`rail-${currentSlide}`)?.classList.remove('active');
+    currentSlide = n;
+    const s = document.getElementById(`slide-${n}`);
+    if (s) s.classList.add('active');
+    document.getElementById(`rail-${n}`)?.classList.add('active');
+    document.getElementById(`rail-${n}`)?.scrollIntoView({block:'nearest',behavior:'smooth'});
+    updateNav();
+  }
+
+  function nextSlide() { goToSlide(currentSlide + 1); }
+  function prevSlide() { goToSlide(currentSlide - 1); }
+
+  function updateNav() {
+    document.getElementById('slide-counter').textContent = `${currentSlide} / ${totalSlides}`;
+    document.getElementById('btn-prev').disabled = currentSlide === 1;
+    document.getElementById('btn-next').disabled = currentSlide === totalSlides;
+    document.getElementById('slide-progress-fill').style.width = `${((currentSlide-1)/(totalSlides-1))*100}%`;
+  }
+
+  // ─── MODE SWITCH ────────────────────────────────────
+  function setMode(mode) {
+    document.body.className = mode + '-mode';
+    document.getElementById('btn-slide-mode').classList.toggle('active', mode === 'slide');
+    document.getElementById('btn-report-mode').classList.toggle('active', mode === 'report');
+    document.getElementById('slide-progress-bar').style.display = mode === 'slide' ? 'block' : 'none';
+    if (mode === 'report') {
+      document.body.style.overflow = 'auto';
+      document.body.style.height = 'auto';
+    } else {
+      document.body.style.overflow = 'hidden';
+      document.body.style.height = '100vh';
+    }
+  }
+
+  // ─── KEYBOARD NAV ───────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (document.body.classList.contains('report-mode')) return;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+    if (e.key === 'Home') goToSlide(1);
+    if (e.key === 'End') goToSlide(totalSlides);
+  });
+
+  // ─── BOOT ───────────────────────────────────────────
+  initRail();
+  goToSlide(1);
+  setMode('slide');
+</script>
+</body>
+</html>

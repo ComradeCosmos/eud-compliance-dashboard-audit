@@ -176,3 +176,27 @@ To deliver streamlined SOC operations, the platform implements a tight feedback 
 *   **Dynamic Custom Columns Parsing**: Instantly detects and classifies miscellaneous columns (e.g. `mfa_status`, `agent_v3_active`) as dynamic compliance controls, automatically registering them on the **Security Policies Governance Board** and parsing them in the zero-tolerance engine.
 *   **Pristine CSV Export**: Compiles and downloads the current active filtered fleet ledger matching all active queries, searches, and status parameters cleanly.
 
+---
+
+## 🔄 Multi-Sheet Asset Reconciliation Workspace
+
+To support large-scale asset tracking and multi-agent compliance audits, the platform features a highly sophisticated **Multi-Sheet Asset Reconciliation Workspace**:
+
+### 1. ⚡ Cross-Sheet Multi-Agent Alignment
+*   **Multi-Ingestion Queue**: Bulk upload multiple CSV/Excel spreadsheets representing different directories or agent check-ins (e.g. Active Directory, EDR SentinelOne logs, SCCM records).
+*   **Fuzzy Key Matching**: Set role classifications (Primary Corporate Directory vs. Secondary Agent Telemetries) and customize device/hostname alignment keys for each sheet dynamically.
+*   **Automated Verification Pipeline**:
+    *   **Reconciled Matches**: Devices correctly aligned across all primary and secondary telemetries.
+    *   **Coverage Gaps (Non-Compliant)**: Assets registered in the Corporate Directory but missing checking records in one or more agent telemetries. Drops compliance score to `0.00` immediately.
+    *   **Rogue Assets (Unmanaged)**: Untracked endpoints discovered checking in to agent telemetries but missing from the Corporate Directory.
+*   **Asset Ingest Merge**: Merge verified alignment parameters and dynamic Excel custom properties directly into the live dashboard fleet database instantly.
+
+### 2. ⚡ High-Performance DOM Virtualization (UI Freeze Fix)
+*   To seamlessly render large reconciliation sets (e.g. **16,742 records**) without freezing the browser UI or triggering "page isn't responding" errors, the reconciliation table uses a virtualized paginated controller (`reconPageSize = 10` by default).
+*   DOM updates inside `renderReconTableBody()` are batched in memory using high-efficiency `DocumentFragment` templates (with graceful fallback for testing context) before appending to the live DOM tree, keeping layout calculations instant and the browser thread perfectly responsive.
+
+### 3. 📊 Tabular Flat CSV Reporting Matrix
+*   **Flat Matrix Export**: Instead of cramming all dynamic properties into a single text column, the refactored reconciliation CSV exporter compiles a structured flat spreadsheet matrix containing distinct headers for every unique sheet property (`[filename.csv] PropertyName`).
+*   **Scalable Blob Stream Downloads**: Large export streams are compiled into UTF-8 encoded binary `Blob` objects and served via local memory references (`URL.createObjectURL`), bypassing standard URI string constraints and securing flawless downloads of tens of thousands of rows.
+
+
