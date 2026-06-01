@@ -231,57 +231,43 @@
             <div id="section-reconciler" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
                     <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Cross-Sheet Asset Reconciliation Workspace</h2>
+                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Multi-Sheet Asset Reconciliation Workspace</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Import and compare two different device directories or agent telemetries. Using the <strong>Device Name / Hostname</strong> as the key, the engine will cross-reference both datasets to identify coverage gaps, mismatches, and unmanaged rogue assets.
+                            Bulk import multiple device directories or agent telemetries (Active Directory, EDR, SCCM, Zscaler, etc.). The engine will align them by <strong>Device Name / Hostname</strong> as the matching key and evaluate compliance parameters across all datasets.
                         </p>
                     </div>
 
-                    <!-- Dual upload cards grid -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <!-- Primary Source (Source of Truth) -->
-                        <div class="card" style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border-radius: 4px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Primary Directory (e.g. Asset Management / AD)</h3>
-                                <span class="badge group-sift" style="font-size: 0.65rem;">PRIMARY</span>
-                            </div>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary);">The master catalog or corporate directory of record.</p>
+                    <!-- Multi-upload zone -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="card" style="border: 2px dashed var(--border-clean); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-radius: 4px;">
+                            <span style="font-size: 2.5rem;">📥</span>
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Bulk Upload Compliance Sheets</h3>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">Select multiple CSV or Excel files (.xlsx, .xls) representing different asset inventories or agent check-ins.</p>
                             
-                            <div style="border: 2px dashed var(--border-clean); padding: 2rem 1.5rem; text-align: center; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">📥</span>
-                                <label for="reconciler-primary-file" class="btn" style="font-size: 0.75rem; padding: 0.45rem 1rem; cursor: pointer; margin: 0;">Upload Primary Sheet</label>
-                                <input type="file" id="reconciler-primary-file" accept=".csv, .xlsx, .xls" style="display: none;" onchange="handleReconcilerUpload(event, 'primary')">
-                                <span id="reconciler-primary-filename" style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;">No file selected</span>
-                            </div>
-
-                            <div class="input-group" style="margin: 0;">
-                                <label for="reconciler-primary-key" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Device Name Column Match Key</label>
-                                <select id="reconciler-primary-key" style="border: 1px solid var(--border-clean); padding: 0.5rem; font-size: 0.8rem; outline: none; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" disabled>
-                                    <option value="">(Auto-detect on upload)</option>
-                                </select>
-                            </div>
+                            <label for="reconciler-multi-files" class="btn" style="font-size: 0.8rem; padding: 0.55rem 1.5rem; cursor: pointer; margin-top: 0.5rem; background: var(--color-accent); border-color: var(--color-accent);">Select Sheets to Add</label>
+                            <input type="file" id="reconciler-multi-files" accept=".csv, .xlsx, .xls" style="display: none;" multiple onchange="handleMultiSheetUpload(event)">
                         </div>
 
-                        <!-- Secondary Source (Comparison Target) -->
-                        <div class="card" style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; border-radius: 4px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <h3 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Secondary Directory (e.g. EDR / EUD Agent List)</h3>
-                                <span class="badge group-non-sift" style="font-size: 0.65rem;">SECONDARY</span>
-                            </div>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary);">The target security compliance list to audit (e.g. antivirus, EDR telemetry).</p>
+                        <!-- Queue Table Card -->
+                        <div id="reconciler-queue-card" class="card" style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; border-radius: 4px; display: none;">
+                            <h4 style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Uploaded Compliance Sheets Queue</h4>
                             
-                            <div style="border: 2px dashed var(--border-clean); padding: 2rem 1.5rem; text-align: center; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-                                <span style="font-size: 2rem;">📥</span>
-                                <label for="reconciler-secondary-file" class="btn" style="font-size: 0.75rem; padding: 0.45rem 1rem; cursor: pointer; margin: 0;">Upload Secondary Sheet</label>
-                                <input type="file" id="reconciler-secondary-file" accept=".csv, .xlsx, .xls" style="display: none;" onchange="handleReconcilerUpload(event, 'secondary')">
-                                <span id="reconciler-secondary-filename" style="font-size: 0.75rem; color: var(--text-muted); word-break: break-all;">No file selected</span>
-                            </div>
-
-                            <div class="input-group" style="margin: 0;">
-                                <label for="reconciler-secondary-key" style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Device Name Column Match Key</label>
-                                <select id="reconciler-secondary-key" style="border: 1px solid var(--border-clean); padding: 0.5rem; font-size: 0.8rem; outline: none; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" disabled>
-                                    <option value="">(Auto-detect on upload)</option>
-                                </select>
+                            <div class="fleet-table-container">
+                                <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left;">Sheet Name / Source File</th>
+                                            <th style="text-align: left; width: 120px;">Record Count</th>
+                                            <th style="text-align: left; width: 220px;">Role / Classification</th>
+                                            <th style="text-align: left; width: 220px;">Device Name Column Key</th>
+                                            <th style="text-align: left;">Compliance Controls Identified</th>
+                                            <th style="text-align: right; width: 80px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reconciler-queue-tbody">
+                                        <!-- Dynamic queue rows -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -289,7 +275,7 @@
                     <!-- Comparison Action Center -->
                     <div style="display: flex; justify-content: center; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
                         <button id="btn-execute-reconciliation" class="btn" style="font-size: 0.85rem; padding: 0.75rem 2.5rem; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; display: flex; gap: 0.5rem; align-items: center; opacity: 0.6; cursor: not-allowed;" onclick="executeDeepReconciliation()" disabled>
-                            <span>⚡ Execute Deep Reconciliation</span>
+                            <span>⚡ Execute Multi-Sheet Reconciliation</span>
                         </button>
                     </div>
 
@@ -297,30 +283,30 @@
                     <div id="reconciler-results-wrapper" style="display: none; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
                         <div style="border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
                             <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Audit Reconciliation Metrics</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time analysis of the comparison between both directories.</p>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time analysis of the alignment and audits across all compliance sheets.</p>
                         </div>
 
                         <!-- KPI widgets row -->
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
                             <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Matched Devices</span>
+                                <span style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Reconciled Matches</span>
                                 <div id="recon-stat-matches" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--text-primary); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Identified in both sheets</p>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Found across required sheets</p>
                             </div>
                             <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
                                 <span style="font-size: 0.7rem; color: var(--status-critical); text-transform: uppercase; font-weight: 700;">Coverage Gaps (Non-Compliant)</span>
                                 <div id="recon-stat-gaps" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-critical); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--status-critical); margin-top: 0.2rem;">In Primary but missing in Secondary</p>
+                                <p style="font-size: 0.7rem; color: var(--status-critical); margin-top: 0.2rem;">Missing from one or more sheets</p>
                             </div>
                             <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
                                 <span style="font-size: 0.7rem; color: var(--status-medium); text-transform: uppercase; font-weight: 700;">Rogue / Unmanaged Assets</span>
                                 <div id="recon-stat-rogues" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-medium); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--status-medium); margin-top: 0.2rem;">In Secondary but missing in Primary</p>
+                                <p style="font-size: 0.7rem; color: var(--status-medium); margin-top: 0.2rem;">Missing from Corporate Directory</p>
                             </div>
                             <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--status-low); text-transform: uppercase; font-weight: 700;">EDR Coverage Match Rate</span>
+                                <span style="font-size: 0.7rem; color: var(--status-low); text-transform: uppercase; font-weight: 700;">Reconciliation Match Rate</span>
                                 <div id="recon-stat-match-rate" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-low); margin-top: 0.4rem;">0.0%</div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Goal SLA: 100.0% coverage</p>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Goal SLA: 100% directory alignment</p>
                             </div>
                         </div>
 
@@ -330,7 +316,7 @@
                                 <div style="display: flex; gap: 0.5rem; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 4px; background: var(--bg-secondary);">
                                     <button id="btn-recon-tab-gaps" class="tab-btn active" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('gaps')">Coverage Gaps (<span id="recon-tab-count-gaps">0</span>)</button>
                                     <button id="btn-recon-tab-rogues" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('rogues')">Rogue Assets (<span id="recon-tab-count-rogues">0</span>)</button>
-                                    <button id="btn-recon-tab-matches" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('matches')">Reconciled List (<span id="recon-tab-count-matches">0</span>)</button>
+                                    <button id="btn-recon-tab-matches" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('matches')">Reconciled Matches (<span id="recon-tab-count-matches">0</span>)</button>
                                 </div>
                                 <div style="display: flex; gap: 1rem;">
                                     <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;" onclick="exportReconciliationReport()">📥 Export Recon CSV</button>
@@ -3173,10 +3159,7 @@
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
         
-        let reconcilerData = {
-            primary: { rows: [], headers: [], keyIdx: -1, filename: "", isComplianceCol: [] },
-            secondary: { rows: [], headers: [], keyIdx: -1, filename: "", isComplianceCol: [] }
-        };
+        let reconcilerSheets = []; // Array of { id, filename, rows, headers, keyIdx, isComplianceCol, role }
 
         let reconciliationResults = {
             matches: [],
@@ -3186,154 +3169,260 @@
 
         let currentReconTab = "gaps";
 
-        function handleReconcilerUpload(event, source) {
-            const file = event.target.files[0];
-            if (!file) return;
+        function handleMultiSheetUpload(event) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
 
-            logToTerminal(`[Reconciler] Upload request received for ${source.toUpperCase()} source file: "${file.name}"`);
-            
-            const reader = new FileReader();
-            const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
-
-            reader.onload = function (e) {
-                let data = e.target.result;
-                let workbook;
-                try {
-                    if (isExcel) {
-                        const bytes = new Uint8Array(data);
-                        workbook = XLSX.read(bytes, { type: "array" });
-                    } else {
-                        workbook = XLSX.read(data, { type: "string" });
-                    }
-                } catch (err) {
-                    logToTerminal(`[Reconciler] Ingestion failed: ${err.message}`, "error");
-                    alert(`Upload failed: ${err.message}`);
-                    return;
-                }
-
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-
-                if (rows.length < 2) {
-                    logToTerminal(`[Reconciler] Failed: ${file.name} contains insufficient rows.`, "error");
-                    alert("Import failed: Insufficient data rows in the selected sheet.");
-                    return;
-                }
-
-                const headers = rows[0].map(h => String(h).trim());
-                const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                // Auto-detect the key column (Device Name / Hostname)
-                let keyIdx = -1;
-                const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+            Array.from(files).forEach(file => {
+                logToTerminal(`[Reconciler] Upload request received for source file: "${file.name}"`);
                 
-                for (let kw of keyKeywords) {
-                    const idx = lowerHeaders.findIndex(h => {
-                        if (kw.length <= 3) {
-                            const words = h.split(/[^a-z0-9]+/);
-                            return words.includes(kw);
+                const reader = new FileReader();
+                const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+
+                reader.onload = function (e) {
+                    let data = e.target.result;
+                    let workbook;
+                    try {
+                        if (isExcel) {
+                            const bytes = new Uint8Array(data);
+                            workbook = XLSX.read(bytes, { type: "array" });
+                        } else {
+                            workbook = XLSX.read(data, { type: "string" });
                         }
-                        return h.includes(kw);
-                    });
-                    if (idx !== -1) {
-                        keyIdx = idx;
-                        break;
+                    } catch (err) {
+                        logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
+                        return;
                     }
-                }
 
-                // Fallback to first column if not auto-detected
-                if (keyIdx === -1) keyIdx = 0;
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
 
-                // Dynamically detect compliance columns in this reconciler sheet
-                const lowerHeadersCount = headers.length;
-                const isComplianceCol = new Array(lowerHeadersCount).fill(false);
-                const complianceKeywords = ["ad", "bitlocker", "bit locker", "zscaler", "z-scaler", "nessus", "sentinelone", "sentinel one", "s1", "sccm", "agent", "status", "compliance", "encryption", "protection", "security", "firewall", "mfa", "antivirus", "patch", "update", "state", "enrollment", "client", "connector", "scanner"];
-                const valueKeywords = ["compliant", "non-compliant", "non_compliant", "active", "inactive", "installed", "missing", "enabled", "disabled", "yes", "no", "true", "false", "offline", "online", "fail", "failed", "success", "warning", "critical"];
+                    if (rows.length < 2) {
+                        logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
+                        return;
+                    }
 
-                for (let colIdx = 0; colIdx < lowerHeadersCount; colIdx++) {
-                    if (colIdx === keyIdx) continue;
+                    const headers = rows[0].map(h => String(h).trim());
+                    const lowerHeaders = headers.map(h => h.toLowerCase());
 
-                    const headerText = String(headers[colIdx]).trim().toLowerCase();
-                    const words = headerText.split(/[^a-z0-9]+/);
-                    let matchesHeader = complianceKeywords.some(kw => {
-                        if (kw.length <= 3) {
-                            return words.includes(kw);
+                    // Auto-detect the key column (Device Name / Hostname)
+                    let keyIdx = -1;
+                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+                    
+                    for (let kw of keyKeywords) {
+                        const idx = lowerHeaders.findIndex(h => {
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
+                        if (idx !== -1) {
+                            keyIdx = idx;
+                            break;
                         }
-                        return headerText.includes(kw);
-                    });
+                    }
 
-                    let matchesValue = false;
-                    for (let rIdx = 1; rIdx < rows.length; rIdx++) {
-                        const rowVal = rows[rIdx] && rows[rIdx][colIdx];
-                        if (rowVal !== undefined && rowVal !== null) {
-                            const valStr = String(rowVal).trim().toLowerCase();
-                            if (valueKeywords.includes(valStr)) {
-                                matchesValue = true;
-                                break;
+                    // Fallback to first column if not auto-detected
+                    if (keyIdx === -1) keyIdx = 0;
+
+                    // Dynamically detect compliance columns in this reconciler sheet
+                    const lowerHeadersCount = headers.length;
+                    const isComplianceCol = new Array(lowerHeadersCount).fill(false);
+                    const complianceKeywords = ["ad", "bitlocker", "bit locker", "zscaler", "z-scaler", "nessus", "sentinelone", "sentinel one", "s1", "sccm", "agent", "status", "compliance", "encryption", "protection", "security", "firewall", "mfa", "antivirus", "patch", "update", "state", "enrollment", "client", "connector", "scanner"];
+                    const valueKeywords = ["compliant", "non-compliant", "non_compliant", "active", "inactive", "installed", "missing", "enabled", "disabled", "yes", "no", "true", "false", "offline", "online", "fail", "failed", "success", "warning", "critical"];
+
+                    for (let colIdx = 0; colIdx < lowerHeadersCount; colIdx++) {
+                        if (colIdx === keyIdx) continue;
+
+                        const headerText = String(headers[colIdx]).trim().toLowerCase();
+                        const words = headerText.split(/[^a-z0-9]+/);
+                        let matchesHeader = complianceKeywords.some(kw => {
+                            if (kw.length <= 3) {
+                                return words.includes(kw);
+                            }
+                            return headerText.includes(kw);
+                        });
+
+                        let matchesValue = false;
+                        for (let rIdx = 1; rIdx < rows.length; rIdx++) {
+                            const rowVal = rows[rIdx] && rows[rIdx][colIdx];
+                            if (rowVal !== undefined && rowVal !== null) {
+                                const valStr = String(rowVal).trim().toLowerCase();
+                                if (valueKeywords.includes(valStr)) {
+                                    matchesValue = true;
+                                    break;
+                                }
                             }
                         }
+
+                        if (matchesHeader || matchesValue) {
+                            isComplianceCol[colIdx] = true;
+                        }
                     }
 
-                    if (matchesHeader || matchesValue) {
-                        isComplianceCol[colIdx] = true;
-                    }
-                }
+                    // Default Role classification: First uploaded sheet is primary, subsequent sheets are secondary
+                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
 
-                reconcilerData[source] = {
-                    rows: rows.slice(1),
-                    headers: headers,
-                    keyIdx: keyIdx,
-                    filename: file.name,
-                    isComplianceCol: isComplianceCol
+                    const sheetObj = {
+                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                        filename: file.name,
+                        rows: rows.slice(1),
+                        headers: headers,
+                        keyIdx: keyIdx,
+                        isComplianceCol: isComplianceCol,
+                        role: role
+                    };
+
+                    reconcilerSheets.push(sheetObj);
+
+                    // Report detected compliance features
+                    const detectedCompCount = isComplianceCol.filter(Boolean).length;
+                    logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from "	ext{file.name}". Auto-detected match key: "${headers[keyIdx]}" (${detectedCompCount} compliance columns found)`, "info");
+
+                    renderReconcilerQueue();
                 };
 
-                // Update UI displays
-                document.getElementById(`reconciler-${source}-filename`).innerText = `✔ ${file.name} (${rows.length - 1} records loaded)`;
-                
-                const selectEl = document.getElementById(`reconciler-${source}-key`);
-                selectEl.innerHTML = "";
-                headers.forEach((h, idx) => {
-                    const selected = idx === keyIdx ? "selected" : "";
-                    selectEl.innerHTML += `<option value="${idx}" ${selected}>${escapeHTML(h)} (Col ${idx + 1})</option>`;
+                if (isExcel) {
+                    reader.readAsArrayBuffer(file);
+                } else {
+                    reader.readAsText(file);
+                }
+            });
+        }
+
+        function renderReconcilerQueue() {
+            const tbody = document.getElementById("reconciler-queue-tbody");
+            const queueCard = document.getElementById("reconciler-queue-card");
+            const executeBtn = document.getElementById("btn-execute-reconciliation");
+            if (!tbody || !queueCard) return;
+
+            if (reconcilerSheets.length === 0) {
+                queueCard.style.display = "none";
+                executeBtn.disabled = true;
+                executeBtn.style.opacity = 0.6;
+                executeBtn.style.cursor = "not-allowed";
+                return;
+            }
+
+            queueCard.style.display = "block";
+            tbody.innerHTML = "";
+
+            reconcilerSheets.forEach(sheet => {
+                const tr = document.createElement("tr");
+
+                // Role classification select
+                let roleSelectHtml = `
+                    <select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetRole('${sheet.id}', this.value)">
+                        <option value="primary" ${sheet.role === 'primary' ? 'selected' : ''}>Corporate Directory (Primary)</option>
+                        <option value="secondary" ${sheet.role === 'secondary' ? 'selected' : ''}>Agent Telemetry (Secondary)</option>
+                    </select>
+                `;
+
+                // Key column select dropdown
+                let keySelectHtml = `<select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetKey('${sheet.id}', this.value)">`;
+                sheet.headers.forEach((h, idx) => {
+                    const selected = idx === sheet.keyIdx ? "selected" : "";
+                    keySelectHtml += `<option value="	ext{idx}" ${selected}>${escapeHTML(h)} (Col 	ext{idx + 1})</option>`;
                 });
-                selectEl.disabled = false;
-                selectEl.onchange = function() {
-                    reconcilerData[source].keyIdx = parseInt(this.value);
-                    logToTerminal(`[Reconciler] ${source.toUpperCase()} match key updated to: "${headers[reconcilerData[source].keyIdx]}"`);
-                };
+                keySelectHtml += `</select>`;
 
-                // Report detected compliance features
-                const detectedCompCount = isComplianceCol.filter(Boolean).length;
-                logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from ${source.toUpperCase()} source. Auto-detected match key: "${headers[keyIdx]}" (${detectedCompCount} compliance columns found)`, "info");
+                // Detected compliance controls
+                const compCols = [];
+                sheet.headers.forEach((h, idx) => {
+                    if (sheet.isComplianceCol[idx] && idx !== sheet.keyIdx) {
+                        compCols.push(h);
+                    }
+                });
+                const compColsHtml = compCols.length > 0 
+                    ? compCols.map(c => `<span class="badge group-sift" style="font-size:0.65rem; margin-right:0.25rem; display:inline-block; margin-bottom:0.15rem;">${escapeHTML(c)}</span>`).join("")
+                    : `<span style="color:var(--text-muted); font-style:italic; font-size:0.75rem;">None identified</span>`;
 
-                // Check if both files are successfully uploaded to enable the glowing button
-                const btn = document.getElementById("btn-execute-reconciliation");
-                if (reconcilerData.primary.rows.length > 0 && reconcilerData.secondary.rows.length > 0) {
-                    btn.disabled = false;
-                    btn.style.opacity = 1;
-                    btn.style.cursor = "pointer";
-                }
-            };
+                tr.innerHTML = `
+                    <td><strong style="color:var(--color-accent);">${escapeHTML(sheet.filename)}</strong></td>
+                    <td style="font-family:var(--font-mono); font-weight:700;">${sheet.rows.length.toLocaleString()}</td>
+                    <td>${roleSelectHtml}</td>
+                    <td>${keySelectHtml}</td>
+                    <td style="max-width:320px; word-break:break-word;">${compColsHtml}</td>
+                    <td style="text-align:right;">
+                        <button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.3rem 0.6rem; cursor:pointer;" onclick="deleteSheetFromQueue('${sheet.id}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-            if (isExcel) {
-                reader.readAsArrayBuffer(file);
+            // Enforce role compliance: Need at least 1 primary and 1 secondary to execute deep cross-sheet reconciliation
+            const hasPrimary = reconcilerSheets.some(s => s.role === "primary");
+            const hasSecondary = reconcilerSheets.some(s => s.role === "secondary");
+
+            if (reconcilerSheets.length >= 2 && hasPrimary && hasSecondary) {
+                executeBtn.disabled = false;
+                executeBtn.style.opacity = 1;
+                executeBtn.style.cursor = "pointer";
             } else {
-                reader.readAsText(file);
+                executeBtn.disabled = true;
+                executeBtn.style.opacity = 0.6;
+                executeBtn.style.cursor = "not-allowed";
             }
         }
 
+        function updateSheetRole(id, role) {
+            const sheet = reconcilerSheets.find(s => s.id === id);
+            if (!sheet) return;
+            
+            // Enforce only one primary sheet
+            if (role === "primary") {
+                reconcilerSheets.forEach(s => {
+                    if (s.id !== id && s.role === "primary") {
+                        s.role = "secondary";
+                    }
+                });
+            }
+            
+            sheet.role = role;
+            logToTerminal(`[Reconciler] Role for "${sheet.filename}" updated to ${role.toUpperCase()}`);
+            renderReconcilerQueue();
+        }
+
+        function updateSheetKey(id, val) {
+            const sheet = reconcilerSheets.find(s => s.id === id);
+            if (!sheet) return;
+            sheet.keyIdx = parseInt(val);
+            logToTerminal(`[Reconciler] Match key for "${sheet.filename}" changed to "${sheet.headers[sheet.keyIdx]}"`);
+            renderReconcilerQueue();
+        }
+
+        function deleteSheetFromQueue(id) {
+            const sheet = reconcilerSheets.find(s => s.id === id);
+            if (!sheet) return;
+            reconcilerSheets = reconcilerSheets.filter(s => s.id !== id);
+            logToTerminal(`[Reconciler] File "${sheet.filename}" removed from queue.`);
+            
+            // Auto-assign a new primary if there is none left
+            if (reconcilerSheets.length > 0 && !reconcilerSheets.some(s => s.role === "primary")) {
+                reconcilerSheets[0].role = "primary";
+            }
+            
+            renderReconcilerQueue();
+        }
+
         function executeDeepReconciliation() {
-            if (reconcilerData.primary.rows.length === 0 || reconcilerData.secondary.rows.length === 0) return;
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
 
-            logToTerminal("[Reconciler] Executing deep cross-sheet asset alignment algorithm...");
+            if (!primarySheet || secondarySheets.length === 0) {
+                alert("Deep reconciliation requires 1 Primary Corporate Directory and at least 1 Secondary Agent Telemetry sheet.");
+                return;
+            }
 
-            const primaryKeyIdx = reconcilerData.primary.keyIdx;
-            const secondaryKeyIdx = reconcilerData.secondary.keyIdx;
+            logToTerminal(`[Reconciler] Executing deep alignment across ${reconcilerSheets.length} compliance directories...`);
+
+            const primaryKeyIdx = primarySheet.keyIdx;
 
             // Map and group primary rows by normalized device name
             const primaryMap = new Map();
-            reconcilerData.primary.rows.forEach(row => {
+            primarySheet.rows.forEach(row => {
                 const nameVal = String(row[primaryKeyIdx] || "").trim();
                 if (!nameVal) return;
                 const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -3344,93 +3433,148 @@
             });
 
             // Map and group secondary rows by normalized device name
-            const secondaryMap = new Map();
-            reconcilerData.secondary.rows.forEach(row => {
-                const nameVal = String(row[secondaryKeyIdx] || "").trim();
-                if (!nameVal) return;
-                const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                secondaryMap.set(normName, {
-                    rawName: nameVal,
-                    row: row
+            const secondaryMaps = secondarySheets.map(sheet => {
+                const map = new Map();
+                sheet.rows.forEach(row => {
+                    const nameVal = String(row[sheet.keyIdx] || "").trim();
+                    if (!nameVal) return;
+                    const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    map.set(normName, row);
                 });
+                return {
+                    sheetId: sheet.id,
+                    filename: sheet.filename,
+                    headers: sheet.headers,
+                    isComplianceCol: sheet.isComplianceCol,
+                    keyIdx: sheet.keyIdx,
+                    map: map
+                };
             });
 
-            // Compute Matches and Coverage Gaps (exist in Primary, missing/present in Secondary)
+            // Compute Matches and Coverage Gaps (exist in Primary directory, but missing/present in secondary lists)
             const matches = [];
             const gaps = [];
 
             primaryMap.forEach((primaryData, normName) => {
-                if (secondaryMap.has(normName)) {
-                    const secondaryData = secondaryMap.get(normName);
-                    
-                    const failedPolicies = [];
-                    const complianceDetails = [];
+                const presentInSheets = [];
+                const missingInSheets = [];
+                const failedPolicies = [];
+                const complianceDetails = [];
 
-                    const checkRowCompliance = (source, rowData, headers, isComplianceCol) => {
-                        if (!isComplianceCol) return;
-                        headers.forEach((h, idx) => {
-                            if (isComplianceCol[idx] && idx !== reconcilerData[source].keyIdx) {
+                // 1. Audit primary sheet compliance columns
+                primarySheet.headers.forEach((h, idx) => {
+                    if (primarySheet.isComplianceCol[idx] && idx !== primaryKeyIdx) {
+                        const raw = String(primaryData.row[idx] || "").trim();
+                        const val = raw.toLowerCase();
+                        const isFailed = val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive" || val === "disabled" || val === "fail" || val === "failed" || val === "non_compliant" || val === "non-compliant" || val === "offline" || val === "critical";
+                        
+                        complianceDetails.push({
+                            source: primarySheet.filename,
+                            policy: h,
+                            value: raw || "MISSING",
+                            status: isFailed ? "NON_COMPLIANT" : "COMPLIANT"
+                        });
+
+                        if (isFailed) {
+                            failedPolicies.push(`${h} (${raw || "MISSING"}) [${primarySheet.filename}]`);
+                        }
+                    }
+                });
+
+                // 2. Audit each secondary sheet
+                secondaryMaps.forEach(sec => {
+                    if (sec.map.has(normName)) {
+                        presentInSheets.push(sec.filename);
+                        const rowData = sec.map.get(normName);
+                        
+                        sec.headers.forEach((h, idx) => {
+                            if (sec.isComplianceCol[idx] && idx !== sec.keyIdx) {
                                 const raw = String(rowData[idx] || "").trim();
                                 const val = raw.toLowerCase();
                                 const isFailed = val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive" || val === "disabled" || val === "fail" || val === "failed" || val === "non_compliant" || val === "non-compliant" || val === "offline" || val === "critical";
                                 
                                 complianceDetails.push({
-                                    source: source,
+                                    source: sec.filename,
                                     policy: h,
                                     value: raw || "MISSING",
                                     status: isFailed ? "NON_COMPLIANT" : "COMPLIANT"
                                 });
 
                                 if (isFailed) {
-                                    failedPolicies.push(`${h} (${raw || "MISSING"})`);
+                                    failedPolicies.push(`${h} (${raw || "MISSING"}) [${sec.filename}]`);
                                 }
                             }
                         });
-                    };
+                    } else {
+                        missingInSheets.push(sec.filename);
+                    }
+                });
 
-                    checkRowCompliance("primary", primaryData.row, reconcilerData.primary.headers, reconcilerData.primary.isComplianceCol);
-                    checkRowCompliance("secondary", secondaryData.row, reconcilerData.secondary.headers, reconcilerData.secondary.isComplianceCol);
+                const isMissingAnySecondary = missingInSheets.length > 0;
+                const isCompliant = failedPolicies.length === 0 && !isMissingAnySecondary;
 
-                    const isCompliant = failedPolicies.length === 0;
-
-                    matches.push({
-                        id: `dev-rec-${Math.random().toString(36).substring(2, 6)}`,
-                        name: primaryData.rawName,
-                        normalized: normName,
-                        primaryRow: primaryData.row,
-                        secondaryRow: secondaryData.row,
-                        status: isCompliant ? "MATCHED" : "NON_COMPLIANT_MATCH",
-                        failedPolicies: failedPolicies,
-                        complianceDetails: complianceDetails
-                    });
-                } else {
+                if (isMissingAnySecondary) {
                     gaps.push({
                         id: `dev-gap-${Math.random().toString(36).substring(2, 6)}`,
                         name: primaryData.rawName,
                         normalized: normName,
                         primaryRow: primaryData.row,
+                        missingInSheets: missingInSheets,
+                        presentInSheets: presentInSheets,
+                        failedPolicies: failedPolicies,
+                        complianceDetails: complianceDetails,
                         status: "COVERAGE_GAP"
+                    });
+                } else {
+                    matches.push({
+                        id: `dev-rec-${Math.random().toString(36).substring(2, 6)}`,
+                        name: primaryData.rawName,
+                        normalized: normName,
+                        primaryRow: primaryData.row,
+                        failedPolicies: failedPolicies,
+                        complianceDetails: complianceDetails,
+                        status: isCompliant ? "MATCHED" : "NON_COMPLIANT_MATCH"
                     });
                 }
             });
 
-            // Compute Rogues (exist in Secondary, but missing in Primary)
+            // Compute Rogues (exist in Secondary telemetries, but missing from Corporate Directory)
+            const roguesMap = new Map();
+            secondaryMaps.forEach(sec => {
+                sec.map.forEach((row, normName) => {
+                    if (!primaryMap.has(normName)) {
+                        if (!roguesMap.has(normName)) {
+                            roguesMap.set(normName, {
+                                name: String(row[sec.keyIdx] || "").trim(),
+                                sheets: []
+                            });
+                        }
+                        const rogueObj = roguesMap.get(normName);
+                        rogueObj.sheets.push({
+                            filename: sec.filename,
+                            row: row,
+                            headers: sec.headers,
+                            isComplianceCol: sec.isComplianceCol,
+                            keyIdx: sec.keyIdx
+                        });
+                    }
+                });
+            });
+
             const rogues = [];
-            secondaryMap.forEach((secondaryData, normName) => {
-                if (!primaryMap.has(normName)) {
-                    rogues.push({
-                        id: `dev-rogue-${Math.random().toString(36).substring(2, 6)}`,
-                        name: secondaryData.rawName,
-                        normalized: normName,
-                        secondaryRow: secondaryData.row,
-                        status: "ROGUE_UNMANAGED"
-                    });
-                }
+            roguesMap.forEach((rogueObj, normName) => {
+                rogues.push({
+                    id: `dev-rogue-${Math.random().toString(36).substring(2, 6)}`,
+                    name: rogueObj.name,
+                    normalized: normName,
+                    sheets: rogueObj.sheets,
+                    status: "ROGUE_UNMANAGED"
+                });
             });
 
             reconciliationResults = { matches, gaps, rogues };
 
-            // Update metrics KPI widgets
+            // Update Metrics KPI Widgets
             const totalPrimary = primaryMap.size;
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
             const compliantMatchesCount = matches.filter(m => m.status === "MATCHED").length;
@@ -3448,7 +3592,7 @@
             document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
             
             const matchRateEl = document.getElementById("recon-stat-match-rate");
-            matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
+            matchRateEl.innerText = `	ext{matchRate.toFixed(1)}%`;
             matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
 
             // Update tab button count bubbles
@@ -3459,10 +3603,10 @@
             // Reveal the results wrapper
             document.getElementById("reconciler-results-wrapper").style.display = "block";
 
-            logToTerminal(`[Reconciler] Audit finished. Matches: ${matches.length} (${compliantMatchesCount} compliant, ${nonCompliantMatchesCount} failed), Gaps: ${gaps.length}, Rogues: ${rogues.length}. Match Rate: ${matchRate.toFixed(2)}%`, matchRate >= 85 ? "info" : "warn");
+            logToTerminal(`[Reconciler] Audit finished. Aligned Matches: ${matches.length} (${compliantMatchesCount} compliant, ${nonCompliantMatchesCount} failed), Coverage Gaps: ${gaps.length}, Rogue Assets: ${rogues.length}. Match Rate: ${matchRate.toFixed(2)}%`, matchRate >= 85 ? "info" : "warn");
 
-            // Switch to gaps tab by default or rogues/matches if gaps empty
-            const defaultTab = gaps.length > 0 ? "gaps" : (rogues.length > 0 ? "rogues" : "matches");
+            // Switch to gaps tab by default or matches/rogues if gaps empty
+            const defaultTab = gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues");
             switchReconTab(defaultTab);
         }
 
@@ -3480,50 +3624,68 @@
             head.innerHTML = "";
             body.innerHTML = "";
 
-            const primaryHeaders = reconcilerData.primary.headers;
-            const secondaryHeaders = reconcilerData.secondary.headers;
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
 
-            let headersToRender = [];
+            const primaryHeaders = primarySheet.headers;
             let rowsToRender = reconciliationResults[tabId];
 
             if (tabId === "gaps") {
-                headersToRender = ["Device ID", "Hostname", "Directory Detail (Primary)"];
+                const headersToRender = ["Device ID", "Hostname", "Missing Agent Telemetries", "Failing Controls", "Directory Detail (Primary)"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
 
                 if (rowsToRender.length === 0) {
-                    body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 Stellar Coverage! Zero compliance coverage gaps detected.</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 Stellar Coverage! Zero compliance coverage gaps detected.</td></tr>`;
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
-                        const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
+                        
+                        const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing: ${escapeHTML(s)}</span>`).join("");
+                        
+                        const failingBadges = item.failedPolicies.length > 0 
+                            ? item.failedPolicies.map(p => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">${escapeHTML(p)}</span>`).join("")
+                            : `<span style="color:var(--status-low); font-weight:700;">Passed present checks</span>`;
+
+                        const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> 	ext{escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
+                        
                         tr.innerHTML = `
-                            <td style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHTML(item.id)}</td>
-                            <td><strong style="color: var(--status-critical);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-critical" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MISSING AGENT</span></td>
-                            <td style="font-size: 0.8rem; color: var(--text-secondary);">${primaryDetails}</td>
+                            <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-critical" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">SHIELD GAPS</span></td>
+                            <td style="vertical-align: middle;">${missingBadges}</td>
+                            <td style="vertical-align: middle; max-width: 250px; word-break: break-word;">${failingBadges}</td>
+                            <td style="vertical-align: middle; font-size: 0.78rem; color: var(--text-secondary);">${primaryDetails}</td>
                         `;
                         body.appendChild(tr);
                     });
                 }
             } else if (tabId === "rogues") {
-                headersToRender = ["Device ID", "Hostname", "Agent Properties (Secondary)"];
+                const headersToRender = ["Device ID", "Hostname", "Detected Telemetry Sources", "Agent Properties Details"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
 
                 if (rowsToRender.length === 0) {
-                    body.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No unmanaged rogue assets identified.</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No unmanaged rogue assets identified.</td></tr>`;
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
-                        const secondaryDetails = secondaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.secondaryRow[idx] || "-")}`).join(" | ");
+                        
+                        const detectedBadges = item.sheets.map(s => `<span class="badge risk-medium" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Source: 	ext{escapeHTML(s.filename)}</span>`).join("");
+                        
+                        const detailsHtml = item.sheets.map(s => {
+                            const details = s.headers.slice(0, 3).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> 	ext{escapeHTML(s.row[idx] || "-")}`).join(" | ");
+                            return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
+                        }).join("");
+                        
                         tr.innerHTML = `
-                            <td style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHTML(item.id)}</td>
-                            <td><strong style="color: var(--status-medium);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
-                            <td style="font-size: 0.8rem; color: var(--text-secondary);">${secondaryDetails}</td>
+                            <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
+                            <td style="vertical-align: middle;">${detectedBadges}</td>
+                            <td style="vertical-align: middle;">${detailsHtml}</td>
                         `;
                         body.appendChild(tr);
                     });
                 }
             } else if (tabId === "matches") {
-                headersToRender = ["Device ID", "Hostname", "Compliance Audit", "Failing Security Controls", "Asset Telemetries & Excel Properties"];
+                const headersToRender = ["Device ID", "Hostname", "Compliance Audit", "Failing Security Controls", "Asset Telemetries & Excel Properties"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
 
                 if (rowsToRender.length === 0) {
@@ -3549,12 +3711,11 @@
                             return `<span style="font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(d.policy)}:</strong> <span style="color: ${cl}; font-weight:700;">${escapeHTML(d.value)}</span></span>`;
                         }).join(" | ");
 
-                        const primaryTrunc = primaryHeaders.slice(0, 2).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
-                        const secondaryTrunc = secondaryHeaders.slice(0, 2).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.secondaryRow[idx] || "-")}`).join(" | ");
+                        const primaryTrunc = primaryHeaders.slice(0, 2).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> 	ext{escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
                         
                         const detailsHtml = `
                             <div style="font-size: 0.75rem; line-height: 1.4;">
-                                <div style="color: var(--text-muted); margin-bottom: 0.25rem;">${primaryTrunc} &nbsp;|&nbsp; ${secondaryTrunc}</div>
+                                <div style="color: var(--text-muted); margin-bottom: 0.25rem;">${primaryTrunc}</div>
                                 <div style="border-top: 1px solid rgba(255,255,255,0.03); padding-top: 0.25rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                                     ${complianceSummary || '<span style="color: var(--text-muted); font-style: italic;">No compliance fields found</span>'}
                                 </div>
@@ -3563,10 +3724,10 @@
 
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: ${isCompliant ? 'var(--status-low)' : 'var(--status-critical)'};">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge ${badgeClass}" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">${badgeText}</span></td>
+                            <td style="vertical-align: middle;"><strong style="color: ${isCompliant ? 'var(--status-low)' : 'var(--status-critical)'};">	ext{escapeHTML(item.name.toUpperCase())}</strong> <span class="badge ${badgeClass}" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">${badgeText}</span></td>
                             <td style="vertical-align: middle;">${isCompliant ? '🟢 Passed' : '🔴 Shield Gaps'}</td>
-                            <td style="vertical-align: middle; max-width: 300px; word-break: break-word;">${gapsHtml}</td>
-                            <td style="vertical-align: middle;">${detailsHtml}</td>
+                            <td style="vertical-align: middle; max-width: 300px; word-break: break-word;">	ext{gapsHtml}</td>
+                            <td style="vertical-align: middle;">	ext{detailsHtml}</td>
                         `;
                         body.appendChild(tr);
                     });
@@ -3584,11 +3745,14 @@
                 return;
             }
 
-            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled assets into the active database?\n\n- ${matches.length} Matches will be updated and audited\n- ${gaps.length} Coverage Gaps will be marked as NON_COMPLIANT\n- ${rogues.length} Rogue Assets will be appended\n\nActive fleet metrics will recalculate in real-time.`);
+            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled assets into the active database?\n\n- ${matches.length} Matches will be updated and audited\n- 	ext{gaps.length} Coverage Gaps will be marked as NON_COMPLIANT\n- 	ext{rogues.length} Rogue Assets will be appended\n\nActive fleet metrics will recalculate in real-time.`);
             if (!confirmMerge) return;
 
             let newlyCreated = 0;
             let mergedUpdated = 0;
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
 
             // 1. Process matches: compliant or non-compliant
             matches.forEach(item => {
@@ -3658,15 +3822,12 @@
 
                 // Map sheet properties to custom properties
                 const customProps = { "Audit Source": "Cross-Sheet Match" };
-                reconcilerData.primary.headers.forEach((h, idx) => {
-                    if (idx !== reconcilerData.primary.keyIdx) {
-                        customProps[`Primary:${h}`] = String(item.primaryRow[idx] || "");
-                    }
-                });
-                reconcilerData.secondary.headers.forEach((h, idx) => {
-                    if (idx !== reconcilerData.secondary.keyIdx) {
-                        customProps[`Secondary:${h}`] = String(item.secondaryRow[idx] || "");
-                    }
+                reconcilerSheets.forEach(sheet => {
+                    sheet.headers.forEach((h, idx) => {
+                        if (idx !== sheet.keyIdx) {
+                            customProps[`	ext{sheet.role === 'primary' ? 'Primary' : 'Secondary'}:${sheet.filename}:${h}`] = String(item.primaryRow[idx] || "");
+                        }
+                    });
                 });
 
                 if (existing) {
@@ -3703,27 +3864,109 @@
                 }
             });
 
-            // 2. Process coverage gaps: missing Secondary compliance agent, score = 0
+            // 2. Process coverage gaps: missing from one or more agent sheets
             gaps.forEach(item => {
                 const normName = item.normalized;
                 let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
 
-                // Make the Secondary EDR agent non-compliant
-                const swAgentList = sampleSoftwareCatalog.map((sw, idx) => {
-                    const isS1 = sw.name.includes("SentinelOne") || sw.name.includes("Sentinel One") || sw.key === "sentinelone";
+                // Generate software agent status from compliance details and missing sheets
+                const swAgentList = sampleSoftwareCatalog.map(sw => {
+                    // Check if the missing sheets represented this compliance control
+                    const representedByMissingSheet = item.missingInSheets.some(filename => {
+                        const sheet = reconcilerSheets.find(s => s.filename === filename);
+                        if (!sheet) return false;
+                        return sheet.headers.some(h => {
+                            const kw = sw.key;
+                            const colName = h.toLowerCase();
+                            const words = colName.split(/[^a-z0-9]+/);
+                            if (kw.length <= 3) return words.includes(kw);
+                            return colName.includes(kw);
+                        });
+                    });
+
+                    if (representedByMissingSheet) {
+                        return {
+                            name: sw.name,
+                            key: sw.key,
+                            installed: "MISSING (AGENT UNREPORTED)",
+                            required: "REQUIRED",
+                            status: "NON_COMPLIANT"
+                        };
+                    }
+
+                    // Check if we have active compliance details for this control
+                    const matchedDetail = item.complianceDetails.find(d => {
+                        const kw = sw.key;
+                        const colName = d.policy.toLowerCase();
+                        const words = colName.split(/[^a-z0-9]+/);
+                        if (kw.length <= 3) return words.includes(kw);
+                        return colName.includes(kw);
+                    });
+
+                    if (matchedDetail) {
+                        return {
+                            name: sw.name,
+                            key: sw.key,
+                            installed: matchedDetail.value,
+                            required: "REQUIRED",
+                            status: matchedDetail.status
+                        };
+                    }
+
                     return {
                         name: sw.name,
                         key: sw.key,
-                        installed: isS1 ? "MISSING" : "INSTALLED",
+                        installed: "INSTALLED",
                         required: "REQUIRED",
-                        status: isS1 ? "NON_COMPLIANT" : "COMPLIANT"
+                        status: "COMPLIANT"
                     };
                 });
 
+                // Append dynamic non-core compliance controls
+                item.complianceDetails.forEach(d => {
+                    const isCore = sampleSoftwareCatalog.some(sw => {
+                        const kw = sw.key;
+                        const colName = d.policy.toLowerCase();
+                        const words = colName.split(/[^a-z0-9]+/);
+                        if (kw.length <= 3) return words.includes(kw);
+                        return colName.includes(kw);
+                    });
+                    if (!isCore) {
+                        swAgentList.push({
+                            name: d.policy,
+                            key: `compliance:${d.policy}`,
+                            required: "REQUIRED",
+                            installed: d.value,
+                            status: d.status
+                        });
+                    }
+                });
+
                 const customProps = { "Audit Source": "Cross-Sheet Coverage Gap" };
-                reconcilerData.primary.headers.forEach((h, idx) => {
-                    if (idx !== reconcilerData.primary.keyIdx) {
-                        customProps[`Primary:${h}`] = String(item.primaryRow[idx] || "");
+                reconcilerSheets.forEach(sheet => {
+                    if (sheet.role === "primary") {
+                        sheet.headers.forEach((h, idx) => {
+                            if (idx !== sheet.keyIdx) {
+                                customProps[`Primary:${sheet.filename}:${h}`] = String(item.primaryRow[idx] || "");
+                            }
+                        });
+                    } else {
+                        // If it's present in this secondary sheet, add its properties
+                        const mapObj = reconcilerSheets.find(s => s.id === sheet.id);
+                        if (mapObj) {
+                            const nameIdx = mapObj.keyIdx;
+                            const secRow = mapObj.rows.find(r => {
+                                const val = String(r[nameIdx] || "").trim();
+                                return val.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName;
+                            });
+                            if (secRow) {
+                                sheet.headers.forEach((h, idx) => {
+                                    if (idx !== sheet.keyIdx) {
+                                        customProps[`Secondary:${sheet.filename}:${h}`] = String(secRow[idx] || "");
+                                    }
+                                });
+                            }
+                        }
                     }
                 });
 
@@ -3741,7 +3984,7 @@
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: item.name,
                         serial: `SN-GAP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                        mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                        mac: `00:1A:2B:3C:	ext{Math.floor(Math.random()*89+10)}:	ext{Math.floor(Math.random()*89+10)}`,
                         manufacturer: "Generic Gap",
                         os: "Windows 11 (22631)",
                         os_family: "Windows",
@@ -3765,20 +4008,35 @@
                 const normName = item.normalized;
                 let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
 
-                const swAgentList = sampleSoftwareCatalog.map(sw => ({
-                    name: sw.name, key: sw.key, installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT"
-                }));
+                // Set AD as missing since it's absent from directory
+                const swAgentList = sampleSoftwareCatalog.map(sw => {
+                    const isAD = sw.key === "ad" || sw.name.toLowerCase().includes("active directory");
+                    return {
+                        name: sw.name,
+                        key: sw.key,
+                        installed: isAD ? "MISSING (DIRECTORY ABSENT)" : "INSTALLED",
+                        required: "REQUIRED",
+                        status: isAD ? "NON_COMPLIANT" : "COMPLIANT"
+                    };
+                });
 
                 const customProps = { "Audit Source": "Cross-Sheet Rogue Asset" };
-                reconcilerData.secondary.headers.forEach((h, idx) => {
-                    if (idx !== reconcilerData.secondary.keyIdx) {
-                        customProps[`Secondary:${h}`] = String(item.secondaryRow[idx] || "");
-                    }
+                item.sheets.forEach(s => {
+                    s.headers.forEach((h, idx) => {
+                        if (idx !== s.keyIdx) {
+                            customProps[`Secondary:${s.filename}:${h}`] = String(s.row[idx] || "");
+                        }
+                    });
                 });
 
                 if (existing) {
                     existing.score = 0.00;
                     existing.level = "NON_COMPLIANT";
+                    existing.software = swAgentList;
+
+                    if (!existing.custom_properties) existing.custom_properties = {};
+                    Object.assign(existing.custom_properties, customProps);
+
                     mergedUpdated++;
                 } else {
                     fleetDataset.push({
@@ -3797,14 +4055,7 @@
                         location: "Unknown Location",
                         location_group: "Non-Sift",
                         is_isolated: false,
-                        software: swAgentList.map(sw => {
-                            const isAD = sw.name.includes("Active Directory") || sw.key === "ad";
-                            return {
-                                ...sw,
-                                installed: isAD ? "MISSING" : "INSTALLED",
-                                status: isAD ? "NON_COMPLIANT" : "COMPLIANT"
-                            };
-                        }),
+                        software: swAgentList,
                         custom_properties: customProps
                     });
                     newlyCreated++;
@@ -3826,26 +4077,28 @@
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += `"Recon Device ID","Hostname","Audit Status","Details / Properties"\n`;
 
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
+
             // 1. Add coverage gaps
             reconciliationResults.gaps.forEach(item => {
-                const details = reconcilerData.primary.headers.map((h, idx) => `${h}:${item.primaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
-                csvContent += `"${item.id}","${item.name}","COVERAGE_GAP","${details}"\n`;
+                const details = primarySheet.headers.map((h, idx) => `${h}:${item.primaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
+                csvContent += `"${item.id}","${item.name}","COVERAGE_GAP","	ext{details} | Missing: ${item.missingInSheets.join('; ')}"\n`;
             });
 
             // 2. Add rogue unmanaged assets
             reconciliationResults.rogues.forEach(item => {
-                const details = reconcilerData.secondary.headers.map((h, idx) => `${h}:${item.secondaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
-                csvContent += `"${item.id}","${item.name}","ROGUE_UNMANAGED","${details}"\n`;
+                const details = item.sheets.map(s => `${s.filename}: [${s.headers.slice(0,2).map((h, idx) => `${h}:	ext{s.row[idx] || "-"}`).join(', ')}]`).join(" | ").replace(/"/g, '""');
+                csvContent += `"${item.id}","${item.name}","ROGUE_UNMANAGED","	ext{details}"\n`;
             });
 
             // 3. Add matches
             reconciliationResults.matches.forEach(item => {
                 const isCompliant = item.status === "MATCHED";
-                const primaryDetails = reconcilerData.primary.headers.map((h, idx) => `${h}:${item.primaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
-                const secondaryDetails = reconcilerData.secondary.headers.map((h, idx) => `${h}:${item.secondaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
+                const primaryDetails = primarySheet.headers.map((h, idx) => `${h}:	ext{item.primaryRow[idx] || "-"}`).join(" | ").replace(/"/g, '""');
                 const statusStr = isCompliant ? "COMPLIANT_MATCH" : "NON_COMPLIANT_MATCH";
                 const failureStr = isCompliant ? "Passed all compliance controls" : `Violated: ${item.failedPolicies.join(" | ")}`;
-                csvContent += `"${item.id}","${item.name}","${statusStr}","${failureStr} | Primary: [${primaryDetails}] | Secondary: [${secondaryDetails}]"\n`;
+                csvContent += `"	ext{item.id}","	ext{item.name}","${statusStr}","${failureStr} | Primary: [${primaryDetails}]"\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
@@ -3856,9 +4109,10 @@
             link.click();
             document.body.removeChild(link);
 
-            logToTerminal(`[Reconciler] Export successful. Dispatched report download stream.`, "info");
+            logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
         }
-    </script>
+
+</script>
 </body>
 
 </html>
