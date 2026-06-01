@@ -3169,6 +3169,49 @@
 
         let currentReconTab = "gaps";
 
+        function parseCSVNative(text) {
+            const lines = [];
+            let row = [""];
+            let inQuotes = false;
+            
+            let sep = ",";
+            const firstLine = text.split(/\r?\n/)[0] || "";
+            let commaCount = (firstLine.match(/,/g) || []).length;
+            let semiCount = (firstLine.match(/;/g) || []).length;
+            let tabCount = (firstLine.match(/\t/g) || []).length;
+            
+            if (semiCount > commaCount && semiCount > tabCount) sep = ";";
+            else if (tabCount > commaCount && tabCount > semiCount) sep = "\t";
+            
+            for (let i = 0; i < text.length; i++) {
+                const c = text[i];
+                const next = text[i+1];
+                
+                if (c === '"') {
+                    if (inQuotes && next === '"') {
+                        row[row.length - 1] += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (c === sep && !inQuotes) {
+                    row.push("");
+                } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                    if (c === '\r' && next === '\n') {
+                        i++;
+                    }
+                    lines.push(row);
+                    row = [""];
+                } else {
+                    row[row.length - 1] += c;
+                }
+            }
+            if (row.length > 1 || row[0] !== "") {
+                lines.push(row);
+            }
+            return lines;
+        }
+
         function handleMultiSheetUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
@@ -3180,70 +3223,94 @@
                 const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
 
                 reader.onload = function (e) {
-                    let data = e.target.result;
-                    let workbook;
                     try {
-                        if (isExcel) {
-                            const bytes = new Uint8Array(data);
-                            workbook = XLSX.read(bytes, { type: "array" });
+                        let data = e.target.result;
+                        let rows;
+
+                        if (!isExcel) {
+                            // CSV file logic - first attempt native parse, then fallback to SheetJS
+                            try {
+                                rows = parseCSVNative(data);
+                                logToTerminal(`[Reconciler] Native CSV parser successfully processed "${file.name}"`, "info");
+                            } catch (csvErr) {
+                                logToTerminal(`[Reconciler] Native CSV parser failed for "${file.name}": ${csvErr.message}. Trying SheetJS...`, "warn");
+                                if (typeof XLSX !== "undefined") {
+                                    let workbook = XLSX.read(data, { type: "string" });
+                                    const sheetName = workbook.SheetNames[0];
+                                    const worksheet = workbook.Sheets[sheetName];
+                                    rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                                } else {
+                                    throw new Error("SheetJS is not loaded and native CSV parse failed.");
+                                }
+                            }
                         } else {
-                            workbook = XLSX.read(data, { type: "string" });
+                            // Excel files - require SheetJS (XLSX)
+                            if (typeof XLSX === "undefined") {
+                                const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
+                                logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${cdnError}`, "error");
+                                alert(`❌ Excel Ingestion Failed:\n\n${cdnError}`);
+                                return;
+                            }
+
+                            const bytes = new Uint8Array(data);
+                            let workbook = XLSX.read(bytes, { type: "array" });
+                            const sheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[sheetName];
+                            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
                         }
+
+                        if (!rows || rows.length < 2) {
+                            logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
+                            alert(`❌ Ingestion Failed: "${file.name}" has no data or has too few rows.`);
+                            return;
+                        }
+
+                        const headers = rows[0].map(h => String(h).trim());
+                        const lowerHeaders = headers.map(h => h.toLowerCase());
+
+                        // Auto-detect the key column (Device Name / Hostname)
+                        let keyIdx = -1;
+                        const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+                        
+                        for (let kw of keyKeywords) {
+                            const idx = lowerHeaders.findIndex(h => {
+                                if (kw.length <= 3) {
+                                    const words = h.split(/[^a-z0-9]+/);
+                                    return words.includes(kw);
+                                }
+                                return h.includes(kw);
+                            });
+                            if (idx !== -1) {
+                                keyIdx = idx;
+                                break;
+                            }
+                        }
+
+                        // Fallback to first column if not auto-detected
+                        if (keyIdx === -1) keyIdx = 0;
+
+                        // Default Role classification: First uploaded sheet is primary, subsequent sheets are secondary
+                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+
+                        const sheetObj = {
+                            id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                            filename: file.name,
+                            rows: rows.slice(1),
+                            headers: headers,
+                            keyIdx: keyIdx,
+                            role: role
+                        };
+
+                        reconcilerSheets.push(sheetObj);
+
+                        logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
+
+                        renderReconcilerQueue();
+
                     } catch (err) {
                         logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
-                        return;
+                        alert(`❌ File Import Error: ${err.message}`);
                     }
-
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-
-                    if (rows.length < 2) {
-                        logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
-                        return;
-                    }
-
-                    const headers = rows[0].map(h => String(h).trim());
-                    const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                    // Auto-detect the key column (Device Name / Hostname)
-                    let keyIdx = -1;
-                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                    
-                    for (let kw of keyKeywords) {
-                        const idx = lowerHeaders.findIndex(h => {
-                            if (kw.length <= 3) {
-                                const words = h.split(/[^a-z0-9]+/);
-                                return words.includes(kw);
-                            }
-                            return h.includes(kw);
-                        });
-                        if (idx !== -1) {
-                            keyIdx = idx;
-                            break;
-                        }
-                    }
-
-                    // Fallback to first column if not auto-detected
-                    if (keyIdx === -1) keyIdx = 0;
-
-                    // Default Role classification: First uploaded sheet is primary, subsequent sheets are secondary
-                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
-
-                    const sheetObj = {
-                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
-                        filename: file.name,
-                        rows: rows.slice(1),
-                        headers: headers,
-                        keyIdx: keyIdx,
-                        role: role
-                    };
-
-                    reconcilerSheets.push(sheetObj);
-
-                    logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
-
-                    renderReconcilerQueue();
                 };
 
                 if (isExcel) {
@@ -3300,7 +3367,7 @@
                 }).join("");
 
                 tr.innerHTML = `
-                    <td><strong style="color:var(--color-accent);">${escapeHTML(sheet.filename)}</strong></td>
+                    <td><strong style="color:var(--color-accent);">${sheet.filename}</strong></td>
                     <td style="font-family:var(--font-mono); font-weight:700;">${sheet.rows.length.toLocaleString()}</td>
                     <td>${roleSelectHtml}</td>
                     <td>${keySelectHtml}</td>
@@ -3567,7 +3634,7 @@
                         
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${escapeHTML(item.name.toUpperCase())}</strong></td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
                             <td style="vertical-align: middle;">${missingBadges}</td>
                             <td style="vertical-align: middle; font-size: 0.78rem; color: var(--text-secondary);">${primaryDetails}</td>
                         `;
@@ -3592,7 +3659,7 @@
                         
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
                             <td style="vertical-align: middle;">${detectedBadges}</td>
                             <td style="vertical-align: middle;">${detailsHtml}</td>
                         `;
@@ -3613,7 +3680,7 @@
                             const sourceLabel = p.source.length > 20 ? p.source.substring(0, 17) + "..." : p.source;
                             return `
                                 <div style="display:inline-block; background:rgba(255,255,255,0.02); border:1px solid var(--border-clean); padding: 0.35rem 0.6rem; border-radius: 4px; font-size: 0.72rem; margin: 0.2rem 0.3rem 0.2rem 0; line-height:1.2;">
-                                    <span style="font-size:0.6rem; color:var(--color-accent); font-weight:700; text-transform:uppercase; display:block;">${escapeHTML(sourceLabel)}</span>
+                                    <span style="font-size:0.6rem; color:var(--color-accent); font-weight:700; text-transform:uppercase; display:block;">${sourceLabel}</span>
                                     <strong style="color:var(--text-secondary);">${escapeHTML(p.property)}:</strong> 
                                     <span style="color:var(--text-primary); font-weight:700;">${escapeHTML(p.value)}</span>
                                 </div>
@@ -3622,7 +3689,7 @@
 
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${escapeHTML(item.name.toUpperCase())}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${item.name.toUpperCase()}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
                             <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">🟢 Aligned</td>
                             <td style="vertical-align: middle; padding: 0.75rem 0;">
                                 <div style="display: flex; flex-wrap: wrap; max-width: 750px;">
@@ -3850,8 +3917,9 @@
             link.click();
             document.body.removeChild(link);
 
+            logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
         }
-    </script>
+</script>
 </body>
 
 </html>
