@@ -757,6 +757,14 @@
             }
         };
 
+        // Global Reconciliation Workspace Data (Declared at the top to prevent TDZ ReferenceErrors on page reload)
+        let reconcilerSheets = [];
+        let reconciliationResults = {
+            matches: [],
+            gaps: [],
+            rogues: []
+        };
+
         // Current active tenant session details
         let currentSession = {
             isLoggedIn: false, // Default is false, requiring full screen login on page boot
@@ -3159,9 +3167,9 @@
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
         
-        let reconcilerSheets = []; // Array of { id, filename, rows, headers, keyIdx, role }
-
-        let reconciliationResults = {
+        // reconcilerSheets and reconciliationResults are declared globally at the top of the script block to prevent TDZ ReferenceErrors on page reload
+        reconcilerSheets = []; 
+        reconciliationResults = {
             matches: [],
             gaps: [],
             rogues: []
