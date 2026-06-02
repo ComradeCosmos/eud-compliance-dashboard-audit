@@ -42,7 +42,7 @@ graph TD
 ## 🌟 Key Features
 
 ### 1. 🖥️ Premium Frontend Dashboard
-*   **Aesthetics**: Harmonious high-contrast dark mode tailored for Security Operations Centers (SOCs).
+*   **Aesthetics**: Harmonious high-contrast dark mode tailored for Security Operations Centers (SOCs) with modern glassmorphism.
 *   **Security Actions**: Context-isolated network mitigation controls (e.g. isolate compromised devices, trigger immediate hotfix patch deploys, force re-enrollment).
 *   **Granular RBAC**: strict interface gating for four customized operational personas:
     *   **Administrator**: Full administrative & mutation capabilities.
@@ -51,7 +51,7 @@ graph TD
     *   **External Compliance Auditor**: Restricted Read-Only ledger access.
 
 ### 2. ⚙️ Go-Based Core Compliance Engine (`/backend`)
-*   **Multi-Dimension Evaluator**: Evaluates device endpoints on six critical modern vectors:
+*   **Multi-Dimension Evaluator**: Evaluates device endpoints on six critical vectors:
     *   `EDR` (Endpoint Detection & Response protection status)
     *   `PATCH` (OS and security updates currency)
     *   `VULNERABILITY` (Active CVE exposures)
@@ -67,7 +67,7 @@ graph TD
 *   **Cryptographic Hardware Fingerprinting**: Calculates deterministic SHA-256 signatures from serials, MAC addresses, and manufacturer profiles to uniquely identify physical endpoints.
 *   **Levenshtein Edit-Distance Comparison**: Performs programmatic string distance matching to compare incoming host telemetries with active directory records, automatically aligning close matches (e.g. `DESKTOP-A1B2` vs `desktop-a1b2-corp`) within high-fidelity threshold parameters.
 *   **Multi-Stage Alignment Pipelines**:
-    *   **Stage 1: Exact Match**: Automated name matching (100% confidence).
+    *   **Stage 1: Exact Match**: Automated name matching (100% confidence) with robust alphanumeric normalization.
     *   **Stage 2: Cryptographic Match**: Hardware fingerprint matching (95% confidence).
     *   **Stage 3: Edit-Distance Match**: Dynamic Levenshtein alignments (calculated trust boundaries).
     *   **Stage 5: Review Queue**: Programmatically routes untrusted records to the manual verification queue.
@@ -105,7 +105,7 @@ graph TD
 ### 1. Frontend
 Simply load the high-fidelity index inside any modern browser:
 ```bash
-# Double-click or serve using a static server
+# Serve using a static server
 cd frontend
 npx browser-sync start --server --files "*.html, *.css"
 ```
@@ -116,6 +116,22 @@ Navigate to `/backend` and compile or test the core evaluation packages:
 cd backend
 # Run core evaluator & risk engine tests
 go test ./pkg/evaluator/...
+```
+
+### 3. Running Automated Tests
+Run standard automated test suites located in the workspace root directory:
+```bash
+# Verify JavaScript Syntax
+node test-syntax.js
+
+# Verify DOM Runtime Initialization
+node test-runtime.js
+
+# Verify Successive Merges & Leakage Check
+node test-telemetry-leakage.js
+
+# Verify Full Ingest-to-Clear Sequence Verification
+node test-clear-after-reconciliation.js
 ```
 
 ---
@@ -174,4 +190,16 @@ To support large-scale asset tracking and multi-agent compliance audits, the pla
 *   **Flat Matrix Export**: Instead of cramming all dynamic properties into a single text column, the refactored reconciliation CSV exporter compiles a structured flat spreadsheet matrix containing distinct headers for every unique sheet property (`[filename.csv] PropertyName`).
 *   **Scalable Blob Stream Downloads**: Large export streams are compiled into UTF-8 encoded binary `Blob` objects and served via local memory references (`URL.createObjectURL`), bypassing standard URI string constraints and securing flawless downloads of tens of thousands of rows.
 
+### 4. 🚀 High-Performance Map-Based Bulk Ingest Merging
+*   **Linear O(N) Processing**: The bulk reconciler merge engine uses Map-based pre-indexing of the 16,742 devices (`fleetByName`, `fleetBySerial`, `fleetByMac`) to resolve existing device alignments in O(1) time. This optimizes the time to merge 13,000+ matched rows from a thread-locking 30-60 seconds down to **under 50 milliseconds**.
 
+### 5. 🗑️ Complete Database & Reconciler Purges
+*   **Consistent Zero-State**: The upgraded "🗑️ Clear Fleet" action performs a comprehensive purge. It clears the active dataset (`fleetDataset`/`filteredDataset`), fully resets all uploaded inventory spreadsheets (`reconcilerSheets`), dynamic alignment match counts (`reconciliationResults`), software catalog registrations (`mergedSoftwareAgents`), clears file inputs (`reconciler-multi-files`), hides results containers, and triggers layout re-renders instantly to guarantee a secure, pristine state transition.
+
+---
+
+## 🔒 Security Hardening
+
+*   **Stored XSS & CSV Formula Injection Prevention**: Core template rendering employs standard HTML character entity encoding `escapeHTML(str)` to protect the DOM from stored XSS vectors. Export operations sanitize cell payloads through `sanitizeCSVCell(val)` by prefixing control formulas (`=`, `+`, `-`, `@`, `\t`, `\r`) with single quotes.
+*   **Exact Normalization Matching**: Device lookups in CSV imports (`handleCsvImport`) and identity simulations (`runReconciliationSimulation`) strictly normalize canonical names via alphanumeric regex `replace(/[^a-zA-Z0-9]/g, "")` before comparison to avoid character bypass vulnerabilities.
+*   **Inline JavaScript Hardening**: Safeguards inline event handlers from quotes-parsing failures and script injection by encoding variables dynamically via `encodeURIComponent` and decoding them via `decodeURIComponent` at click execution time.
