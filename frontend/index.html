@@ -787,6 +787,8 @@
             gaps: [],
             rogues: []
         };
+        let mergedSoftwareAgents = new Set();
+        let currentPolicyTab = "all";
 
         // Current active tenant session details
         let currentSession = {
@@ -1529,13 +1531,12 @@
             alert("Database Purged: All assets have been cleared successfully.");
         }
 
-        // Filtering & Search functions
         function handleFleetQueryChange() {
-            const query = document.getElementById("fleet-search-input").value.toLowerCase();
-            const riskFilter = document.getElementById("fleet-filter-risk").value;
-            const conditionFilter = document.getElementById("fleet-filter-condition").value;
-            const locGroupFilter = document.getElementById("fleet-filter-loc-group").value;
-            const osPlatformFilter = document.getElementById("fleet-filter-os-platform").value;
+            const query = ((document.getElementById("fleet-search-input") || {}).value || "").toLowerCase();
+            const riskFilter = (document.getElementById("fleet-filter-risk") || {}).value || "ALL";
+            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
+            const locGroupFilter = (document.getElementById("fleet-filter-loc-group") || {}).value || "ALL";
+            const osPlatformFilter = (document.getElementById("fleet-filter-os-platform") || {}).value || "ALL";
 
             filteredDataset = fleetDataset.filter(item => {
                 const matchesSearch =
@@ -2002,14 +2003,21 @@
         }
 
         function runReconciliationSimulation() {
-            const nameInput = document.getElementById("recon-name").value;
-            const serialInput = document.getElementById("recon-serial").value;
-            const macInput = document.getElementById("recon-mac").value;
-            const manufacturerInput = document.getElementById("recon-manufacturer").value;
+            const nameInputEl = document.getElementById("recon-name");
+            const serialInputEl = document.getElementById("recon-serial");
+            const macInputEl = document.getElementById("recon-mac");
+            const manufacturerInputEl = document.getElementById("recon-manufacturer");
+            if (!nameInputEl || !serialInputEl || !macInputEl || !manufacturerInputEl) return;
+
+            const nameInput = nameInputEl.value;
+            const serialInput = serialInputEl.value;
+            const macInput = macInputEl.value;
+            const manufacturerInput = manufacturerInputEl.value;
 
             const normalizedInput = nameInput.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
             const fp = calculateFingerprint(serialInput, macInput, manufacturerInput);
-            document.getElementById("out-fp").innerText = fp;
+            const outFpEl = document.getElementById("out-fp");
+            if (outFpEl) outFpEl.innerText = fp;
 
             logToTerminal(`[Reconciler] Evaluation triggered for incoming name: "${nameInput}"`);
 
@@ -2075,9 +2083,14 @@
         }
 
         function recalculateScores() {
-            const edr = document.getElementById("score-edr").value;
-            const patch = document.getElementById("score-patch").value;
-            const enc = document.getElementById("score-encryption").value;
+            const edrEl = document.getElementById("score-edr");
+            const patchEl = document.getElementById("score-patch");
+            const encEl = document.getElementById("score-encryption");
+            if (!edrEl || !patchEl || !encEl) return;
+
+            const edr = edrEl.value;
+            const patch = patchEl.value;
+            const enc = encEl.value;
 
             let edrScore = edr === "compliant" ? 100 : edr === "threats" ? 40 : 0;
             let patchScore = patch === "compliant" ? 100 : patch === "late" ? 40 : 0;
@@ -2094,36 +2107,46 @@
 
             const displayScore = document.getElementById("out-calc-score");
             const displayLevel = document.getElementById("out-calc-level");
-            displayScore.innerText = finalScore.toFixed(2);
+            if (displayScore) displayScore.innerText = finalScore.toFixed(2);
 
             let riskTier = "COMPLIANT";
             let color = "#15803d";
             if (finalScore < 100) { riskTier = "NON-COMPLIANT"; color = "#b91c1c"; }
 
-            displayScore.style.color = color;
-            displayLevel.innerText = riskTier;
-            displayLevel.style.color = color;
-
-            const penaltyLabel = document.getElementById("out-penalty-label");
-            if (criticalCount > 0) {
-                penaltyLabel.innerText = `Active Failures: ${criticalCount} (${(penalty * 100)}% Drop Applied)`;
-                penaltyLabel.style.color = "#b91c1c";
-            } else {
-                penaltyLabel.innerText = "None (0% drop)";
-                penaltyLabel.style.color = "#16a34a";
+            if (displayScore) displayScore.style.color = color;
+            if (displayLevel) {
+                displayLevel.innerText = riskTier;
+                displayLevel.style.color = color;
             }
 
-            document.getElementById("out-nist").innerText = finalScore === 100 ? "100% Compliant" : `${finalScore.toFixed(0)}% Compliant`;
-            document.getElementById("out-nist").style.color = finalScore === 100 ? "#16a34a" : "#a16207";
+            const penaltyLabel = document.getElementById("out-penalty-label");
+            if (penaltyLabel) {
+                if (criticalCount > 0) {
+                    penaltyLabel.innerText = `Active Failures: ${criticalCount} (${(penalty * 100)}% Drop Applied)`;
+                    penaltyLabel.style.color = "#b91c1c";
+                } else {
+                    penaltyLabel.innerText = "None (0% drop)";
+                    penaltyLabel.style.color = "#16a34a";
+                }
+            }
+
+            const outNistEl = document.getElementById("out-nist");
+            if (outNistEl) {
+                outNistEl.innerText = finalScore === 100 ? "100% Compliant" : `${finalScore.toFixed(0)}% Compliant`;
+                outNistEl.style.color = finalScore === 100 ? "#16a34a" : "#a16207";
+            }
 
             logToTerminal(`[Risk Engine] Compliance recalculated. Base: ${baseScore.toFixed(2)}, Criticals: ${criticalCount}, Final: ${finalScore.toFixed(2)} (${riskTier})`);
         }
 
         function runDriftSimulation() {
-            const scenario = document.getElementById("drift-scenario").value;
+            const scenarioEl = document.getElementById("drift-scenario");
             const d7 = document.getElementById("drift-7");
             const d14 = document.getElementById("drift-14");
             const d30 = document.getElementById("drift-30");
+            if (!scenarioEl || !d7 || !d14 || !d30) return;
+
+            const scenario = scenarioEl.value;
 
             logToTerminal(`[AI Drift] Running 90-day LSTM timeseries projection for "${scenario}" scenario...`);
 
@@ -2730,7 +2753,7 @@
             showDeviceAuditDetails(fleetDataset[0].id);
         }
         populateFleetTable();
-        recalculateScores();
+        recalculateAllScores();
         enforceRoleBasedControls();
 
         // Dynamic operations for User Login and Settings sections
@@ -2870,8 +2893,8 @@
         }
 
         // --- Simplified Compliance & Policy Governance Scripting Blocks ---
-
-        let currentPolicyTab = "all";
+        
+        currentPolicyTab = "all";
 
         function switchPolicyTab(tabId) {
             currentPolicyTab = tabId;
@@ -3301,7 +3324,7 @@
         let currentReconTab = "gaps";
         let reconCurrentPage = 1;
         const reconPageSize = 10;
-        let mergedSoftwareAgents = new Set();
+        mergedSoftwareAgents = new Set();
 
         function registerMergedSoftwareAgents() {
             reconcilerSheets.forEach(sheet => {
