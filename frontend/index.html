@@ -210,7 +210,7 @@
 
                     <!-- Admin-Only Config Alert -->
                     <div id="policy-admin-alert" style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
-                        ⚠️ ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security) privileges are required to override compliance requirements.
+                         ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security) privileges are required to override compliance requirements.
                     </div>
 
                     <!-- Policy Grid Filter Tabs -->
@@ -247,7 +247,7 @@
                     <!-- Multi-upload zone -->
                     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                         <div class="card" style="border: 2px dashed var(--border-clean); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-radius: 4px;">
-                            <span style="font-size: 2.5rem;">📥</span>
+                            <span style="font-size: 2.5rem;"></span>
                             <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Bulk Upload Compliance Sheets</h3>
                             <p style="font-size: 0.75rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">Select multiple CSV or Excel files (.xlsx, .xls) representing different asset inventories or agent check-ins.</p>
                             
@@ -282,7 +282,7 @@
                     <!-- Comparison Action Center -->
                     <div style="display: flex; justify-content: center; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
                         <button id="btn-execute-reconciliation" class="btn" style="font-size: 0.85rem; padding: 0.75rem 2.5rem; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; display: flex; gap: 0.5rem; align-items: center; opacity: 0.6; cursor: not-allowed;" onclick="executeDeepReconciliation()" disabled>
-                            <span>⚡ Execute Multi-Sheet Reconciliation</span>
+                            <span> Execute Multi-Sheet Reconciliation</span>
                         </button>
                     </div>
 
@@ -326,8 +326,8 @@
                                     <button id="btn-recon-tab-matches" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('matches')">Reconciled Matches (<span id="recon-tab-count-matches">0</span>)</button>
                                 </div>
                                 <div style="display: flex; gap: 1rem;">
-                                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;" onclick="exportReconciliationReport()">📥 Export Recon CSV</button>
-                                    <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--status-low); border-color: var(--status-low); color: var(--bg-main);" onclick="mergeReconciliationIntoFleet()">⚡ Merge Reconciled to Fleet</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;" onclick="exportReconciliationReport()">Export Recon CSV</button>
+                                    <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--status-low); border-color: var(--status-low); color: var(--bg-main);" onclick="mergeReconciliationIntoFleet()">Merge Reconciled to Fleet</button>
                                 </div>
                             </div>
 
@@ -379,7 +379,7 @@
                             <!-- Dynamic isolation alert banner -->
                             <div id="det-isolation-banner"
                                 style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); padding: 0.75rem 1rem; color: var(--status-critical); font-weight: 700; font-size: 0.85rem; border-radius: 4px;">
-                                ⚠️ EDR ALERT: THIS HOST HAS BEEN ISOLATED FROM THE CORPORATE NETWORK. ALL SUBNET
+                                EDR ALERT: THIS HOST HAS BEEN ISOLATED FROM THE CORPORATE NETWORK. ALL SUBNET
                                 INGRESS/EGRESS CONSTRAINED.
                             </div>
                             <div
@@ -497,21 +497,21 @@
                                 <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                                     <button class="btn btn-secondary"
                                         style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('PATCH')"><span>🔄 Push Patch Updates</span>
+                                        onclick="triggerDeviceRemediation('PATCH')"><span>Push Patch Updates</span>
                                         <span style="font-weight:400; color:var(--text-muted);">SCCM</span></button>
                                     <button class="btn btn-secondary"
                                         style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('EDR')"><span>🛡️ Run Endpoint Threat
+                                        onclick="triggerDeviceRemediation('EDR')"><span>Run Endpoint Threat
                                             Scan</span> <span
                                             style="font-weight:400; color:var(--text-muted);">EDR</span></button>
                                     <button class="btn btn-secondary"
                                         style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('VAULT')"><span>🔑 Escrow BitLocker
+                                        onclick="triggerDeviceRemediation('VAULT')"><span>Escrow BitLocker
                                             Keys</span> <span
                                             style="font-weight:400; color:var(--text-muted);">Vault</span></button>
                                     <button class="btn"
                                         style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between; background: var(--status-critical); border-color: var(--status-critical); color: var(--bg-main);"
-                                        id="btn-isolate-device" onclick="toggleDeviceIsolation()"><span>⚠️ Isolate
+                                        id="btn-isolate-device" onclick="toggleDeviceIsolation()"><span> Isolate
                                             Network Host</span> <span
                                             style="font-weight:400; opacity: 0.8;">Block</span></button>
                                 </div>
@@ -529,14 +529,14 @@
                         <!-- Import / Export / Clear Controls -->
                         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                             <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
-                                onclick="triggerCsvExport()">📥 Export CSV</button>
+                                onclick="triggerCsvExport()">Export CSV</button>
                             <label for="csv-import-file" class="btn"
-                                style="font-size: 0.75rem; padding: 0.5rem 1rem; margin: 0; display: inline-block; cursor: pointer;">📤
+                                style="font-size: 0.75rem; padding: 0.5rem 1rem; margin: 0; display: inline-block; cursor: pointer;">
                                 Import Sheet</label>
                             <input type="file" id="csv-import-file" accept=".csv, .xlsx, .xls" style="display: none;"
                                 onchange="handleCsvImport(event)">
                             <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 600;"
-                                onclick="triggerClearFleetData()">🗑️ Clear Fleet</button>
+                                onclick="triggerClearFleetData()">Clear Fleet</button>
                         </div>
                     </div>
 
@@ -831,7 +831,7 @@
                         btn.title = "Access Denied: Auditor Read-Only";
 
                         if (isIsolation) {
-                            btn.innerHTML = `<span>🔒 Isolated (Auditor Read-Only)</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                            btn.innerHTML = `<span>Isolated (Auditor Read-Only)</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
                             btn.style.background = "var(--border-clean)";
                             btn.style.borderColor = "var(--border-clean)";
                             btn.style.color = "var(--text-muted)";
@@ -853,12 +853,12 @@
                                 const dev = fleetDataset.find(d => d.id === selectedDevice);
                                 if (dev) {
                                     if (dev.is_isolated) {
-                                        btn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                                        btn.innerHTML = `<span>Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
                                         btn.style.background = "var(--status-low)";
                                         btn.style.borderColor = "var(--status-low)";
                                         btn.style.color = "var(--bg-main)";
                                     } else {
-                                        btn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                                        btn.innerHTML = `<span>Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
                                         btn.style.background = "var(--status-critical)";
                                         btn.style.borderColor = "var(--status-critical)";
                                         btn.style.color = "var(--bg-main)";
@@ -877,12 +877,12 @@
                             const dev = fleetDataset.find(d => d.id === selectedDevice);
                             if (dev) {
                                 if (dev.is_isolated) {
-                                    btn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                                    btn.innerHTML = `<span>Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
                                     btn.style.background = "var(--status-low)";
                                     btn.style.borderColor = "var(--status-low)";
                                     btn.style.color = "var(--bg-main)";
                                 } else {
-                                    btn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                                    btn.innerHTML = `<span>Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
                                     btn.style.background = "var(--status-critical)";
                                     btn.style.borderColor = "var(--status-critical)";
                                     btn.style.color = "var(--bg-main)";
@@ -1509,7 +1509,7 @@
         }
 
         function triggerClearFleetData() {
-            const confirmPurge = confirm("🚨 WARNING: Are you sure you want to clear the entire compliance database? All assets will be deleted.");
+            const confirmPurge = confirm("WARNING: Are you sure you want to clear the entire compliance database? All assets will be deleted.");
             if (!confirmPurge) return;
 
             fleetDataset = [];
@@ -1721,11 +1721,11 @@
             // Update Network Isolation Button state
             const isolateBtn = document.getElementById("btn-isolate-device");
             if (dev.is_isolated) {
-                isolateBtn.innerHTML = `<span>🟢 Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                isolateBtn.innerHTML = `<span>Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
                 isolateBtn.style.background = "var(--status-low)";
                 isolateBtn.style.borderColor = "var(--status-low)";
             } else {
-                isolateBtn.innerHTML = `<span>⚠️ Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                isolateBtn.innerHTML = `<span>Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
                 isolateBtn.style.background = "var(--status-critical)";
                 isolateBtn.style.borderColor = "var(--status-critical)";
             }
@@ -1823,7 +1823,7 @@
             if (targetBtn) {
                 targetBtn.disabled = true;
                 const originalHtml = targetBtn.innerHTML;
-                targetBtn.innerHTML = `<span>⏳ Processing Remediation...</span> <span style="font-weight:400; color:var(--text-muted);">${action}</span>`;
+                targetBtn.innerHTML = `<span>Processing Remediation...</span> <span style="font-weight:400; color:var(--text-muted);">${action}</span>`;
 
                 setTimeout(() => {
                     targetBtn.disabled = false;
@@ -2787,7 +2787,7 @@
             // Check lockout first
             if (Date.now() < lockoutUntil) {
                 const waitSecs = Math.ceil((lockoutUntil - Date.now()) / 1000);
-                document.getElementById("portal-login-error-msg").innerText = `🔒 Vault Security lockout active. Please try again in ${waitSecs} seconds.`;
+                document.getElementById("portal-login-error-msg").innerText = `Vault Security lockout active. Please try again in ${waitSecs} seconds.`;
                 document.getElementById("portal-login-error-msg").style.display = "block";
                 logToTerminal(`[Auth Lockout] Access denied. Client is rate-limited.`, "error");
                 return;
@@ -2801,7 +2801,7 @@
             errorDiv.style.display = "none";
 
             if (!user) {
-                errorDiv.innerText = "❌ Ingestion Failure: Username cannot be empty.";
+                errorDiv.innerText = " Ingestion Failure: Username cannot be empty.";
                 errorDiv.style.display = "block";
                 logToTerminal("[Login Fail] Username cannot be empty.", "error");
                 return;
@@ -2818,9 +2818,9 @@
                 if (loginFailCount >= 3) {
                     lockoutUntil = Date.now() + 60000; // 60 seconds lockout
                     loginFailCount = 0; // Reset fails after lock
-                    errorDiv.innerText = "🔒 Security Alert: Too many failed challenge matches. Vault locked for 60 seconds.";
+                    errorDiv.innerText = "Security Alert: Too many failed challenge matches. Vault locked for 60 seconds.";
                 } else {
-                    errorDiv.innerText = `❌ Authentication Failed: Invalid challenge PIN matched. (${3 - loginFailCount} attempts remaining)`;
+                    errorDiv.innerText = ` Authentication Failed: Invalid challenge PIN matched. (${3 - loginFailCount} attempts remaining)`;
                 }
                 errorDiv.style.display = "block";
                 return;
@@ -3098,7 +3098,7 @@
                             <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)')}; border: 1px solid ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)')}; color: ${isUnreported ? 'var(--text-muted)' : (isRequired ? '#ff6b6b' : '#15803d')}; font-weight: 700; cursor: ${isAdmin && !isUnreported ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin && !isUnreported ? 1 : 0.6};" 
                                 ${isUnreported ? 'disabled' : ''}
                                 onclick="togglePolicyEnforcement(decodeURIComponent('${encodeURIComponent(name)}'))">
-                                ${isUnreported ? 'Telemetry Unavailable' : (isRequired ? '⚠️ Exclude Policy (Make Optional)' : '🛡️ Enforce Policy (Make Required)')}
+                                ${isUnreported ? 'Telemetry Unavailable' : (isRequired ? 'Exclude Policy (Make Optional)' : 'Enforce Policy (Make Required)')}
                             </button>
                         </div>
                     `;
@@ -3263,7 +3263,7 @@
             let exceptionsRowsHtml = "";
 
             if (nonCompliantDevices.length === 0) {
-                exceptionsRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 No non-compliance exceptions detected! Active fleet is 100% compliant.</td></tr>`;
+                exceptionsRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;"> No non-compliance exceptions detected! Active fleet is 100% compliant.</td></tr>`;
             } else {
                 nonCompliantDevices.forEach(dev => {
                     const failedControls = getFailedControlsForDevice(dev);
@@ -3295,7 +3295,7 @@
                             <td style="text-align: right; width: 120px;">
                                 <button class="btn" style="font-size: 0.7rem; padding: 0.35rem 0.65rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 700; width: auto; cursor: pointer;"
                                     onclick="goToRemediation('${dev.id}')">
-                                    🔧 Remediate
+                                     Remediate
                                 </button>
                             </td>
                         </tr>
@@ -3449,7 +3449,7 @@
                             if (typeof XLSX === "undefined") {
                                 const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
                                 logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${cdnError}`, "error");
-                                alert(`❌ Excel Ingestion Failed:\n\n${cdnError}`);
+                                alert(` Excel Ingestion Failed:\n\n${cdnError}`);
                                 return;
                             }
 
@@ -3462,7 +3462,7 @@
 
                         if (!rows || rows.length < 2) {
                             logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
-                            alert(`❌ Ingestion Failed: "${file.name}" has no data or has too few rows.`);
+                            alert(` Ingestion Failed: "${file.name}" has no data or has too few rows.`);
                             return;
                         }
 
@@ -3510,7 +3510,7 @@
 
                     } catch (err) {
                         logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
-                        alert(`❌ File Import Error: ${err.message}`);
+                        alert(` File Import Error: ${err.message}`);
                     }
                 };
 
@@ -3940,10 +3940,10 @@
                         
                         const isIsolated = item.is_isolated;
                         const isolateBtnHtml = isIsolated 
-                            ? `<button class="btn" style="background:var(--border-clean); color:var(--text-muted); border-color:var(--border-clean); font-size:0.7rem; padding:0.35rem 0.65rem; cursor:not-allowed;" disabled>🔒 Isolated</button>`
-                            : `<button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="isolateRogueAsset('${item.id}')">⚠️ Isolate</button>`;
+                            ? `<button class="btn" style="background:var(--border-clean); color:var(--text-muted); border-color:var(--border-clean); font-size:0.7rem; padding:0.35rem 0.65rem; cursor:not-allowed;" disabled>Isolated</button>`
+                            : `<button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="isolateRogueAsset('${item.id}')"> Isolate</button>`;
                         
-                        const registerBtnHtml = `<button class="btn" style="background:rgba(21,128,61,0.15); border:1px solid rgba(21,128,61,0.4); color:#15803d; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="registerRogueAsset('${item.id}')">🟢 Register</button>`;
+                        const registerBtnHtml = `<button class="btn" style="background:rgba(21,128,61,0.15); border:1px solid rgba(21,128,61,0.4); color:#15803d; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="registerRogueAsset('${item.id}')">Register</button>`;
                         
                         const actionButtons = `<div style="display:flex; gap:0.5rem; justify-content:flex-end;">${isolateBtnHtml}${registerBtnHtml}</div>`;
                         
@@ -3972,7 +3972,7 @@
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${item.name.toUpperCase()}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
-                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">🟢 Aligned</td>
+                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;"> Aligned</td>
                             <td style="vertical-align: middle; padding: 0.75rem 0;">
                                 <div style="display: flex; flex-wrap: wrap; max-width: 750px;">
                                     ${propertiesHtml}
@@ -4406,7 +4406,7 @@
             
             rogue.is_isolated = true;
             logToTerminal(`[EDR Containment] Dispatched zero-trust network containment isolation for rogue host ${rogue.name.toUpperCase()} (ID: ${rogue.id}).`, "error");
-            alert(`⚠️ Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
+            alert(`Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
             
             recalculateAllScores();
             renderReconTableBody();
@@ -4497,7 +4497,7 @@
             if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
             
             logToTerminal(`[Reconciler] Manually authorized and enrolled rogue asset ${rogue.name.toUpperCase()} into Corporate Directory context.`, "info");
-            alert(`🟢 Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
+            alert(`Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
             
             recalculateAllScores();
             switchReconTab("matches");
@@ -4513,7 +4513,7 @@
                 return;
             }
 
-            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
+            const confirmMerge = confirm(`Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
             if (!confirmMerge) return;
 
             registerMergedSoftwareAgents();
@@ -4779,7 +4779,7 @@
             recalculateAllScores();
             switchNavSection("compliance");
             
-            const successMsg = `⚡ Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
+            const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
             logToTerminal(`[Reconciler] ${successMsg}`, "info");
             alert(successMsg);
         }
