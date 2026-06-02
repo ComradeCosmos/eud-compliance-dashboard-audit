@@ -4058,12 +4058,210 @@
             }
         }
 
+        function findExistingDeviceByItem(item) {
+            if (!item) return null;
+            
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
+            
+            function getPrimaryColValue(row, keywords) {
+                if (!primarySheet) return null;
+                for (let kw of keywords) {
+                    const idx = primaryHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
+                    if (idx !== -1 && row[idx] !== undefined) {
+                        return String(row[idx]).trim();
+                    }
+                }
+                return null;
+            }
+            
+            function getMergedPropValue(mergedProperties, keywords) {
+                if (!mergedProperties) return null;
+                for (let p of mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    for (let kw of keywords) {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) {
+                                return p.value;
+                            }
+                        } else if (propName.includes(kw)) {
+                            return p.value;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            let nameVal = null;
+            let serialVal = null;
+            let macVal = null;
+            
+            if (item.primaryRow && primarySheet) {
+                nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
+                serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
+                macVal = getPrimaryColValue(item.primaryRow, macKeywords);
+            }
+            
+            if (item.mergedProperties) {
+                if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
+                if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
+                if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
+            }
+            
+            if (item.sheets) {
+                item.sheets.forEach(s => {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+                    
+                    function getSecondaryColValue(row, keywords) {
+                        for (let kw of keywords) {
+                            const idx = sHeaders.findIndex(h => {
+                                if (kw.length <= 3) {
+                                    const words = h.split(/[^a-z0-9]+/);
+                                    return words.includes(kw);
+                                }
+                                return h.includes(kw);
+                            });
+                            if (idx !== -1 && row[idx] !== undefined) {
+                                return String(row[idx]).trim();
+                            }
+                        }
+                        return null;
+                    }
+                    
+                    if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
+                    if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
+                    if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
+                });
+            }
+            
+            if (!nameVal) nameVal = item.name || item.normalized || "";
+            
+            const normName = nameVal ? nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+            const normSerial = serialVal ? serialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+            const normMac = macVal ? macVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+            
+            if (!normName && !normSerial && !normMac) return null;
+            
+            return fleetDataset.find(dev => {
+                const devName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                const devSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                const devMac = String(dev.mac || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                
+                if (normName && (devName === normName || devName.includes(normName) || normName.includes(devName))) return true;
+                if (normSerial && (devSerial === normSerial || devSerial.includes(normSerial) || normSerial.includes(devSerial))) return true;
+                if (normMac && (devMac === normMac || devMac.includes(normMac) || devMac.includes(devMac))) return true;
+                
+                return false;
+            });
+        }
+
+        function extractDeviceIdentifiers(item) {
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
+            
+            function getPrimaryColValue(row, keywords) {
+                if (!primarySheet) return null;
+                for (let kw of keywords) {
+                    const idx = primaryHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
+                    if (idx !== -1 && row[idx] !== undefined) {
+                        return String(row[idx]).trim();
+                    }
+                }
+                return null;
+            }
+            
+            function getMergedPropValue(mergedProperties, keywords) {
+                if (!mergedProperties) return null;
+                for (let p of mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    for (let kw of keywords) {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) {
+                                return p.value;
+                            }
+                        } else if (propName.includes(kw)) {
+                            return p.value;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            let nameVal = null;
+            let serialVal = null;
+            let macVal = null;
+            
+            if (item.primaryRow && primarySheet) {
+                nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
+                serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
+                macVal = getPrimaryColValue(item.primaryRow, macKeywords);
+            }
+            if (item.mergedProperties) {
+                if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
+                if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
+                if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
+            }
+            if (item.sheets) {
+                item.sheets.forEach(s => {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+                    
+                    function getSecondaryColValue(row, keywords) {
+                        for (let kw of keywords) {
+                            const idx = sHeaders.findIndex(h => {
+                                if (kw.length <= 3) {
+                                    const words = h.split(/[^a-z0-9]+/);
+                                    return words.includes(kw);
+                                }
+                                return h.includes(kw);
+                            });
+                            if (idx !== -1 && row[idx] !== undefined) {
+                                return String(row[idx]).trim();
+                            }
+                        }
+                        return null;
+                    }
+                    
+                    if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
+                    if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
+                    if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
+                });
+            }
+            
+            if (!nameVal) nameVal = item.name || item.normalized || "Unknown Reconciled";
+            if (!serialVal) serialVal = `SN-RECON-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+            if (!macVal) macVal = `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`;
+            
+            return { nameVal, serialVal, macVal };
+        }
+
         function isolateRogueAsset(rogueId) {
             const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
             if (!rogue) return;
             
-            // Check if already in fleetDataset
-            let existing = fleetDataset.find(dev => dev.canonical_name === rogue.normalized);
+            // Check if already in fleetDataset using robust matching
+            let existing = findExistingDeviceByItem(rogue);
             if (existing) {
                 existing.is_isolated = true;
                 existing.is_rogue = true;
@@ -4080,11 +4278,12 @@
                     });
                 });
                 
+                const ids = extractDeviceIdentifiers(rogue);
                 fleetDataset.push({
                     id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                    canonical_name: rogue.normalized,
-                    serial: `SN-ROGUE-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                    mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                    canonical_name: rogue.normalized || ids.nameVal,
+                    serial: ids.serialVal.startsWith("SN-ROGUE-") ? ids.serialVal : `SN-ROGUE-${ids.serialVal.replace(/^SN-/, "")}`,
+                    mac: ids.macVal,
                     manufacturer: "Unmanaged Rogue",
                     os: "Unknown Platform",
                     os_family: "Windows",
@@ -4120,8 +4319,8 @@
             const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
             if (!rogue) return;
             
-            // Register it! Add it to fleetDataset as a fully compliant managed asset
-            let existing = fleetDataset.find(dev => dev.canonical_name === rogue.normalized);
+            // Register it! Add it to fleetDataset as a fully compliant managed asset using robust matching
+            let existing = findExistingDeviceByItem(rogue);
             
             const newCustomProps = { 
                 "Reconciliation Match": "SUCCESS",
@@ -4148,11 +4347,12 @@
                 if (!existing.custom_properties) existing.custom_properties = {};
                 Object.assign(existing.custom_properties, newCustomProps);
             } else {
+                const ids = extractDeviceIdentifiers(rogue);
                 fleetDataset.push({
                     id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                    canonical_name: rogue.normalized,
-                    serial: `SN-REGISTERED-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                    mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                    canonical_name: rogue.normalized || ids.nameVal,
+                    serial: ids.serialVal.startsWith("SN-REGISTERED-") ? ids.serialVal : `SN-REGISTERED-${ids.serialVal.replace(/^SN-/, "")}`,
+                    mac: ids.macVal,
                     manufacturer: "Authorized Manually",
                     os: "Windows 11 Enterprise",
                     os_family: "Windows",
@@ -4225,12 +4425,7 @@
             let mergedUpdated = 0;
 
             matches.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => {
-                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    return dName === normName || dSerial === normName || dSerial.includes(normName);
-                });
+                let existing = findExistingDeviceByItem(item);
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
@@ -4253,11 +4448,12 @@
                 } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                        canonical_name: item.name,
-                        serial: `SN-RECON-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                        mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal,
+                        mac: ids.macVal,
                         manufacturer: "Generic Reconciled",
                         os: "Windows 11 Enterprise",
                         os_family: "Windows",
@@ -4288,12 +4484,7 @@
             });
 
             gaps.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => {
-                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    return dName === normName || dSerial === normName || dSerial.includes(normName);
-                });
+                let existing = findExistingDeviceByItem(item);
 
                 const customProps = { 
                     "Reconciliation Match": "COVERAGE_GAP",
@@ -4333,11 +4524,12 @@
                 } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                        canonical_name: item.name,
-                        serial: `SN-GAP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                        mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : `SN-GAP-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
+                        mac: ids.macVal,
                         manufacturer: "Generic Reconciled Gap",
                         os: "Unknown Platform",
                         os_family: "Windows",
@@ -4389,12 +4581,7 @@
             });
 
             rogues.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => {
-                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    return dName === normName || dSerial === normName || dSerial.includes(normName);
-                });
+                let existing = findExistingDeviceByItem(item);
 
                 const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
                 item.sheets.forEach(s => {
@@ -4406,20 +4593,22 @@
                 });
 
                 if (existing) {
-                    existing.score = 0.00;
+                    existing.score = item.is_isolated ? 10.00 : 0.00;
                     existing.level = "NON_COMPLIANT";
                     existing.is_rogue = true;
+                    existing.is_isolated = !!item.is_isolated;
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                        canonical_name: item.name,
-                        serial: `SN-ROGUE-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-                        mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal.startsWith("SN-ROGUE-") ? ids.serialVal : `SN-ROGUE-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
+                        mac: ids.macVal,
                         manufacturer: "Unmanaged Rogue",
                         os: "Unknown Platform",
                         os_family: "Windows",
