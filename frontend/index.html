@@ -3827,6 +3827,43 @@
             renderReconTableBody();
         }
 
+        function mergeDistinctProperties(target, source) {
+            for (let key in source) {
+                if (!source.hasOwnProperty(key)) continue;
+                
+                const newValue = source[key];
+                
+                // Extract base property name from the source key
+                let baseKey = key;
+                if (key.startsWith('[') && key.includes('] ')) {
+                    baseKey = key.substring(key.indexOf('] ') + 2);
+                }
+                
+                // Let's check if the target already contains a matching property with the same value
+                let hasMatchingInfo = false;
+                for (let targetKey in target) {
+                    if (!target.hasOwnProperty(targetKey)) continue;
+                    
+                    let targetBaseKey = targetKey;
+                    if (targetKey.startsWith('[') && targetKey.includes('] ')) {
+                        targetBaseKey = targetKey.substring(targetKey.indexOf('] ') + 2);
+                    }
+                    
+                    if (targetBaseKey.toLowerCase() === baseKey.toLowerCase()) {
+                        if (target[targetKey] === newValue) {
+                            hasMatchingInfo = true;
+                            break;
+                        }
+                    }
+                }
+                
+                // If the target does NOT have matching information, then we merge it!
+                if (!hasMatchingInfo) {
+                    target[key] = newValue;
+                }
+            }
+        }
+
         function mergeReconciliationIntoFleet() {
             const gaps = reconciliationResults.gaps;
             const rogues = reconciliationResults.rogues;
@@ -3854,9 +3891,11 @@
 
                 if (existing) {
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: item.name,
@@ -3880,7 +3919,7 @@
                             required: "REQUIRED",
                             status: "COMPLIANT"
                         })),
-                        custom_properties: customProps
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
@@ -3914,9 +3953,11 @@
                     });
 
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: item.name,
@@ -3946,7 +3987,7 @@
                                 status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
                             };
                         }),
-                        custom_properties: customProps
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
@@ -3969,9 +4010,11 @@
                     existing.score = 0.00;
                     existing.level = "NON_COMPLIANT";
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
                     fleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: item.name,
@@ -3995,7 +4038,7 @@
                             required: "REQUIRED",
                             status: "COMPLIANT"
                         })),
-                        custom_properties: customProps
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
