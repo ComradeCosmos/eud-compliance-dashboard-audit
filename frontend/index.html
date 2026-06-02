@@ -1320,48 +1320,6 @@
                 // Fuzzy match column for pre-calculated score if it exists in the imported sheet
                 const scoreColIdx = findIndex(["score", "compliance score", "compliance_score", "risk score", "risk_score", "device score", "device_score"]);
 
-                // Analyze headers and classify them dynamically
-                const complianceKeywords = ["ad", "bitlocker", "bit locker", "zscaler", "z-scaler", "nessus", "sentinelone", "sentinel one", "s1", "sccm", "agent", "status", "compliance", "encryption", "protection", "security", "firewall", "mfa", "antivirus", "patch", "update", "state", "enrollment", "client", "connector", "scanner"];
-                const valueKeywords = ["compliant", "non-compliant", "non_compliant", "active", "inactive", "installed", "missing", "enabled", "disabled", "yes", "no", "true", "false", "offline", "online", "fail", "failed", "success", "warning", "critical"];
-
-                const headersCount = rows[0].length;
-                const isComplianceCol = new Array(headersCount).fill(false);
-
-                for (let colIdx = 0; colIdx < headersCount; colIdx++) {
-                    // Skip basic metadata columns
-                    if (colIdx === deviceNameIdx || colIdx === serialIdx || colIdx === macIdx || colIdx === manufacturerIdx ||
-                        colIdx === conditionIdx || colIdx === userIdx || colIdx === lastLoginIdx || colIdx === locationIdx ||
-                        colIdx === locationGroupIdx || colIdx === scoreColIdx) {
-                        continue;
-                    }
-
-                    const headerText = String(rows[0][colIdx]).trim().toLowerCase();
-                    const words = headerText.split(/[^a-z0-9]+/);
-                    let matchesHeader = complianceKeywords.some(kw => {
-                        if (kw.length <= 3) {
-                            // Avoid substring matching for short keywords (e.g. "ad" in "ip_address")
-                            return words.includes(kw);
-                        }
-                        return headerText.includes(kw);
-                    });
-
-                    let matchesValue = false;
-                    for (let rIdx = 1; rIdx < rows.length; rIdx++) {
-                        const rowVal = rows[rIdx] && rows[rIdx][colIdx];
-                        if (rowVal !== undefined && rowVal !== null) {
-                            const valStr = String(rowVal).trim().toLowerCase();
-                            if (valueKeywords.includes(valStr)) {
-                                matchesValue = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (matchesHeader || matchesValue) {
-                        isComplianceCol[colIdx] = true;
-                    }
-                }
-
                 // Map the spreadsheet headers dynamically in original order
                 activeTableHeaders = rows[0].map(h => String(h).trim());
                 activeTableKeys = headers.map((header, idx) => {
@@ -1381,7 +1339,6 @@
                     if (idx === nessusColIdx) return "nessus";
                     if (idx === sentinelOneColIdx) return "sentinelone";
                     if (idx === sccmColIdx) return "sccm";
-                    if (isComplianceCol[idx]) return `compliance:${rows[0][idx].trim()}`;
                     return `custom:${rows[0][idx].trim()}`;
                 });
 
@@ -1457,22 +1414,9 @@
                         { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControlVal(sccmColIdx, "SCCM Management Agent", true) }
                     ];
 
-                    // Dynamically append any other dynamic compliance columns!
-                    headers.forEach((header, idx) => {
-                        if (isComplianceCol[idx] && idx !== adColIdx && idx !== bitlockerColIdx && idx !== zscalerColIdx && idx !== nessusColIdx && idx !== sentinelOneColIdx && idx !== sccmColIdx) {
-                            const colName = rows[0][idx].trim();
-                            software.push({
-                                name: colName,
-                                key: `compliance:${colName}`,
-                                required: "REQUIRED",
-                                ...checkControlVal(idx, colName, true)
-                            });
-                        }
-                    });
-
                     let finalScore = 100.00;
                     const hasNonCompliant = software.some(sw => {
-                        const isRequired = isCoreMandate(sw.name) ? (enforcedPolicies[sw.name] !== false) : (enforcedPolicies[sw.name] === true);
+                        const isRequired = enforcedPolicies[sw.name] !== false;
                         return isRequired && sw.status === "NON_COMPLIANT";
                     });
                     if (hasNonCompliant) {
@@ -1764,13 +1708,8 @@
             enforceRoleBasedControls();
         }
 
-        // Helper to check if a compliance policy is a core built-in mandate
-        function isCoreMandate(name) {
-            return sampleSoftwareCatalog.some(sw => sw.name === name);
-        }
-
         // Unified score calculation algorithm link software table status and dynamic Excel properties dynamically
-        function recalculateSingleDeviceScore(dev, cachedPolicies) {
+        function recalculateSingleDeviceScore(dev) {
             if (dev.is_isolated) {
                 dev.score = 10.00;
                 dev.level = "NON_COMPLIANT";
@@ -1785,31 +1724,15 @@
             let score = 100.00;
             let hasNonCompliant = false;
 
-            const policies = cachedPolicies || getAvailablePolicies();
+            const policies = getAvailablePolicies();
             for (let name of policies) {
-                const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
+                const isRequired = enforcedPolicies[name] !== false; // Required by default
                 if (!isRequired) continue;
 
-                // 1. Check core software agent compliance
+                // Check core software agent compliance
                 const sw = dev.software && dev.software.find(s => s.name === name);
                 if (sw) {
                     if (sw.status === "NON_COMPLIANT") {
-                        hasNonCompliant = true;
-                        break;
-                    }
-                }
-
-                // 2. Check dynamic Excel-merged custom properties
-                if (name.startsWith('[')) {
-                    const val = dev.custom_properties && dev.custom_properties[name];
-                    if (val === undefined || val === null) {
-                        // Device is missing from the sheet that supplied this policy -> NON_COMPLIANT!
-                        hasNonCompliant = true;
-                        break;
-                    }
-                    const valStr = String(val).trim().toLowerCase();
-                    const isFailed = valStr === "" || valStr === "missing" || valStr === "no" || valStr === "false" || valStr === "0" || valStr === "none" || valStr === "inactive" || valStr === "disabled" || valStr === "fail" || valStr === "failed" || valStr === "non_compliant" || valStr === "non-compliant" || valStr === "offline" || valStr === "critical";
-                    if (isFailed) {
                         hasNonCompliant = true;
                         break;
                     }
@@ -2940,25 +2863,14 @@
         }
 
         function getAvailablePolicies() {
-            const policies = new Set();
-            sampleSoftwareCatalog.forEach(sw => policies.add(sw.name));
-            if (fleetDataset.length > 0) {
-                fleetDataset.forEach(dev => {
-                    if (dev.software) {
-                        dev.software.forEach(sw => {
-                            policies.add(sw.name);
-                        });
-                    }
-                    if (dev.custom_properties) {
-                        Object.keys(dev.custom_properties).forEach(key => {
-                            if (key.startsWith('[')) {
-                                policies.add(key);
-                            }
-                        });
-                    }
-                });
-            }
-            return Array.from(policies);
+            return [
+                "Active Directory (AD) Enrollment",
+                "BitLocker Drive Encryption",
+                "Zscaler Client Connector",
+                "Nessus Vulnerability Agent",
+                "SentinelOne Endpoint Protection",
+                "SCCM Management Agent"
+            ];
         }
 
         function getPolicyStats(name) {
@@ -2970,22 +2882,10 @@
 
                 totalCount++;
 
-                if (name.startsWith('[')) {
-                    // Dynamic Excel custom property policy
-                    const val = dev.custom_properties && dev.custom_properties[name];
-                    if (val !== undefined && val !== null) {
-                        const valStr = String(val).trim().toLowerCase();
-                        const isFailed = valStr === "" || valStr === "missing" || valStr === "no" || valStr === "false" || valStr === "0" || valStr === "none" || valStr === "inactive" || valStr === "disabled" || valStr === "fail" || valStr === "failed" || valStr === "non_compliant" || valStr === "non-compliant" || valStr === "offline" || valStr === "critical";
-                        if (!isFailed) {
-                            compliantCount++;
-                        }
-                    }
-                } else {
-                    // Core software policy
-                    const sw = dev.software && dev.software.find(s => s.name === name);
-                    if (sw && sw.status === "COMPLIANT") {
-                        compliantCount++;
-                    }
+                // Core software policy
+                const sw = dev.software && dev.software.find(s => s.name === name);
+                if (sw && sw.status === "COMPLIANT") {
+                    compliantCount++;
                 }
             });
 
@@ -2997,39 +2897,19 @@
 
             if (dev.software) {
                 dev.software.forEach(sw => {
-                    const isRequired = isCoreMandate(sw.name) ? (enforcedPolicies[sw.name] !== false) : (enforcedPolicies[sw.name] === true);
+                    const isRequired = enforcedPolicies[sw.name] !== false;
                     if (isRequired && sw.status === "NON_COMPLIANT") {
                         failedControls.push(sw.name);
                     }
                 });
             }
 
-            const policies = getAvailablePolicies();
-            policies.forEach(name => {
-                if (name.startsWith('[')) {
-                    const isRequired = enforcedPolicies[name] === true; // dynamic Excel properties are optional by default
-                    if (isRequired) {
-                        const val = dev.custom_properties && dev.custom_properties[name];
-                        if (val === undefined || val === null) {
-                            failedControls.push(`${name} (Missing Entry)`);
-                        } else {
-                            const valStr = String(val).trim().toLowerCase();
-                            const isFailed = valStr === "" || valStr === "missing" || valStr === "no" || valStr === "false" || valStr === "0" || valStr === "none" || valStr === "inactive" || valStr === "disabled" || valStr === "fail" || valStr === "failed" || valStr === "non_compliant" || valStr === "non-compliant" || valStr === "offline" || valStr === "critical";
-                            if (isFailed) {
-                                failedControls.push(`${name} (${val})`);
-                            }
-                        }
-                    }
-                }
-            });
-
             return failedControls;
         }
 
         function recalculateAllScores() {
-            const policies = getAvailablePolicies();
             fleetDataset.forEach(dev => {
-                recalculateSingleDeviceScore(dev, policies);
+                recalculateSingleDeviceScore(dev);
             });
             updateFleetWideMetrics();
             handleFleetQueryChange();
@@ -3086,7 +2966,7 @@
             } else {
                 grid.style.display = "grid";
                 filteredPolicies.forEach(name => {
-                    const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
+                    const isRequired = enforcedPolicies[name] !== false; // default true
                     
                     // Count telemetry passes via unified stats helper
                     const stats = getPolicyStats(name);
@@ -3107,9 +2987,9 @@
                     const badgeClass = isRequired ? "risk-low" : "group-non-sift";
                     const badgeLabel = isRequired ? "REQUIRED" : "OPTIONAL";
 
-                    // Simplify dynamic Excel headers for rendering to keep cards beautifully clean
-                    const displayName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
-                    const displaySubtitle = name.startsWith('[') ? `Source: ${name.match(/^\[(.*?)\]/)[1]}` : 'Core System Mandate';
+                    // Core mandates are simple display names
+                    const displayName = name;
+                    const displaySubtitle = 'Core System Mandate';
 
                     card.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
@@ -3150,7 +3030,7 @@
                 return;
             }
 
-            const current = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
+            const current = enforcedPolicies[name] !== false; // default true
             enforcedPolicies[name] = !current;
 
             logToTerminal(`[Policy Board] Policy "${name}" enforcement status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL'}.`, enforcedPolicies[name] ? 'info' : 'warning');
@@ -3234,7 +3114,7 @@
                 controlRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No security policies loaded.</td></tr>`;
             } else {
                 policies.forEach(name => {
-                    const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
+                    const isRequired = enforcedPolicies[name] !== false;
                     const stats = getPolicyStats(name);
                     const compliantCount = stats.compliantCount;
                     const totalCount = stats.totalCount;
