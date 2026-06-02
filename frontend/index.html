@@ -1520,10 +1520,36 @@
             activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
             activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
 
-            // Clear selected device details panel
-            document.getElementById("details-default-msg").style.display = "block";
-            document.getElementById("details-content-box").style.display = "none";
+            // Clear spreadsheet reconciler cache and workspace data
+            reconcilerSheets = [];
+            reconciliationResults = {
+                matches: [],
+                gaps: [],
+                rogues: []
+            };
+            mergedSoftwareAgents = new Set();
 
+            // Clear file input UI elements
+            const csvImportFile = document.getElementById("csv-import-file");
+            if (csvImportFile) csvImportFile.value = "";
+            const reconcilerMultiFiles = document.getElementById("reconciler-multi-files");
+            if (reconcilerMultiFiles) reconcilerMultiFiles.value = "";
+
+            // Hide reconciler results sub-panel wrapper
+            const reconcilerResultsWrapper = document.getElementById("reconciler-results-wrapper");
+            if (reconcilerResultsWrapper) {
+                reconcilerResultsWrapper.style.display = "none";
+            }
+
+            // Clear selected device details panel
+            const detailsDefaultMsg = document.getElementById("details-default-msg");
+            if (detailsDefaultMsg) detailsDefaultMsg.style.display = "block";
+            const detailsContentBox = document.getElementById("details-content-box");
+            if (detailsContentBox) detailsContentBox.style.display = "none";
+
+            // Update all views, metrics, and render states
+            renderReconcilerQueue();
+            renderReconTableBody();
             updateFleetWideMetrics();
             handleFleetQueryChange();
 
