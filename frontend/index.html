@@ -2176,10 +2176,11 @@
 
         // Fleet stats updater
         function updateFleetWideMetrics() {
-            const scaleVal = fleetDataset.length;
+            const activeFleet = fleetDataset.filter(d => d.condition === "IN_USE");
+            const scaleVal = activeFleet.length;
             document.getElementById("fleet-scale-val").innerText = scaleVal.toLocaleString();
 
-            const avg = fleetDataset.reduce((sum, item) => sum + item.score, 0) / scaleVal;
+            const avg = scaleVal > 0 ? activeFleet.reduce((sum, item) => sum + item.score, 0) / scaleVal : 100;
             const scoreDisplay = document.getElementById("fleet-score-val");
             scoreDisplay.innerText = avg.toFixed(2);
             scoreDisplay.style.color = getScoreColor(avg);
@@ -2205,8 +2206,9 @@
 
             if (dimension === "trend") {
                 // Calculate fleet average compliance score
-                const scaleVal = fleetDataset.length;
-                const avg = scaleVal > 0 ? (fleetDataset.reduce((sum, item) => sum + item.score, 0) / scaleVal) : 0;
+                const activeFleet = fleetDataset.filter(d => d.condition === "IN_USE");
+                const scaleVal = activeFleet.length;
+                const avg = scaleVal > 0 ? (activeFleet.reduce((sum, item) => sum + item.score, 0) / scaleVal) : 100;
 
                 // Preceding 5 points + current point
                 const months = ["Dec 2025", "Jan 2026", "Feb 2026", "Mar 2026", "Apr 2026", "May (Current)"];
@@ -2321,6 +2323,7 @@
                 // OS breakdown column chart
                 let winCount = 0, macCount = 0, linuxCount = 0, otherCount = 0;
                 fleetDataset.forEach(d => {
+                    if (d.condition !== "IN_USE") return; // Filter active only!
                     const family = (d.os_family || "").toLowerCase();
                     const name = (d.os || "").toLowerCase();
                     if (family === "windows" || name.includes("windows")) winCount++;
@@ -2329,7 +2332,7 @@
                     else otherCount++;
                 });
 
-                const total = fleetDataset.length;
+                const total = winCount + macCount + linuxCount + otherCount;
                 const osData = [
                     { name: "Windows", count: winCount, pct: total > 0 ? (winCount / total) * 100 : 0, color: "#334155" },
                     { name: "macOS", count: macCount, pct: total > 0 ? (macCount / total) * 100 : 0, color: "#0f172a" },
@@ -2399,6 +2402,7 @@
                 let siftScoreSum = 0, nonSiftScoreSum = 0;
 
                 fleetDataset.forEach(d => {
+                    if (d.condition !== "IN_USE") return; // Filter active only!
                     if (d.location_group === "Sift") {
                         siftCount++;
                         siftScoreSum += d.score;
@@ -2408,7 +2412,7 @@
                     }
                 });
 
-                const total = fleetDataset.length;
+                const total = siftCount + nonSiftCount;
                 const siftPct = total > 0 ? (siftCount / total) * 100 : 0;
                 const nonSiftPct = total > 0 ? (nonSiftCount / total) * 100 : 0;
 
@@ -2498,11 +2502,12 @@
                 // Count compliance status dynamically
                 let compliant = 0, nonCompliant = 0;
                 fleetDataset.forEach(d => {
+                    if (d.condition !== "IN_USE") return; // Filter active only!
                     if (d.level === "COMPLIANT") compliant++;
                     else nonCompliant++;
                 });
 
-                const total = fleetDataset.length;
+                const total = compliant + nonCompliant;
                 const data = [
                     { name: "Compliant", count: compliant, pct: total > 0 ? (compliant / total) * 100 : 0, color: "var(--status-low)" },
                     { name: "Non-Compliant", count: nonCompliant, pct: total > 0 ? (nonCompliant / total) * 100 : 0, color: "var(--status-critical)" }
@@ -3070,11 +3075,12 @@
             const container = document.getElementById("reporting-dashboard-content");
             if (!container) return;
 
-            const totalDevices = fleetDataset.length;
+            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
+            const totalDevices = activeFleet.length;
             let compliantCount = 0;
             let nonCompliantCount = 0;
 
-            fleetDataset.forEach(dev => {
+            activeFleet.forEach(dev => {
                 if (dev.level === "COMPLIANT") compliantCount++;
                 else nonCompliantCount++;
             });
