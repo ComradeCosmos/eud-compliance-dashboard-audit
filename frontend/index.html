@@ -1737,6 +1737,14 @@
                 // Check core software agent compliance
                 const sw = dev.software && dev.software.find(s => s.name === name);
                 if (sw) {
+                    const isAd = sw.key === "ad";
+                    const isUploaded = isSheetUploadedForSoftware(sw.key);
+                    
+                    // If the sheet was NOT uploaded and it is not Active Directory, we bypass compliance verification
+                    if (!isAd && !isUploaded) {
+                        continue;
+                    }
+
                     if (sw.status === "NON_COMPLIANT") {
                         hasNonCompliant = true;
                         break;
@@ -2882,6 +2890,15 @@
             let compliantCount = 0;
             let totalCount = 0;
 
+            const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
+            const swKey = swCatalogItem ? swCatalogItem.key : "";
+            const isAd = swKey === "ad";
+            const isUploaded = isSheetUploadedForSoftware(swKey);
+
+            if (!isAd && !isUploaded) {
+                return { compliantCount: 0, totalCount: 0, isUnreported: true };
+            }
+
             fleetDataset.forEach(dev => {
                 if (dev.condition !== "IN_USE") return; // active devices only
 
@@ -2894,7 +2911,7 @@
                 }
             });
 
-            return { compliantCount, totalCount };
+            return { compliantCount, totalCount, isUnreported: false };
         }
 
         function getFailedControlsForDevice(dev) {
@@ -2977,6 +2994,7 @@
                     const stats = getPolicyStats(name);
                     const compliantCount = stats.compliantCount;
                     const totalCount = stats.totalCount;
+                    const isUnreported = stats.isUnreported;
 
                     const passRate = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
                     const card = document.createElement("div");
@@ -2989,12 +3007,16 @@
                     card.style.background = "var(--bg-card)";
                     card.style.borderRadius = "4px";
 
-                    const badgeClass = isRequired ? "risk-low" : "group-non-sift";
-                    const badgeLabel = isRequired ? "REQUIRED" : "OPTIONAL";
+                    const badgeClass = isUnreported ? "group-non-sift" : (isRequired ? "risk-low" : "group-non-sift");
+                    const badgeLabel = isUnreported ? "UNREPORTED" : (isRequired ? "REQUIRED" : "OPTIONAL");
 
                     // Core mandates are simple display names
                     const displayName = name;
                     const displaySubtitle = 'Core System Mandate';
+
+                    const telemetryText = isUnreported ? "Sheet Missing" : `${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()} Pass`;
+                    const passRateText = isUnreported ? "N/A (Unreported)" : `${passRate.toFixed(1)}%`;
+                    const passRateColor = isUnreported ? "var(--text-muted)" : (passRate === 100 ? "var(--status-low)" : (isRequired ? "var(--status-critical)" : "var(--text-primary)"));
 
                     card.innerHTML = `
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
@@ -3008,18 +3030,19 @@
                         <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;">
                             <div style="display: flex; justify-content: space-between;">
                                 <span>Active Telemetry:</span>
-                                <strong style="color: var(--text-primary); font-family: var(--font-mono);">${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()} Pass</strong>
+                                <strong style="color: ${isUnreported ? 'var(--text-muted)' : 'var(--text-primary)'}; font-family: var(--font-mono);">${escapeHTML(telemetryText)}</strong>
                             </div>
                             <div style="display: flex; justify-content: space-between;">
                                 <span>Mandate Pass Rate:</span>
-                                <strong style="color: ${passRate === 100 ? 'var(--status-low)' : (isRequired ? 'var(--status-critical)' : 'var(--text-primary)')}; font-family: var(--font-mono);">${passRate.toFixed(1)}%</strong>
+                                <strong style="color: ${passRateColor}; font-family: var(--font-mono);">${escapeHTML(passRateText)}</strong>
                             </div>
                         </div>
                         
                         <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
-                            <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)'}; border: 1px solid ${isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)'}; color: ${isRequired ? '#ff6b6b' : '#15803d'}; font-weight: 700; cursor: ${isAdmin ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin ? 1 : 0.6};" 
+                            <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)')}; border: 1px solid ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)')}; color: ${isUnreported ? 'var(--text-muted)' : (isRequired ? '#ff6b6b' : '#15803d')}; font-weight: 700; cursor: ${isAdmin && !isUnreported ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin && !isUnreported ? 1 : 0.6};" 
+                                ${isUnreported ? 'disabled' : ''}
                                 onclick="togglePolicyEnforcement('${escapeHTML(name)}')">
-                                ${isRequired ? '⚠️ Exclude Policy (Make Optional)' : '🛡️ Enforce Policy (Make Required)'}
+                                ${isUnreported ? 'Telemetry Unavailable' : (isRequired ? '⚠️ Exclude Policy (Make Optional)' : '🛡️ Enforce Policy (Make Required)')}
                             </button>
                         </div>
                     `;
@@ -3123,13 +3146,19 @@
                     const stats = getPolicyStats(name);
                     const compliantCount = stats.compliantCount;
                     const totalCount = stats.totalCount;
+                    const isUnreported = stats.isUnreported;
 
                     const passPct = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
-                    const barColor = isRequired ? (passPct === 100 ? 'var(--status-low)' : 'var(--status-critical)') : 'var(--text-muted)';
+                    const barColor = isUnreported ? 'var(--border-clean)' : (isRequired ? (passPct === 100 ? 'var(--status-low)' : 'var(--status-critical)') : 'var(--text-muted)');
                     const barBg = "rgba(255, 255, 255, 0.05)";
 
                     const displayName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
                     const displaySubtitle = name.startsWith('[') ? `Source: ${name.match(/^\[(.*?)\]/)[1]}` : 'Core System Mandate';
+
+                    const telemetryText = isUnreported ? "Sheet Missing" : `${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()}`;
+                    const passRateText = isUnreported ? "N/A" : `${passPct.toFixed(1)}%`;
+                    const passRateColor = isUnreported ? "var(--text-muted)" : (passPct === 100 ? "var(--status-low)" : (isRequired ? "var(--status-critical)" : "var(--text-primary)"));
+                    const barWidth = isUnreported ? 0 : passPct;
 
                     controlRowsHtml += `
                         <tr>
@@ -3137,12 +3166,12 @@
                                 <strong style="color: var(--text-primary); display: block;">${escapeHTML(displayName)}</strong>
                                 <span style="font-size: 0.7rem; color: var(--text-muted);">${escapeHTML(displaySubtitle)}</span>
                             </td>
-                            <td><span class="badge ${isRequired ? 'risk-low' : 'group-non-sift'}" style="font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem;">${isRequired ? 'REQUIRED' : 'OPTIONAL'}</span></td>
-                            <td style="font-family: var(--font-mono); font-weight: 600; text-align: center;">${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()}</td>
-                            <td style="font-family: var(--font-mono); font-weight: 700; color: ${passPct === 100 ? 'var(--status-low)' : (isRequired ? 'var(--status-critical)' : 'var(--text-primary)')};">${passPct.toFixed(1)}%</td>
+                            <td><span class="badge ${isUnreported ? 'group-non-sift' : (isRequired ? 'risk-low' : 'group-non-sift')}" style="font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem;">${isUnreported ? 'UNREPORTED' : (isRequired ? 'REQUIRED' : 'OPTIONAL')}</span></td>
+                            <td style="font-family: var(--font-mono); font-weight: 600; text-align: center; color: ${isUnreported ? 'var(--text-muted)' : 'var(--text-primary)'};">${escapeHTML(telemetryText)}</td>
+                            <td style="font-family: var(--font-mono); font-weight: 700; color: ${passRateColor};">${escapeHTML(passRateText)}</td>
                             <td style="width: 180px; vertical-align: middle;">
                                 <div style="width: 100%; height: 6px; background: ${barBg}; border-radius: 3px; overflow: hidden; position: relative;">
-                                    <div style="width: ${passPct}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
+                                    <div style="width: ${barWidth}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
                                 </div>
                             </td>
                         </tr>
@@ -4145,7 +4174,11 @@
 
             matches.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => {
+                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    return dName === normName || dSerial === normName || dSerial.includes(normName);
+                });
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
@@ -4204,7 +4237,11 @@
 
             gaps.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => {
+                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    return dName === normName || dSerial === normName || dSerial.includes(normName);
+                });
 
                 const customProps = { 
                     "Reconciliation Match": "COVERAGE_GAP",
@@ -4301,7 +4338,11 @@
 
             rogues.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => {
+                    const dName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    const dSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    return dName === normName || dSerial === normName || dSerial.includes(normName);
+                });
 
                 const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
                 item.sheets.forEach(s => {
