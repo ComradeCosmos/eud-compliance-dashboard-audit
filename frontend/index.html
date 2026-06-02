@@ -1720,6 +1720,11 @@
                 dev.level = "NON_COMPLIANT";
                 return;
             }
+            if (dev.is_rogue) {
+                dev.score = 0.00;
+                dev.level = "NON_COMPLIANT";
+                return;
+            }
 
             let score = 100.00;
             let hasNonCompliant = false;
@@ -3709,7 +3714,7 @@
                 const headersToRender = ["Device ID", "Hostname", "Missing Sheet Telemetries", "Corporate Detail (Primary)"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
             } else if (tabId === "rogues") {
-                const headersToRender = ["Device ID", "Hostname", "Detected Telemetry Sources", "Agent Properties Details"];
+                const headersToRender = ["Device ID", "Hostname", "Detected Telemetry Sources", "Agent Properties Details", "Remediation Action"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
             } else if (tabId === "matches") {
                 const headersToRender = ["Device ID", "Hostname", "Alignment", "Merged Excel Sheet Information / Row Details"];
@@ -3736,7 +3741,8 @@
 
             if (displaySlice.length === 0) {
                 const tr = document.createElement("tr");
-                tr.innerHTML = `<td colspan="4" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No entries found.</td>`;
+                const colSpan = currentReconTab === "rogues" ? 5 : 4;
+                tr.innerHTML = `<td colspan="${colSpan}" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No entries found.</td>`;
                 fragment.appendChild(tr);
             } else {
                 displaySlice.forEach(item => {
@@ -3760,11 +3766,24 @@
                             return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
                         }).join("");
                         
+                        const isIsolated = item.is_isolated;
+                        const isolateBtnHtml = isIsolated 
+                            ? `<button class="btn" style="background:var(--border-clean); color:var(--text-muted); border-color:var(--border-clean); font-size:0.7rem; padding:0.35rem 0.65rem; cursor:not-allowed;" disabled>🔒 Isolated</button>`
+                            : `<button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="isolateRogueAsset('${item.id}')">⚠️ Isolate</button>`;
+                        
+                        const registerBtnHtml = `<button class="btn" style="background:rgba(21,128,61,0.15); border:1px solid rgba(21,128,61,0.4); color:#15803d; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="registerRogueAsset('${item.id}')">🟢 Register</button>`;
+                        
+                        const actionButtons = `<div style="display:flex; gap:0.5rem; justify-content:flex-end;">${isolateBtnHtml}${registerBtnHtml}</div>`;
+                        
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
+                            <td style="vertical-align: middle;">
+                                <strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> 
+                                <span class="badge ${isIsolated ? 'risk-critical' : 'risk-medium'}" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">${isIsolated ? 'CONTAINED' : 'UNMANAGED'}</span>
+                            </td>
                             <td style="vertical-align: middle;">${detectedBadges}</td>
                             <td style="vertical-align: middle;">${detailsHtml}</td>
+                            <td style="vertical-align: middle; text-align: right;">${actionButtons}</td>
                         `;
                     } else if (currentReconTab === "matches") {
                         const propertiesHtml = item.mergedProperties.map(p => {
@@ -3862,6 +3881,154 @@
                     target[key] = newValue;
                 }
             }
+        }
+
+        function isolateRogueAsset(rogueId) {
+            const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
+            if (!rogue) return;
+            
+            // Check if already in fleetDataset
+            let existing = fleetDataset.find(dev => dev.canonical_name === rogue.normalized);
+            if (existing) {
+                existing.is_isolated = true;
+                existing.is_rogue = true;
+                existing.score = 10.00;
+                existing.level = "NON_COMPLIANT";
+            } else {
+                // Add to fleet as isolated rogue!
+                const newCustomProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
+                rogue.sheets.forEach(s => {
+                    s.headers.forEach((h, idx) => {
+                        if (idx !== s.keyIdx) {
+                            newCustomProps[`[${s.filename}] ${h}`] = String(s.row[idx] || "");
+                        }
+                    });
+                });
+                
+                fleetDataset.push({
+                    id: `dev-${Math.random().toString(36).substring(2, 8)}`,
+                    canonical_name: rogue.normalized,
+                    serial: `SN-ROGUE-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+                    mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                    manufacturer: "Unmanaged Rogue",
+                    os: "Unknown Platform",
+                    os_family: "Windows",
+                    score: 10.00,
+                    level: "NON_COMPLIANT",
+                    condition: "IN_USE",
+                    user_assigned: "rogue.unmanaged",
+                    last_login: "-",
+                    location: "Unknown / Network Trace",
+                    location_group: "Non-Sift",
+                    is_isolated: true,
+                    is_rogue: true,
+                    software: sampleSoftwareCatalog.map(sw => ({
+                        name: sw.name,
+                        key: sw.key,
+                        installed: "MISSING",
+                        required: "REQUIRED",
+                        status: "NON_COMPLIANT"
+                    })),
+                    custom_properties: newCustomProps
+                });
+            }
+            
+            rogue.is_isolated = true;
+            logToTerminal(`[EDR Containment] Dispatched zero-trust network containment isolation for rogue host ${rogue.name.toUpperCase()} (ID: ${rogue.id}).`, "error");
+            alert(`⚠️ Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
+            
+            recalculateAllScores();
+            renderReconTableBody();
+        }
+
+        function registerRogueAsset(rogueId) {
+            const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
+            if (!rogue) return;
+            
+            // Register it! Add it to fleetDataset as a fully compliant managed asset
+            let existing = fleetDataset.find(dev => dev.canonical_name === rogue.normalized);
+            
+            const newCustomProps = { 
+                "Reconciliation Match": "SUCCESS",
+                "Authorized Registration": "MANUALLY APPROVED"
+            };
+            rogue.sheets.forEach(s => {
+                s.headers.forEach((h, idx) => {
+                    if (idx !== s.keyIdx) {
+                        newCustomProps[`[${s.filename}] ${h}`] = String(s.row[idx] || "");
+                    }
+                });
+            });
+            
+            if (existing) {
+                existing.is_rogue = false;
+                existing.is_isolated = false;
+                existing.score = 100.00;
+                existing.level = "COMPLIANT";
+                existing.user_assigned = "authorized.user";
+                existing.software.forEach(sw => {
+                    sw.installed = "INSTALLED";
+                    sw.status = "COMPLIANT";
+                });
+                if (!existing.custom_properties) existing.custom_properties = {};
+                Object.assign(existing.custom_properties, newCustomProps);
+            } else {
+                fleetDataset.push({
+                    id: `dev-${Math.random().toString(36).substring(2, 8)}`,
+                    canonical_name: rogue.normalized,
+                    serial: `SN-REGISTERED-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+                    mac: `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`,
+                    manufacturer: "Authorized Manually",
+                    os: "Windows 11 Enterprise",
+                    os_family: "Windows",
+                    score: 100.00,
+                    level: "COMPLIANT",
+                    condition: "IN_USE",
+                    user_assigned: "authorized.user",
+                    last_login: new Date().toISOString().substring(0, 16).replace("T", " "),
+                    location: "Corporate Head Office",
+                    location_group: "Sift",
+                    is_isolated: false,
+                    is_rogue: false,
+                    software: sampleSoftwareCatalog.map(sw => ({
+                        name: sw.name,
+                        key: sw.key,
+                        installed: "INSTALLED",
+                        required: "REQUIRED",
+                        status: "COMPLIANT"
+                    })),
+                    custom_properties: newCustomProps
+                });
+            }
+            
+            // Remove from rogues, add to matches!
+            reconciliationResults.rogues = reconciliationResults.rogues.filter(r => r.id !== rogueId);
+            reconciliationResults.matches.push({
+                id: rogueId,
+                name: rogue.name,
+                normalized: rogue.normalized,
+                mergedProperties: rogue.sheets.flatMap(s => 
+                    s.headers.slice(1).map((h, idx) => ({
+                        source: s.filename,
+                        sheetRole: "Secondary",
+                        property: h,
+                        value: String(s.row[idx + 1] || "")
+                    }))
+                ),
+                status: "MATCHED"
+            });
+            
+            // Update counts in the tab header
+            const roguesTabCount = document.getElementById("recon-tab-count-rogues");
+            const matchesTabCount = document.getElementById("recon-tab-count-matches");
+            if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
+            if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
+            
+            logToTerminal(`[Reconciler] Manually authorized and enrolled rogue asset ${rogue.name.toUpperCase()} into Corporate Directory context.`, "info");
+            alert(`🟢 Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
+            
+            recalculateAllScores();
+            switchReconTab("matches");
         }
 
         function mergeReconciliationIntoFleet() {
@@ -4009,6 +4176,7 @@
                 if (existing) {
                     existing.score = 0.00;
                     existing.level = "NON_COMPLIANT";
+                    existing.is_rogue = true;
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
@@ -4023,20 +4191,21 @@
                         manufacturer: "Unmanaged Rogue",
                         os: "Unknown Platform",
                         os_family: "Windows",
-                        score: 0.00,
+                        score: item.is_isolated ? 10.00 : 0.00,
                         level: "NON_COMPLIANT",
                         condition: "IN_USE",
                         user_assigned: "rogue.unmanaged",
                         last_login: "-",
                         location: "Unknown / Network Trace",
                         location_group: "Non-Sift",
-                        is_isolated: false,
+                        is_isolated: !!item.is_isolated,
+                        is_rogue: true,
                         software: sampleSoftwareCatalog.map(sw => ({
                             name: sw.name,
                             key: sw.key,
-                            installed: "INSTALLED",
+                            installed: "MISSING",
                             required: "REQUIRED",
-                            status: "COMPLIANT"
+                            status: "NON_COMPLIANT"
                         })),
                         custom_properties: newCustomProps
                     });
