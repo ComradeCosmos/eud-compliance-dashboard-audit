@@ -1472,7 +1472,7 @@
 
                     let finalScore = 100.00;
                     const hasNonCompliant = software.some(sw => {
-                        const isRequired = enforcedPolicies[sw.name] !== false;
+                        const isRequired = isCoreMandate(sw.name) ? (enforcedPolicies[sw.name] !== false) : (enforcedPolicies[sw.name] === true);
                         return isRequired && sw.status === "NON_COMPLIANT";
                     });
                     if (hasNonCompliant) {
@@ -1764,6 +1764,11 @@
             enforceRoleBasedControls();
         }
 
+        // Helper to check if a compliance policy is a core built-in mandate
+        function isCoreMandate(name) {
+            return sampleSoftwareCatalog.some(sw => sw.name === name);
+        }
+
         // Unified score calculation algorithm link software table status and dynamic Excel properties dynamically
         function recalculateSingleDeviceScore(dev, cachedPolicies) {
             if (dev.is_isolated) {
@@ -1782,7 +1787,7 @@
 
             const policies = cachedPolicies || getAvailablePolicies();
             for (let name of policies) {
-                const isRequired = enforcedPolicies[name] !== false; // Required by default
+                const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
                 if (!isRequired) continue;
 
                 // 1. Check core software agent compliance
@@ -2992,7 +2997,7 @@
 
             if (dev.software) {
                 dev.software.forEach(sw => {
-                    const isRequired = enforcedPolicies[sw.name] !== false;
+                    const isRequired = isCoreMandate(sw.name) ? (enforcedPolicies[sw.name] !== false) : (enforcedPolicies[sw.name] === true);
                     if (isRequired && sw.status === "NON_COMPLIANT") {
                         failedControls.push(sw.name);
                     }
@@ -3002,7 +3007,7 @@
             const policies = getAvailablePolicies();
             policies.forEach(name => {
                 if (name.startsWith('[')) {
-                    const isRequired = enforcedPolicies[name] !== false;
+                    const isRequired = enforcedPolicies[name] === true; // dynamic Excel properties are optional by default
                     if (isRequired) {
                         const val = dev.custom_properties && dev.custom_properties[name];
                         if (val === undefined || val === null) {
@@ -3081,7 +3086,7 @@
             } else {
                 grid.style.display = "grid";
                 filteredPolicies.forEach(name => {
-                    const isRequired = enforcedPolicies[name] !== false; // default true
+                    const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
                     
                     // Count telemetry passes via unified stats helper
                     const stats = getPolicyStats(name);
@@ -3145,7 +3150,7 @@
                 return;
             }
 
-            const current = enforcedPolicies[name] !== false; // default true
+            const current = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
             enforcedPolicies[name] = !current;
 
             logToTerminal(`[Policy Board] Policy "${name}" enforcement status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL'}.`, enforcedPolicies[name] ? 'info' : 'warning');
@@ -3229,7 +3234,7 @@
                 controlRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No security policies loaded.</td></tr>`;
             } else {
                 policies.forEach(name => {
-                    const isRequired = enforcedPolicies[name] !== false;
+                    const isRequired = isCoreMandate(name) ? (enforcedPolicies[name] !== false) : (enforcedPolicies[name] === true);
                     const stats = getPolicyStats(name);
                     const compliantCount = stats.compliantCount;
                     const totalCount = stats.totalCount;
