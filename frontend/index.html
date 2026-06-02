@@ -1447,7 +1447,7 @@
                     });
 
                     const normName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    let existing = fleetDataset.find(dev => dev.serial === serial || dev.canonical_name === normName);
+                    let existing = fleetDataset.find(dev => dev.serial === serial || String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName);
 
                     if (existing) {
                         existing.score = finalScore;
@@ -2051,7 +2051,7 @@
 
             const subset = fleetDataset.slice(0, 500);
             for (let dev of subset) {
-                if (dev.canonical_name === normalizedInput) {
+                if (String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normalizedInput) {
                     document.getElementById("out-stage").innerText = "Stage 1: Exact Match (Normalized Name)";
                     document.getElementById("out-confidence").innerText = "100.00%";
                     actionBadge.innerText = "AUTO_MERGE";
@@ -3097,7 +3097,7 @@
                         <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
                             <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)')}; border: 1px solid ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)')}; color: ${isUnreported ? 'var(--text-muted)' : (isRequired ? '#ff6b6b' : '#15803d')}; font-weight: 700; cursor: ${isAdmin && !isUnreported ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin && !isUnreported ? 1 : 0.6};" 
                                 ${isUnreported ? 'disabled' : ''}
-                                onclick="togglePolicyEnforcement('${escapeHTML(name)}')">
+                                onclick="togglePolicyEnforcement(decodeURIComponent('${encodeURIComponent(name)}'))">
                                 ${isUnreported ? 'Telemetry Unavailable' : (isRequired ? '⚠️ Exclude Policy (Make Optional)' : '🛡️ Enforce Policy (Make Required)')}
                             </button>
                         </div>
