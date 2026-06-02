@@ -4122,7 +4122,7 @@
             }
         }
 
-        function findExistingDeviceByItem(item) {
+        function findExistingDeviceByItem(item, fleetByName = null, fleetBySerial = null, fleetByMac = null) {
             if (!item) return null;
             
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
@@ -4216,6 +4216,13 @@
             const normMac = macVal ? macVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
             
             if (!normName && !normSerial && !normMac) return null;
+            
+            if (fleetByName && fleetBySerial && fleetByMac) {
+                if (normName && fleetByName.has(normName)) return fleetByName.get(normName);
+                if (normSerial && fleetBySerial.has(normSerial)) return fleetBySerial.get(normSerial);
+                if (normMac && fleetByMac.has(normMac)) return fleetByMac.get(normMac);
+                return null;
+            }
             
             return fleetDataset.find(dev => {
                 const devName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
@@ -4485,11 +4492,31 @@
 
             registerMergedSoftwareAgents();
 
+            // Pre-index fleetDataset by normalized canonical name, serial, and MAC address
+            const fleetByName = new Map();
+            const fleetBySerial = new Map();
+            const fleetByMac = new Map();
+
+            fleetDataset.forEach(dev => {
+                if (dev.canonical_name) {
+                    const normName = String(dev.canonical_name).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normName) fleetByName.set(normName, dev);
+                }
+                if (dev.serial) {
+                    const normSerial = String(dev.serial).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normSerial) fleetBySerial.set(normSerial, dev);
+                }
+                if (dev.mac) {
+                    const normMac = String(dev.mac).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normMac) fleetByMac.set(normMac, dev);
+                }
+            });
+
             let newlyCreated = 0;
             let mergedUpdated = 0;
 
             matches.forEach(item => {
-                let existing = findExistingDeviceByItem(item);
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
@@ -4548,7 +4575,7 @@
             });
 
             gaps.forEach(item => {
-                let existing = findExistingDeviceByItem(item);
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
                 const customProps = { 
                     "Reconciliation Match": "COVERAGE_GAP",
@@ -4645,7 +4672,7 @@
             });
 
             rogues.forEach(item => {
-                let existing = findExistingDeviceByItem(item);
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
                 const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
                 item.sheets.forEach(s => {
