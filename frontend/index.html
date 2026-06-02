@@ -1735,21 +1735,40 @@
                 const isRequired = enforcedPolicies[name] !== false; // Required by default
                 if (!isRequired) continue;
 
-                // Check core software agent compliance
-                const sw = dev.software && dev.software.find(s => s.name === name);
-                if (sw) {
-                    const isAd = sw.key === "ad";
-                    const isUploaded = isSheetUploadedForSoftware(sw.key);
-                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                if (name.startsWith('[')) {
+                    // Extract filename
+                    const match = name.match(/^\[(.*?)\]/);
+                    const filename = match ? match[1] : "";
+                    const isUploaded = reconcilerSheets.some(s => s.filename === filename);
+                    if (!isUploaded) continue; // bypass if sheet is not uploaded
                     
-                    // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
-                    if (!isAd && !isUploaded && !isEverMerged) {
-                        continue;
+                    const val = dev.custom_properties ? dev.custom_properties[name] : undefined;
+                    let isNonCompliant = true;
+                    if (val !== undefined && val !== null) {
+                        const lowerVal = String(val).trim().toLowerCase();
+                        isNonCompliant = lowerVal === "" || lowerVal === "missing" || lowerVal === "no" || lowerVal === "false" || lowerVal === "0" || lowerVal === "none" || lowerVal === "inactive" || lowerVal === "disabled" || lowerVal === "fail" || lowerVal === "failed" || lowerVal === "non_compliant" || lowerVal === "non-compliant" || lowerVal === "offline" || lowerVal === "critical";
                     }
-
-                    if (sw.status === "NON_COMPLIANT") {
+                    if (isNonCompliant) {
                         hasNonCompliant = true;
                         break;
+                    }
+                } else {
+                    // Check core software agent compliance
+                    const sw = dev.software && dev.software.find(s => s.name === name);
+                    if (sw) {
+                        const isAd = sw.key === "ad";
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                        
+                        // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
+                        if (!isAd && !isUploaded && !isEverMerged) {
+                            continue;
+                        }
+
+                        if (sw.status === "NON_COMPLIANT") {
+                            hasNonCompliant = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -2905,7 +2924,7 @@
         }
 
         function getAvailablePolicies() {
-            return [
+            const corePolicies = [
                 "Active Directory (AD) Enrollment",
                 "BitLocker Drive Encryption",
                 "Zscaler Client Connector",
@@ -2913,11 +2932,60 @@
                 "SentinelOne Endpoint Protection",
                 "SCCM Management Agent"
             ];
+            
+            // Dynamically collect custom Excel policy keys from active fleet devices
+            const excelPoliciesSet = new Set();
+            fleetDataset.forEach(dev => {
+                if (dev.custom_properties) {
+                    for (let key in dev.custom_properties) {
+                        if (key.startsWith('[') && key.includes('] ')) {
+                            excelPoliciesSet.add(key);
+                        }
+                    }
+                }
+            });
+            
+            // Also collect from reconcilerSheets directly so they are immediately available even before merge
+            reconcilerSheets.forEach(sheet => {
+                sheet.headers.forEach((h, idx) => {
+                    if (idx !== sheet.keyIdx) {
+                        excelPoliciesSet.add(`[${sheet.filename}] ${h}`);
+                    }
+                });
+            });
+            
+            return [...corePolicies, ...Array.from(excelPoliciesSet).sort()];
         }
 
         function getPolicyStats(name) {
             let compliantCount = 0;
             let totalCount = 0;
+
+            if (name.startsWith('[')) {
+                // Extract filename
+                const match = name.match(/^\[(.*?)\]/);
+                const filename = match ? match[1] : "";
+                const isUploaded = reconcilerSheets.some(s => s.filename === filename);
+                
+                if (!isUploaded) {
+                    return { compliantCount: 0, totalCount: 0, isUnreported: true };
+                }
+                
+                fleetDataset.forEach(dev => {
+                    if (dev.condition !== "IN_USE") return;
+                    totalCount++;
+                    const val = dev.custom_properties ? dev.custom_properties[name] : undefined;
+                    if (val !== undefined && val !== null) {
+                        const lowerVal = String(val).trim().toLowerCase();
+                        const isNonCompliant = lowerVal === "" || lowerVal === "missing" || lowerVal === "no" || lowerVal === "false" || lowerVal === "0" || lowerVal === "none" || lowerVal === "inactive" || lowerVal === "disabled" || lowerVal === "fail" || lowerVal === "failed" || lowerVal === "non_compliant" || lowerVal === "non-compliant" || lowerVal === "offline" || lowerVal === "critical";
+                        if (!isNonCompliant) {
+                            compliantCount++;
+                        }
+                    }
+                });
+                
+                return { compliantCount, totalCount, isUnreported: false };
+            }
 
             const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
             const swKey = swCatalogItem ? swCatalogItem.key : "";
@@ -2947,14 +3015,35 @@
         function getFailedControlsForDevice(dev) {
             const failedControls = [];
 
-            if (dev.software) {
-                dev.software.forEach(sw => {
-                    const isRequired = enforcedPolicies[sw.name] !== false;
-                    if (isRequired && sw.status === "NON_COMPLIANT") {
-                        failedControls.push(sw.name);
+            const policies = getAvailablePolicies();
+            policies.forEach(name => {
+                const isRequired = enforcedPolicies[name] !== false;
+                if (!isRequired) return;
+
+                if (name.startsWith('[')) {
+                    const match = name.match(/^\[(.*?)\]/);
+                    const filename = match ? match[1] : "";
+                    const isUploaded = reconcilerSheets.some(s => s.filename === filename);
+                    if (!isUploaded) return;
+
+                    const val = dev.custom_properties ? dev.custom_properties[name] : undefined;
+                    let isNonCompliant = true;
+                    if (val !== undefined && val !== null) {
+                        const lowerVal = String(val).trim().toLowerCase();
+                        isNonCompliant = lowerVal === "" || lowerVal === "missing" || lowerVal === "no" || lowerVal === "false" || lowerVal === "0" || lowerVal === "none" || lowerVal === "inactive" || lowerVal === "disabled" || lowerVal === "fail" || lowerVal === "failed" || lowerVal === "non_compliant" || lowerVal === "non-compliant" || lowerVal === "offline" || lowerVal === "critical";
                     }
-                });
-            }
+                    if (isNonCompliant) {
+                        failedControls.push(name);
+                    }
+                } else {
+                    const sw = dev.software && dev.software.find(s => s.name === name);
+                    if (sw) {
+                        if (sw.status === "NON_COMPLIANT") {
+                            failedControls.push(name);
+                        }
+                    }
+                }
+            });
 
             return failedControls;
         }
@@ -3040,9 +3129,9 @@
                     const badgeClass = isUnreported ? "group-non-sift" : (isRequired ? "risk-low" : "group-non-sift");
                     const badgeLabel = isUnreported ? "UNREPORTED" : (isRequired ? "REQUIRED" : "OPTIONAL");
 
-                    // Core mandates are simple display names
-                    const displayName = name;
-                    const displaySubtitle = 'Core System Mandate';
+                    // Formatted display names and subtitles
+                    const displayName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
+                    const displaySubtitle = name.startsWith('[') ? `Source: ${name.match(/^\[(.*?)\]/)[1]}` : 'Core System Mandate';
 
                     const telemetryText = isUnreported ? "Sheet Missing" : `${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()} Pass`;
                     const passRateText = isUnreported ? "N/A (Unreported)" : `${passRate.toFixed(1)}%`;
@@ -4158,9 +4247,9 @@
                 const devSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
                 const devMac = String(dev.mac || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
                 
-                if (normName && (devName === normName || devName.includes(normName) || normName.includes(devName))) return true;
-                if (normSerial && (devSerial === normSerial || devSerial.includes(normSerial) || normSerial.includes(devSerial))) return true;
-                if (normMac && (devMac === normMac || devMac.includes(normMac) || devMac.includes(devMac))) return true;
+                if (normName && devName === normName) return true;
+                if (normSerial && devSerial === normSerial) return true;
+                if (normMac && devMac === normMac) return true;
                 
                 return false;
             });
@@ -4631,6 +4720,31 @@
                         custom_properties: newCustomProps
                     });
                     newlyCreated++;
+                }
+            });
+
+            // Dynamically expand table headers with newly merged custom Excel property columns
+            const mergedKeys = new Set();
+            fleetDataset.forEach(dev => {
+                if (dev.custom_properties) {
+                    for (let key in dev.custom_properties) {
+                        if (key.startsWith('[') && key.includes('] ')) {
+                            mergedKeys.add(key);
+                        }
+                    }
+                }
+            });
+
+            mergedKeys.forEach(k => {
+                const customKey = `custom:${k}`;
+                if (!activeTableKeys.includes(customKey)) {
+                    // Extract clean name and source file for header label
+                    const cleanName = k.replace(/^\[.*?\]\s*/, '');
+                    const sourceName = k.match(/^\[(.*?)\]/) ? k.match(/^\[(.*?)\]/)[1] : 'Excel';
+                    const headerLabel = `${cleanName} (${sourceName})`;
+                    
+                    activeTableHeaders.push(headerLabel);
+                    activeTableKeys.push(customKey);
                 }
             });
 
