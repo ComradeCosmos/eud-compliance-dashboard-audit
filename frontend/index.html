@@ -3332,7 +3332,7 @@
                 swKeys.forEach(k => {
                     const fn = sheet.filename.toLowerCase();
                     const isForSw = fn.includes(k) || 
-                        (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) || 
+                        (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("sentinel") || fn.includes("sentinels") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) || 
                         (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) || 
                         (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("encryption") || fn.includes("disk"))) || 
                         (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("vpn")));
@@ -3619,16 +3619,40 @@
             logToTerminal(`[Reconciler] Executing asset alignment across ${reconcilerSheets.length} spreadsheet inventories...`);
 
             const primaryKeyIdx = primarySheet.keyIdx;
+            
+            const primaryHeaders = primarySheet.headers.map(h => String(h || "").trim().toLowerCase());
+            let assetTagIdx = primaryHeaders.indexOf("asset tag");
+            let orgSerialIdx = primaryHeaders.indexOf("org serial number");
+
+            // If not found, fall back to the selected primaryKeyIdx
+            if (assetTagIdx === -1) assetTagIdx = primaryKeyIdx;
+            if (orgSerialIdx === -1) orgSerialIdx = primaryKeyIdx;
 
             const primaryMap = new Map();
+            const assetTagMap = new Map();
+            const orgSerialMap = new Map();
+
             primarySheet.rows.forEach(row => {
                 const nameVal = String(row[primaryKeyIdx] || "").trim();
                 if (!nameVal) return;
                 const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                primaryMap.set(normName, {
+                const primaryRecord = {
                     rawName: nameVal,
                     row: row
-                });
+                };
+                primaryMap.set(normName, primaryRecord);
+
+                const assetTagVal = String(row[assetTagIdx] || "").trim();
+                if (assetTagVal) {
+                    const normAssetTag = assetTagVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    assetTagMap.set(normAssetTag, primaryRecord);
+                }
+
+                const orgSerialVal = String(row[orgSerialIdx] || "").trim();
+                if (orgSerialVal) {
+                    const normOrgSerial = orgSerialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    orgSerialMap.set(normOrgSerial, primaryRecord);
+                }
             });
 
             const secondaryMaps = secondarySheets.map(sheet => {
@@ -3667,10 +3691,45 @@
                     }
                 });
 
+                const assetTagVal = String(primaryData.row[assetTagIdx] || "").trim();
+                const normAssetTag = assetTagVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+                const orgSerialVal = String(primaryData.row[orgSerialIdx] || "").trim();
+                const normOrgSerial = orgSerialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
                 secondaryMaps.forEach(sec => {
-                    if (sec.map.has(normName)) {
+                    const isZscaler = sec.filename.toLowerCase().includes("zscaler");
+                    let isMatch = false;
+                    let rowData = null;
+
+                    const normNameVal = normName; // selected key in corporate directory
+
+                    if (isZscaler) {
+                        if (normOrgSerial && sec.map.has(normOrgSerial)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normOrgSerial);
+                        } else if (normAssetTag && sec.map.has(normAssetTag)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normAssetTag);
+                        } else if (normNameVal && sec.map.has(normNameVal)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normNameVal);
+                        }
+                    } else {
+                        if (normAssetTag && sec.map.has(normAssetTag)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normAssetTag);
+                        } else if (normNameVal && sec.map.has(normNameVal)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normNameVal);
+                        } else if (normOrgSerial && sec.map.has(normOrgSerial)) {
+                            isMatch = true;
+                            rowData = sec.map.get(normOrgSerial);
+                        }
+                    }
+
+                    if (isMatch) {
                         presentInSheets.push(sec.filename);
-                        const rowData = sec.map.get(normName);
                         
                         sec.headers.forEach((h, idx) => {
                             if (idx !== sec.keyIdx) {
@@ -3714,8 +3773,16 @@
 
             const roguesMap = new Map();
             secondaryMaps.forEach(sec => {
+                const isZscaler = sec.filename.toLowerCase().includes("zscaler");
                 sec.map.forEach((row, normName) => {
-                    if (!primaryMap.has(normName)) {
+                    let isRogue = false;
+                    if (isZscaler) {
+                        isRogue = !orgSerialMap.has(normName) && !assetTagMap.has(normName) && !primaryMap.has(normName);
+                    } else {
+                        isRogue = !assetTagMap.has(normName) && !primaryMap.has(normName) && !orgSerialMap.has(normName);
+                    }
+
+                    if (isRogue) {
                         if (!roguesMap.has(normName)) {
                             roguesMap.set(normName, {
                                 name: String(row[sec.keyIdx] || "").trim(),
@@ -4000,7 +4067,7 @@
                 if (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk"))) return true;
                 if (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn"))) return true;
                 if (k === "nessus" && (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner"))) return true;
-                if (k === "sentinelone" && (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
+                if (k === "sentinelone" && (fn.includes("sentinel") || fn.includes("sentinels") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
                     return true;
                 }
                 if (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) return true;
