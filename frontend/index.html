@@ -3939,7 +3939,7 @@
             }
 
             if (k === "bitlocker") {
-                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("bit_locker") || h.includes("bit-locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
@@ -3947,7 +3947,7 @@
             }
 
             if (k === "zscaler") {
-                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("vpn")) {
+                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("z_scaler") || h.includes("z scaler") || h.includes("vpn")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
@@ -3963,11 +3963,11 @@
             }
 
             if (k === "sentinelone") {
-                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                if (h.includes("sentinel") || h.includes("sentiel") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("sentinelone") || words.includes("s1");
+                return words.includes("sentinel") || words.includes("sentiel") || words.includes("sentinelone") || words.includes("s1");
             }
 
             if (k === "sccm") {
@@ -3997,14 +3997,11 @@
                         return true;
                     }
                 }
-                if (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("encryption") || fn.includes("disk"))) return true;
-                if (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("vpn"))) return true;
+                if (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk"))) return true;
+                if (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn"))) return true;
                 if (k === "nessus" && (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner"))) return true;
-                if (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
-                    const words = fn.split(/[^a-z0-9]+/);
-                    if (words.includes("s1") || fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("edr") || fn.includes("antivirus")) {
-                        return true;
-                    }
+                if (k === "sentinelone" && (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
+                    return true;
                 }
                 if (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) return true;
                 
