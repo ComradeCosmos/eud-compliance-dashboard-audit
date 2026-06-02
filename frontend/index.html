@@ -1739,9 +1739,10 @@
                 if (sw) {
                     const isAd = sw.key === "ad";
                     const isUploaded = isSheetUploadedForSoftware(sw.key);
+                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
                     
-                    // If the sheet was NOT uploaded and it is not Active Directory, we bypass compliance verification
-                    if (!isAd && !isUploaded) {
+                    // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
+                    if (!isAd && !isUploaded && !isEverMerged) {
                         continue;
                     }
 
@@ -2899,8 +2900,9 @@
             const swKey = swCatalogItem ? swCatalogItem.key : "";
             const isAd = swKey === "ad";
             const isUploaded = isSheetUploadedForSoftware(swKey);
+            const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
 
-            if (!isAd && !isUploaded) {
+            if (!isAd && !isUploaded && !isEverMerged) {
                 return { compliantCount: 0, totalCount: 0, isUnreported: true };
             }
 
@@ -3299,6 +3301,25 @@
         let currentReconTab = "gaps";
         let reconCurrentPage = 1;
         const reconPageSize = 10;
+        let mergedSoftwareAgents = new Set();
+
+        function registerMergedSoftwareAgents() {
+            reconcilerSheets.forEach(sheet => {
+                const swKeys = ["ad", "bitlocker", "zscaler", "nessus", "sentinelone", "sccm"];
+                swKeys.forEach(k => {
+                    const fn = sheet.filename.toLowerCase();
+                    const isForSw = fn.includes(k) || 
+                        (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) || 
+                        (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) || 
+                        (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("encryption") || fn.includes("disk"))) || 
+                        (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("vpn")));
+                    
+                    if (isForSw || sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                        mergedSoftwareAgents.add(k);
+                    }
+                });
+            });
+        }
 
         function parseCSVNative(text) {
             const lines = [];
@@ -4174,6 +4195,8 @@
 
             const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
             if (!confirmMerge) return;
+
+            registerMergedSoftwareAgents();
 
             let newlyCreated = 0;
             let mergedUpdated = 0;
