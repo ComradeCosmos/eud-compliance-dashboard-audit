@@ -1540,13 +1540,13 @@
 
             filteredDataset = fleetDataset.filter(item => {
                 const matchesSearch =
-                    item.id.toLowerCase().includes(query) ||
-                    item.canonical_name.toLowerCase().includes(query) ||
-                    item.serial.toLowerCase().includes(query) ||
-                    item.os.toLowerCase().includes(query) ||
-                    item.condition.toLowerCase().includes(query) ||
-                    item.user_assigned.toLowerCase().includes(query) ||
-                    item.location.toLowerCase().includes(query);
+                    String(item.id || "").toLowerCase().includes(query) ||
+                    String(item.canonical_name || "").toLowerCase().includes(query) ||
+                    String(item.serial || "").toLowerCase().includes(query) ||
+                    String(item.os || "").toLowerCase().includes(query) ||
+                    String(item.condition || "").toLowerCase().includes(query) ||
+                    String(item.user_assigned || "").toLowerCase().includes(query) ||
+                    String(item.location || "").toLowerCase().includes(query);
 
                 const matchesRisk = (riskFilter === "ALL") || (item.level === riskFilter);
                 const matchesCondition = (conditionFilter === "ALL") || (item.condition === conditionFilter);
@@ -1554,8 +1554,8 @@
 
                 // OS family match: check if matches family or if family string is contained
                 const matchesOS = (osPlatformFilter === "ALL") ||
-                    (item.os_family && item.os_family.toLowerCase() === osPlatformFilter.toLowerCase()) ||
-                    (item.os && item.os.toLowerCase().includes(osPlatformFilter.toLowerCase()));
+                    (item.os_family && String(item.os_family).toLowerCase() === osPlatformFilter.toLowerCase()) ||
+                    (item.os && String(item.os).toLowerCase().includes(osPlatformFilter.toLowerCase()));
 
                 return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS;
             });
