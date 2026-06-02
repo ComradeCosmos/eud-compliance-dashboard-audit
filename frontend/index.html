@@ -3846,6 +3846,102 @@
             renderReconTableBody();
         }
 
+        function matchSoftwareKey(header, swKey) {
+            if (!header || !swKey) return false;
+            const h = header.toLowerCase().trim();
+            const k = swKey.toLowerCase().trim();
+
+            if (k === "ad") {
+                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("ad");
+            }
+
+            if (k === "bitlocker") {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("bitlocker");
+            }
+
+            if (k === "zscaler") {
+                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("vpn")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("zscaler");
+            }
+
+            if (k === "nessus") {
+                if (h.includes("nessus") || h.includes("tenable") || h.includes("vulnerability agent") || h.includes("nessus agent") || h.includes("scanner")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("nessus");
+            }
+
+            if (k === "sentinelone") {
+                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sentinelone") || words.includes("s1");
+            }
+
+            if (k === "sccm") {
+                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sccm") || words.includes("mecm");
+            }
+
+            if (k.length <= 3) {
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes(k);
+            }
+            return h.includes(k);
+        }
+
+        function isSheetUploadedForSoftware(swKey) {
+            if (!swKey) return false;
+            const k = swKey.toLowerCase();
+            return reconcilerSheets.some(sheet => {
+                const fn = sheet.filename.toLowerCase();
+                
+                if (k === "ad" && (fn.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("domain") || fn.includes("enrollment"))) {
+                    const words = fn.split(/[^a-z0-9]+/);
+                    if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("domain") || fn.includes("enrollment")) {
+                        return true;
+                    }
+                }
+                if (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("encryption") || fn.includes("disk"))) return true;
+                if (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("vpn"))) return true;
+                if (k === "nessus" && (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner"))) return true;
+                if (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
+                    const words = fn.split(/[^a-z0-9]+/);
+                    if (words.includes("s1") || fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("edr") || fn.includes("antivirus")) {
+                        return true;
+                    }
+                }
+                if (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) return true;
+                
+                if (fn.includes(k)) {
+                    if (k.length <= 3) {
+                        const words = fn.split(/[^a-z0-9]+/);
+                        if (words.includes(k)) return true;
+                    } else {
+                        return true;
+                    }
+                }
+                
+                return sheet.headers.some(h => matchSoftwareKey(h, swKey));
+            });
+        }
+
         function mergeDistinctProperties(target, source) {
             for (let key in source) {
                 if (!source.hasOwnProperty(key)) continue;
@@ -4049,7 +4145,7 @@
 
             matches.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
@@ -4057,6 +4153,15 @@
                 });
 
                 if (existing) {
+                    existing.software.forEach(sw => {
+                        if (sw.key === "ad") {
+                            sw.installed = "INSTALLED";
+                            sw.status = "COMPLIANT";
+                        } else if (isSheetUploadedForSoftware(sw.key)) {
+                            sw.installed = "INSTALLED";
+                            sw.status = "COMPLIANT";
+                        }
+                    });
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
@@ -4079,13 +4184,18 @@
                         location: "Corporate Head Office",
                         location_group: "Sift",
                         is_isolated: false,
-                        software: sampleSoftwareCatalog.map(sw => ({
-                            name: sw.name,
-                            key: sw.key,
-                            installed: "INSTALLED",
-                            required: "REQUIRED",
-                            status: "COMPLIANT"
-                        })),
+                        software: sampleSoftwareCatalog.map(sw => {
+                            const isAd = sw.key === "ad";
+                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            const isCompliant = isAd || isUploaded;
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: isCompliant ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
+                                required: "REQUIRED",
+                                status: isCompliant ? "COMPLIANT" : "NON_COMPLIANT"
+                            };
+                        }),
                         custom_properties: newCustomProps
                     });
                     newlyCreated++;
@@ -4094,7 +4204,7 @@
 
             gaps.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
 
                 const customProps = { 
                     "Reconciliation Match": "COVERAGE_GAP",
@@ -4109,13 +4219,22 @@
                     existing.level = "NON_COMPLIANT";
                     
                     existing.software.forEach(sw => {
-                        const isMissing = item.missingInSheets.some(filename => {
-                            const sheet = reconcilerSheets.find(s => s.filename === filename);
-                            return sheet && sheet.headers.some(h => h.toLowerCase().includes(sw.key));
-                        });
-                        if (isMissing) {
-                            sw.installed = "MISSING (AGENT UNREPORTED)";
-                            sw.status = "NON_COMPLIANT";
+                        if (sw.key === "ad") {
+                            sw.installed = "INSTALLED";
+                            sw.status = "COMPLIANT";
+                        } else if (isSheetUploadedForSoftware(sw.key)) {
+                            const isMissing = item.missingInSheets.some(filename => {
+                                const sheet = reconcilerSheets.find(s => s.filename === filename);
+                                const isSheetForSw = sheet && (sheet.filename.toLowerCase().includes(sw.key) || sheet.headers.some(h => matchSoftwareKey(h, sw.key)));
+                                return isSheetForSw;
+                            });
+                            if (isMissing) {
+                                sw.installed = "MISSING (AGENT UNREPORTED)";
+                                sw.status = "NON_COMPLIANT";
+                            } else {
+                                sw.installed = "INSTALLED";
+                                sw.status = "COMPLIANT";
+                            }
                         }
                     });
 
@@ -4142,17 +4261,37 @@
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isMissing = item.missingInSheets.some(filename => {
-                                const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                return sheet && sheet.headers.some(h => h.toLowerCase().includes(sw.key));
-                            });
-                            return {
-                                name: sw.name,
-                                key: sw.key,
-                                installed: isMissing ? "MISSING (AGENT UNREPORTED)" : "INSTALLED",
-                                required: "REQUIRED",
-                                status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
-                            };
+                            if (sw.key === "ad") {
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: "INSTALLED",
+                                    required: "REQUIRED",
+                                    status: "COMPLIANT"
+                                };
+                            }
+                            if (isSheetUploadedForSoftware(sw.key)) {
+                                const isMissing = item.missingInSheets.some(filename => {
+                                    const sheet = reconcilerSheets.find(s => s.filename === filename);
+                                    const isSheetForSw = sheet && (sheet.filename.toLowerCase().includes(sw.key) || sheet.headers.some(h => matchSoftwareKey(h, sw.key)));
+                                    return isSheetForSw;
+                                });
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: isMissing ? "MISSING (AGENT UNREPORTED)" : "INSTALLED",
+                                    required: "REQUIRED",
+                                    status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
+                                };
+                            } else {
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: "MISSING (AGENT UNREPORTED)",
+                                    required: "REQUIRED",
+                                    status: "NON_COMPLIANT"
+                                };
+                            }
                         }),
                         custom_properties: newCustomProps
                     });
@@ -4162,7 +4301,7 @@
 
             rogues.forEach(item => {
                 const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = fleetDataset.find(dev => dev.canonical_name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName || dev.serial.toLowerCase().includes(normName));
 
                 const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
                 item.sheets.forEach(s => {
