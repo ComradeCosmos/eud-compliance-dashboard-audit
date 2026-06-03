@@ -3142,6 +3142,40 @@
             return list;
         }
 
+        function populatePolicyFilterDropdown() {
+            const select = document.getElementById("fleet-filter-policy");
+            if (!select) return;
+
+            const selectedValue = select.value || "ALL";
+
+            let html = `<option value="ALL">All Policies</option>`;
+
+            const policies = getAvailablePolicies();
+            policies.forEach(name => {
+                const isCore = !name.startsWith('[');
+                const displayName = isCore ? name : name.replace(/^\[.*?\]\s*/, '') + ' (' + name.match(/^\[(.*?)\]/)[1] + ')';
+                
+                if (isCore) {
+                    const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
+                    const key = swCatalogItem ? swCatalogItem.key : "";
+                    if (key) {
+                        html += `<option value="core:${key}:COMPLIANT">${escapeHTML(displayName)}: Compliant</option>`;
+                        html += `<option value="core:${key}:NON_COMPLIANT">${escapeHTML(displayName)}: Non-Compliant</option>`;
+                    }
+                } else {
+                    html += `<option value="custom:${name}:COMPLIANT">${escapeHTML(displayName)}: Compliant</option>`;
+                    html += `<option value="custom:${name}:NON_COMPLIANT">${escapeHTML(displayName)}: Non-Compliant</option>`;
+                }
+            });
+
+            select.innerHTML = html;
+            if (select.options && Array.from(select.options).some(opt => opt.value === selectedValue)) {
+                select.value = selectedValue;
+            } else {
+                select.value = "ALL";
+            }
+        }
+
 
         function handleReportingSearch(val) {
             reportingSearchQuery = val.toLowerCase();
@@ -3305,6 +3339,7 @@
         }
 
         function recalculateAllScores() {
+            populatePolicyFilterDropdown();
             const policies = getAvailablePolicies();
             fleetDataset.forEach(dev => {
                 recalculateSingleDeviceScore(dev, policies);
