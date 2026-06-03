@@ -138,7 +138,7 @@
                 <div class="telemetry-row">
                     <div class="metric-widget">
                         <span>Active Fleet Scale</span>
-                        <div class="val" id="fleet-scale-val">16,742</div>
+                        <div class="val" id="fleet-scale-val">10,029</div>
                         <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;">+8.2% ▲ <span
                                 style="color: var(--text-muted); font-weight: 500;">QoQ</span></p>
                     </div>
@@ -605,7 +605,7 @@
                         <div style="font-size: 0.85rem; color: var(--text-secondary);">
                             Showing <span id="pag-start" style="font-weight: 700; color: var(--text-primary);">1</span>
                             to <span id="pag-end" style="font-weight: 700; color: var(--text-primary);">10</span> of
-                            <span id="pag-total" style="font-weight: 700; color: var(--text-primary);">16,742</span>
+                            <span id="pag-total" style="font-weight: 700; color: var(--text-primary);">10,029</span>
                             assets
                         </div>
                         <div style="display: flex; gap: 0.5rem;">
@@ -990,7 +990,7 @@
         const userAssignedCatalog = ["alkes.s", "j.doe", "s.johnson", "a.taylor", "r.jones", "m.smith", "d.brown", "c.miller", "l.davis", "k.wilson"];
         const officeLocationsCatalog = ["New York HQs", "London Office", "Singapore Hub", "Remote - US", "Munich Lab", "Tokyo branch"];
 
-        // Seed generator for highly deterministic, realistic dataset at true corporate scale (exactly 16,742 devices)
+        // Seed generator for highly deterministic, realistic dataset at true corporate scale (exactly 10,029 devices)
         function generateStructuredAssets(count) {
             const list = [];
             for (let i = 1; i <= count; i++) {
@@ -1083,8 +1083,8 @@
         // Global registry of enforced compliance policies (true = Required, false = Optional)
         let enforcedPolicies = {};
 
-        // Initialize with exactly 16,742 corporate assets
-        let fleetDataset = generateStructuredAssets(16742);
+        // Initialize with exactly 10,029 corporate assets
+        let fleetDataset = generateStructuredAssets(10029);
         let filteredDataset = [...fleetDataset];
         let selectedDevice = null;
 

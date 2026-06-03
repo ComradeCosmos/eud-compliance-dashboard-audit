@@ -183,7 +183,7 @@ To support large-scale asset tracking and multi-agent compliance audits, the pla
 *   **Asset Ingest Merge**: Merge verified alignment parameters and dynamic Excel custom properties directly into the live dashboard fleet database instantly.
 
 ### 2. High-Performance DOM Virtualization (UI Freeze Fix)
-*   To seamlessly render large reconciliation sets (e.g. **16,742 records**) without freezing the browser UI or triggering "page isn't responding" errors, the reconciliation table uses a virtualized paginated controller (`reconPageSize = 10` by default).
+*   To seamlessly render large reconciliation sets (e.g. **10,029 records**) without freezing the browser UI or triggering "page isn't responding" errors, the reconciliation table uses a virtualized paginated controller (`reconPageSize = 10` by default).
 *   DOM updates inside `renderReconTableBody()` are batched in memory using high-efficiency `DocumentFragment` templates (with graceful fallback for testing context) before appending to the live DOM tree, keeping layout calculations instant and the browser thread perfectly responsive.
 
 ### 3. Tabular Flat CSV Reporting Matrix
@@ -191,7 +191,7 @@ To support large-scale asset tracking and multi-agent compliance audits, the pla
 *   **Scalable Blob Stream Downloads**: Large export streams are compiled into UTF-8 encoded binary `Blob` objects and served via local memory references (`URL.createObjectURL`), bypassing standard URI string constraints and securing flawless downloads of tens of thousands of rows.
 
 ### 4. High-Performance Map-Based Bulk Ingest Merging
-*   **Linear O(N) Processing**: The bulk reconciler merge engine uses Map-based pre-indexing of the 16,742 devices (`fleetByName`, `fleetBySerial`, `fleetByMac`) to resolve existing device alignments in O(1) time. This optimizes the time to merge 13,000+ matched rows from a thread-locking 30-60 seconds down to **under 50 milliseconds**.
+*   **Linear O(N) Processing**: The bulk reconciler merge engine uses Map-based pre-indexing of the 10,029 devices (`fleetByName`, `fleetBySerial`, `fleetByMac`) to resolve existing device alignments in O(1) time. This optimizes the time to merge 13,000+ matched rows from a thread-locking 30-60 seconds down to **under 50 milliseconds**.
 
 ### 5. Complete Database & Reconciler Purges
 *   **Consistent Zero-State**: The upgraded "Clear Fleet" action performs a comprehensive purge. It clears the active dataset (`fleetDataset`/`filteredDataset`), fully resets all uploaded inventory spreadsheets (`reconcilerSheets`), dynamic alignment match counts (`reconciliationResults`), software catalog registrations (`mergedSoftwareAgents`), clears file inputs (`reconciler-multi-files`), hides results containers, and triggers layout re-renders instantly to guarantee a secure, pristine state transition.
