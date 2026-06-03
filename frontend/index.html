@@ -1112,6 +1112,11 @@
         let currentPage = 1;
         const pageSize = 10;
 
+        // Global variables for reporting pagination and search
+        let reportingCurrentPage = 1;
+        let reportingSearchQuery = "";
+        const reportingPageSize = 10;
+
         function logToTerminal(text, type = "info") {
             const term = document.getElementById("audit-terminal");
             if (!term) return;
@@ -2989,7 +2994,7 @@
         }
 
         function getAvailablePolicies() {
-            return [
+            const list = [
                 "Active Directory (AD) Enrollment",
                 "BitLocker Drive Encryption",
                 "Zscaler Client Connector",
@@ -2997,6 +3002,139 @@
                 "SentinelOne Endpoint Protection",
                 "SCCM Management Agent"
             ];
+            
+            // Gather all custom properties from fleetDataset that represent spreadsheet compliance columns
+            const customKeys = new Set();
+            fleetDataset.forEach(dev => {
+                if (dev.custom_properties) {
+                    Object.keys(dev.custom_properties).forEach(k => {
+                        if (k.startsWith('[') && k.includes(']')) {
+                            customKeys.add(k);
+                        }
+                    });
+                }
+            });
+            
+            customKeys.forEach(k => list.push(k));
+            return list;
+        }
+
+
+        function handleReportingSearch(val) {
+            reportingSearchQuery = val.toLowerCase();
+            reportingCurrentPage = 1;
+            renderReportingAgentTable();
+        }
+
+        function changeReportingPage(dir) {
+            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
+            const filtered = activeFleet.filter(dev => {
+                const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
+                const name = dev.canonical_name || "";
+                const id = dev.id || "";
+                return assetTag.toLowerCase().includes(reportingSearchQuery) || 
+                       name.toLowerCase().includes(reportingSearchQuery) ||
+                       id.toLowerCase().includes(reportingSearchQuery);
+            });
+
+            const maxPage = Math.ceil(filtered.length / reportingPageSize) || 1;
+            reportingCurrentPage += dir;
+            if (reportingCurrentPage < 1) reportingCurrentPage = 1;
+            if (reportingCurrentPage > maxPage) reportingCurrentPage = maxPage;
+            
+            renderReportingAgentTable();
+        }
+
+        function toggleReportingPolicy(name) {
+            const current = enforcedPolicies[name] !== false;
+            enforcedPolicies[name] = !current;
+            
+            logToTerminal(`[Reporting Audit] Excluded policy "${name}" status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL (Negated)'}.`, enforcedPolicies[name] ? 'info' : 'warning');
+            
+            recalculateAllScores();
+            generateComplianceReport();
+        }
+
+        function renderReportingAgentTable() {
+            const tableHead = document.getElementById("reporting-table-head-row");
+            const tbody = document.getElementById("reporting-agent-tbody");
+            if (!tableHead || !tbody) return;
+
+            const policies = getAvailablePolicies();
+
+            let headHtml = `
+                <th style="text-align: left;">Asset Tag</th>
+                <th style="text-align: left;">Device ID / Name</th>
+            `;
+            policies.forEach(name => {
+                const cleanName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
+                headHtml += `<th style="text-align: center;">${escapeHTML(cleanName)}</th>`;
+            });
+            headHtml += `<th style="text-align: center;">Overall Compliance</th>`;
+            tableHead.innerHTML = headHtml;
+
+            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
+            const filtered = activeFleet.filter(dev => {
+                const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
+                const name = dev.canonical_name || "";
+                const id = dev.id || "";
+                return assetTag.toLowerCase().includes(reportingSearchQuery) || 
+                       name.toLowerCase().includes(reportingSearchQuery) ||
+                       id.toLowerCase().includes(reportingSearchQuery);
+            });
+
+            const total = filtered.length;
+            const startIdx = (reportingCurrentPage - 1) * reportingPageSize;
+            const endIdx = Math.min(startIdx + reportingPageSize, total);
+
+            const displaySlice = filtered.slice(startIdx, endIdx);
+            tbody.innerHTML = "";
+
+            if (displaySlice.length === 0) {
+                const colSpan = 3 + policies.length;
+                tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets found.</td></tr>`;
+            } else {
+                displaySlice.forEach(dev => {
+                    const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "-";
+                    
+                    let rowHtml = `
+                        <td><strong>${escapeHTML(assetTag)}</strong></td>
+                        <td>${escapeHTML(dev.canonical_name.toUpperCase())} <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono);">(${dev.id})</span></td>
+                    `;
+
+                    policies.forEach(policyName => {
+                        const isRequired = enforcedPolicies[policyName] !== false;
+                        
+                        const coreSw = sampleSoftwareCatalog.find(sw => sw.name === policyName);
+                        if (coreSw) {
+                            const sw = dev.software && dev.software.find(s => s.name === policyName);
+                            if (!sw) {
+                                rowHtml += `<td style="text-align: center;"><span class="badge group-non-sift" style="font-size:0.65rem;">UNREPORTED</span></td>`;
+                            } else {
+                                const opacityStyle = isRequired ? '' : ' style="opacity: 0.65;"';
+                                const isCompliant = sw.status === "COMPLIANT";
+                                rowHtml += `<td style="text-align: center;"><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}" style="font-size:0.65rem;"${opacityStyle}>${escapeHTML(sw.installed)}</span></td>`;
+                            }
+                        } else {
+                            const val = (dev.custom_properties && dev.custom_properties[policyName] !== undefined) ? dev.custom_properties[policyName] : "MISSING";
+                            const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                            const opacityStyle = isRequired ? '' : ' style="opacity: 0.65;"';
+                            rowHtml += `<td style="text-align: center;"><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}" style="font-size:0.65rem;"${opacityStyle}>${escapeHTML(val)}</span></td>`;
+                        }
+                    });
+
+                    const overallCompliant = dev.level === "COMPLIANT";
+                    rowHtml += `<td style="text-align: center;"><span class="badge ${overallCompliant ? 'risk-low' : 'risk-critical'}">${dev.level}</span></td>`;
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = rowHtml;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById("reporting-pag-start").innerText = total === 0 ? 0 : (startIdx + 1).toLocaleString();
+            document.getElementById("reporting-pag-end").innerText = endIdx.toLocaleString();
+            document.getElementById("reporting-pag-total").innerText = total.toLocaleString();
         }
 
         function getPolicyStats(name) {
@@ -3386,8 +3524,73 @@
                     </table>
                 </div>
             `;
+            // Build dynamic negation controls checkboxes
+            let negationControlsHtml = "";
+            policies.forEach(name => {
+                const isRequired = enforcedPolicies[name] !== false;
+                const cleanLabel = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
+                const sourceLabel = name.startsWith('[') ? ` (${name.match(/^\[(.*?)\]/)[1]})` : '';
+                const checkboxId = `negate-policy-${name.replace(/[^a-zA-Z0-9]/g, "-")}`;
+                negationControlsHtml += `
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">
+                        <input type="checkbox" id="${checkboxId}" ${isRequired ? 'checked' : ''} onchange="toggleReportingPolicy('${escapeHTML(name)}')" style="accent-color: var(--color-accent); width: 14px; height: 14px; cursor: pointer;">
+                        <span>${escapeHTML(cleanLabel)}<span style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal;">${escapeHTML(sourceLabel)}</span></span>
+                    </label>
+                `;
+            });
+
+            html += `
+                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean); display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
+                        <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Interactive Policy Negation & Agent Compliance Audit</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Negate specific policies to exclude them from calculations, and audit individual agent compliance pass rates compared across all active asset tags.</p>
+                    </div>
+
+                    <!-- Negation Controls Grid -->
+                    <div>
+                        <h4 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">Active Compliance Mandates (Uncheck to Negate)</h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; padding: 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
+                            ${negationControlsHtml}
+                        </div>
+                    </div>
+
+                    <!-- Agent Compliance Grid (compared individually with Asset Tag) -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 1rem;">
+                            <h4 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Asset Tag Agent Compliance Ledger</h4>
+                            <!-- Search field inside reporting for these asset tags -->
+                            <input type="text" id="reporting-search-input" value="${escapeHTML(reportingSearchQuery)}" placeholder="Search by Asset Tag or Name..." oninput="handleReportingSearch(this.value)" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); border-radius: 4px; width: 220px; color: var(--text-primary);">
+                        </div>
+                        
+                        <div class="fleet-table-container">
+                            <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
+                                <thead>
+                                    <tr id="reporting-table-head-row">
+                                        <!-- Dynamic headers -->
+                                    </tr>
+                                </thead>
+                                <tbody id="reporting-agent-tbody">
+                                    <!-- Dynamic rows paginated -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Reporting pagination -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
+                                Showing <span id="reporting-pag-start" style="font-weight: 700; color: var(--text-primary);">0</span> to <span id="reporting-pag-end" style="font-weight: 700; color: var(--text-primary);">0</span> of <span id="reporting-pag-total" style="font-weight: 700; color: var(--text-primary);">0</span> records
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 0.35rem 0.75rem;" onclick="changeReportingPage(-1)">Previous</button>
+                                <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 0.35rem 0.75rem;" onclick="changeReportingPage(1)">Next</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
 
             container.innerHTML = html;
+            renderReportingAgentTable();
         }
 
         function goToRemediation(deviceId) {
