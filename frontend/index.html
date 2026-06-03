@@ -1004,7 +1004,7 @@
                 else if (i % 47 === 0) condition = "DECOMMISSIONED";
 
                 let score = 100.00;
-                if (condition === "BROKEN" || condition === "IN_REPAIR" || condition === "DECOMMISSIONED") {
+                if (condition !== "IN_USE") {
                     score = 0.00;
                 } else if (i % 10 === 0) {
                     score = 0.00;
@@ -1026,7 +1026,7 @@
                 });
 
                 // Apply strict binary compliance: 1 non-compliance drops the score to 0.00!
-                if (hasMissing || condition === "BROKEN" || condition === "DECOMMISSIONED" || condition === "IN_REPAIR") {
+                if (hasMissing || condition !== "IN_USE") {
                     score = 0.00;
                 } else {
                     score = 100.00;
@@ -1388,7 +1388,21 @@
                         manufacturer = "Generic Manufacturer";
                     }
 
-                    const condition = (conditionIdx !== -1 && row[conditionIdx] !== undefined) ? String(row[conditionIdx]).trim() : "IN_USE";
+                    let condition = (conditionIdx !== -1 && row[conditionIdx] !== undefined) ? String(row[conditionIdx]).trim() : "IN_USE";
+                    const normCond = condition.toUpperCase().replace(/[\s-]+/g, "_").replace(/[^A-Z0-9_]/g, "");
+                    if (normCond === "IN_USE" || normCond === "USE" || normCond === "ACTIVE") {
+                        condition = "IN_USE";
+                    } else if (normCond === "IN_REPAIR" || normCond === "REPAIR") {
+                        condition = "IN_REPAIR";
+                    } else if (normCond === "BROKEN" || normCond === "DAMAGED") {
+                        condition = "BROKEN";
+                    } else if (normCond === "DECOMMISSIONED" || normCond === "EXPIRED" || normCond === "RETIRED") {
+                        condition = "DECOMMISSIONED";
+                    } else if (normCond) {
+                        condition = normCond;
+                    } else {
+                        condition = "IN_USE";
+                    }
                     const user = (userIdx !== -1 && row[userIdx] !== undefined) ? String(row[userIdx]).trim() : "unassigned";
                     const lastLogin = (lastLoginIdx !== -1 && row[lastLoginIdx] !== undefined) ? String(row[lastLoginIdx]).trim() : "2026-05-27 09:00";
                     const location = (locationIdx !== -1 && row[locationIdx] !== undefined) ? String(row[locationIdx]).trim() : "Remote";
@@ -1426,6 +1440,10 @@
                     } else if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
                         const parsed = parseFloat(row[scoreColIdx]);
                         if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
+                    }
+                    
+                    if (condition !== "IN_USE") {
+                        finalScore = 0.00;
                     }
                     
                     let level = (finalScore === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
@@ -1742,7 +1760,7 @@
                 dev.level = "NON_COMPLIANT";
                 return;
             }
-            if (dev.condition === "BROKEN" || dev.condition === "IN_REPAIR" || dev.condition === "DECOMMISSIONED") {
+            if (dev.condition !== "IN_USE") {
                 dev.score = 0.00;
                 dev.level = "NON_COMPLIANT";
                 return;
