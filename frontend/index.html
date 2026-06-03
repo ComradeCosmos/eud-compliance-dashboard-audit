@@ -1670,14 +1670,31 @@
 
                 let matchesPolicy = true;
                 if (policyFilter !== "ALL") {
-                    const [policyKey, requiredStatus] = policyFilter.split(":");
-                    const sw = item.software && item.software.find(s => s.key === policyKey);
-                    if (sw) {
-                        matchesPolicy = (sw.status === requiredStatus);
+                    const parts = policyFilter.split(":");
+                    const type = parts[0]; // "core" or "custom"
+                    const requiredStatus = parts[parts.length - 1]; // "COMPLIANT" or "NON_COMPLIANT"
+                    const keyOrName = parts.slice(1, parts.length - 1).join(":");
+
+                    let isCompliant = false;
+                    if (type === "core") {
+                        const sw = item.software && item.software.find(s => s.key === keyOrName);
+                        if (sw) {
+                            const isAd = sw.key === "ad";
+                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                            if (!isAd && !isUploaded && !isEverMerged) {
+                                isCompliant = true; // Bypassed core agent compliance
+                            } else {
+                                isCompliant = (sw.status === "COMPLIANT");
+                            }
+                        } else {
+                            isCompliant = false;
+                        }
                     } else {
-                        // If software key not found on the device, treat it as missing (NON_COMPLIANT)
-                        matchesPolicy = (requiredStatus === "NON_COMPLIANT");
+                        const val = (item.custom_properties && item.custom_properties[keyOrName] !== undefined) ? item.custom_properties[keyOrName] : "MISSING";
+                        isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
                     }
+                    matchesPolicy = (isCompliant ? "COMPLIANT" : "NON_COMPLIANT") === requiredStatus;
                 }
 
                 return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS && matchesPolicy;
@@ -1858,19 +1875,29 @@
                 const isRequired = enforcedPolicies[name] !== false; // Required by default
                 if (!isRequired) continue;
 
-                // Check core software agent compliance
-                const sw = dev.software && dev.software.find(s => s.name === name);
-                if (sw) {
-                    const isAd = sw.key === "ad";
-                    const isUploaded = isSheetUploadedForSoftware(sw.key);
-                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
-                    
-                    // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
-                    if (!isAd && !isUploaded && !isEverMerged) {
-                        continue;
-                    }
+                if (!name.startsWith('[')) {
+                    // Check core software agent compliance
+                    const sw = dev.software && dev.software.find(s => s.name === name);
+                    if (sw) {
+                        const isAd = sw.key === "ad";
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                        
+                        // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
+                        if (!isAd && !isUploaded && !isEverMerged) {
+                            continue;
+                        }
 
-                    if (sw.status === "NON_COMPLIANT") {
+                        if (sw.status === "NON_COMPLIANT") {
+                            hasNonCompliant = true;
+                            break;
+                        }
+                    }
+                } else {
+                    // Check custom spreadsheet policy compliance
+                    const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
+                    const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                    if (!isCompliant) {
                         hasNonCompliant = true;
                         break;
                     }
@@ -3326,14 +3353,33 @@
         function getFailedControlsForDevice(dev) {
             const failedControls = [];
 
-            if (dev.software) {
-                dev.software.forEach(sw => {
-                    const isRequired = enforcedPolicies[sw.name] !== false;
-                    if (isRequired && sw.status === "NON_COMPLIANT") {
-                        failedControls.push(sw.name);
+            const policies = getAvailablePolicies();
+            policies.forEach(name => {
+                const isRequired = enforcedPolicies[name] !== false;
+                if (!isRequired) return;
+
+                if (!name.startsWith('[')) {
+                    const sw = dev.software && dev.software.find(s => s.name === name);
+                    if (sw) {
+                        const isAd = sw.key === "ad";
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                        
+                        if (!isAd && !isUploaded && !isEverMerged) {
+                            return; // bypassed
+                        }
+                        if (sw.status === "NON_COMPLIANT") {
+                            failedControls.push(name);
+                        }
                     }
-                });
-            }
+                } else {
+                    const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
+                    const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                    if (!isCompliant) {
+                        failedControls.push(name);
+                    }
+                }
+            });
 
             return failedControls;
         }
