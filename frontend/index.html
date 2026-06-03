@@ -3325,25 +3325,68 @@
             let compliantCount = 0;
             let totalCount = 0;
 
-            const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
-            const swKey = swCatalogItem ? swCatalogItem.key : "";
-            const isAd = swKey === "ad";
-            const isUploaded = isSheetUploadedForSoftware(swKey);
-            const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
+            const isCore = !name.startsWith('[');
+            let isUnreported = false;
 
-            if (!isAd && !isUploaded && !isEverMerged) {
+            if (isCore) {
+                const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
+                const swKey = swCatalogItem ? swCatalogItem.key : "";
+                const isAd = swKey === "ad";
+                const isUploaded = isSheetUploadedForSoftware(swKey);
+                const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
+
+                if (!isAd && !isUploaded && !isEverMerged) {
+                    isUnreported = true;
+                }
+            } else {
+                const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
+                if (!hasProperty) {
+                    isUnreported = true;
+                }
+            }
+
+            if (isUnreported) {
                 return { compliantCount: 0, totalCount: 0, isUnreported: true };
             }
+
+            const isRequired = enforcedPolicies[name] !== false;
 
             fleetDataset.forEach(dev => {
                 if (dev.condition !== "IN_USE") return; // active devices only
 
-                totalCount++;
-
-                // Core software policy
-                const sw = dev.software && dev.software.find(s => s.name === name);
-                if (sw && sw.status === "COMPLIANT") {
-                    compliantCount++;
+                if (isCore) {
+                    const sw = dev.software && dev.software.find(s => s.name === name);
+                    if (isRequired) {
+                        totalCount++;
+                        if (sw && sw.status === "COMPLIANT") {
+                            compliantCount++;
+                        }
+                    } else {
+                        // Optional: only count if reported/available (not missing)
+                        if (sw && sw.installed && !sw.installed.toLowerCase().includes("missing")) {
+                            totalCount++;
+                            if (sw.status === "COMPLIANT") {
+                                compliantCount++;
+                            }
+                        }
+                    }
+                } else {
+                    const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
+                    const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                    if (isRequired) {
+                        totalCount++;
+                        if (isCompliant) {
+                            compliantCount++;
+                        }
+                    } else {
+                        // Optional: only count if reported/available (not missing)
+                        if (val !== "MISSING") {
+                            totalCount++;
+                            if (isCompliant) {
+                                compliantCount++;
+                            }
+                        }
+                    }
                 }
             });
 
