@@ -556,10 +556,15 @@
                         <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
                             <option value="ALL">All Conditions</option>
-                            <option value="IN_USE">In Use</option>
+                            <option value="DISPOSED">Disposed</option>
+                            <option value="DONATED_UNDER_CSR">Donated Under CSR</option>
+                            <option value="EXPIRED">Expired</option>
                             <option value="IN_REPAIR">In Repair</option>
-                            <option value="BROKEN">Broken</option>
-                            <option value="DECOMMISSIONED">Decommissioned</option>
+                            <option value="IN_STORE">In Store</option>
+                            <option value="IN_USE">In Use</option>
+                            <option value="LOANABLE_RESERVED">Loanable Reserved</option>
+                            <option value="NOT_TRACEABLE">Not Traceable</option>
+                            <option value="RESERVED">Reserved</option>
                         </select>
 
                         <select id="fleet-filter-loc-group" onchange="handleFleetQueryChange()"
@@ -967,7 +972,17 @@
             return str;
         }
 
-        const assetConditions = ["IN_USE", "IN_REPAIR", "BROKEN", "DECOMMISSIONED"];
+        const assetConditions = [
+            "DISPOSED",
+            "DONATED_UNDER_CSR",
+            "EXPIRED",
+            "IN_REPAIR",
+            "IN_STORE",
+            "IN_USE",
+            "LOANABLE_RESERVED",
+            "NOT_TRACEABLE",
+            "RESERVED"
+        ];
         const manufacturersList = ["Dell Inc.", "Apple Inc.", "Lenovo", "HP", "Microsoft"];
         const osVersionsList = [
             { os: "Windows 11 (22631)", family: "Windows" },
@@ -997,11 +1012,16 @@
                 const man = manufacturersList[i % manufacturersList.length];
                 const osInfo = osVersionsList[i % osVersionsList.length];
 
-                // Realistic distribution: 92% in use, 4% in repair, 2% broken, 2% decommissioned
+                // Realistic distribution: majority in use, others distributed across the other 8 conditions
                 let condition = "IN_USE";
                 if (i % 25 === 0) condition = "IN_REPAIR";
-                else if (i % 50 === 0) condition = "BROKEN";
-                else if (i % 47 === 0) condition = "DECOMMISSIONED";
+                else if (i % 40 === 0) condition = "IN_STORE";
+                else if (i % 50 === 0) condition = "EXPIRED";
+                else if (i % 60 === 0) condition = "DISPOSED";
+                else if (i % 70 === 0) condition = "DONATED_UNDER_CSR";
+                else if (i % 80 === 0) condition = "LOANABLE_RESERVED";
+                else if (i % 90 === 0) condition = "NOT_TRACEABLE";
+                else if (i % 100 === 0) condition = "RESERVED";
 
                 let score = 100.00;
                 if (condition !== "IN_USE") {
@@ -1394,10 +1414,20 @@
                         condition = "IN_USE";
                     } else if (normCond === "IN_REPAIR" || normCond === "REPAIR") {
                         condition = "IN_REPAIR";
-                    } else if (normCond === "BROKEN" || normCond === "DAMAGED") {
-                        condition = "BROKEN";
-                    } else if (normCond === "DECOMMISSIONED" || normCond === "EXPIRED" || normCond === "RETIRED") {
-                        condition = "DECOMMISSIONED";
+                    } else if (normCond === "IN_STORE" || normCond === "STORE") {
+                        condition = "IN_STORE";
+                    } else if (normCond === "EXPIRED") {
+                        condition = "EXPIRED";
+                    } else if (normCond === "DISPOSED" || normCond === "DECOMMISSIONED" || normCond === "RETIRED") {
+                        condition = "DISPOSED";
+                    } else if (normCond === "DONATED_UNDER_CSR" || normCond === "DONATED" || normCond === "CSR") {
+                        condition = "DONATED_UNDER_CSR";
+                    } else if (normCond === "LOANABLE_RESERVED" || normCond === "LOANABLE") {
+                        condition = "LOANABLE_RESERVED";
+                    } else if (normCond === "NOT_TRACEABLE" || normCond === "NOTTRACEABLE" || normCond === "UNTRACEABLE") {
+                        condition = "NOT_TRACEABLE";
+                    } else if (normCond === "RESERVED") {
+                        condition = "RESERVED";
                     } else if (normCond) {
                         condition = normCond;
                     } else {
@@ -2633,20 +2663,30 @@
                 container.innerHTML = donutSvg + legendContent;
             } else if (dimension === "condition") {
                 // Count physical conditions dynamically
-                let use = 0, repair = 0, broken = 0, decom = 0;
+                let use = 0, repair = 0, store = 0, expired = 0, disposed = 0, donated = 0, loanable = 0, untraceable = 0, reserved = 0;
                 fleetDataset.forEach(d => {
                     if (d.condition === "IN_USE") use++;
                     else if (d.condition === "IN_REPAIR") repair++;
-                    else if (d.condition === "BROKEN") broken++;
-                    else if (d.condition === "DECOMMISSIONED") decom++;
+                    else if (d.condition === "IN_STORE") store++;
+                    else if (d.condition === "EXPIRED") expired++;
+                    else if (d.condition === "DISPOSED") disposed++;
+                    else if (d.condition === "DONATED_UNDER_CSR") donated++;
+                    else if (d.condition === "LOANABLE_RESERVED") loanable++;
+                    else if (d.condition === "NOT_TRACEABLE") untraceable++;
+                    else if (d.condition === "RESERVED") reserved++;
                 });
 
                 const total = fleetDataset.length;
                 const data = [
                     { name: "In Use", count: use, pct: total > 0 ? (use / total) * 100 : 0, color: "#64748b" },
                     { name: "In Repair", count: repair, pct: total > 0 ? (repair / total) * 100 : 0, color: "var(--status-medium)" },
-                    { name: "Broken", count: broken, pct: total > 0 ? (broken / total) * 100 : 0, color: "var(--status-critical)" },
-                    { name: "Decommissioned", count: decom, pct: total > 0 ? (decom / total) * 100 : 0, color: "#cbd5e1" }
+                    { name: "In Store", count: store, pct: total > 0 ? (store / total) * 100 : 0, color: "#475569" },
+                    { name: "Expired", count: expired, pct: total > 0 ? (expired / total) * 100 : 0, color: "var(--status-high)" },
+                    { name: "Disposed", count: disposed, pct: total > 0 ? (disposed / total) * 100 : 0, color: "#cbd5e1" },
+                    { name: "Donated Under CSR", count: donated, pct: total > 0 ? (donated / total) * 100 : 0, color: "#94a3b8" },
+                    { name: "Loanable Reserved", count: loanable, pct: total > 0 ? (loanable / total) * 100 : 0, color: "#334155" },
+                    { name: "Not Traceable", count: untraceable, pct: total > 0 ? (untraceable / total) * 100 : 0, color: "var(--status-critical)" },
+                    { name: "Reserved", count: reserved, pct: total > 0 ? (reserved / total) * 100 : 0, color: "#1e293b" }
                 ];
 
                 const C = 440;
@@ -3287,7 +3327,7 @@
                     const failedControls = getFailedControlsForDevice(dev);
                     let failedMarkup = "";
                     
-                    if (dev.condition === "BROKEN" || dev.condition === "IN_REPAIR" || dev.condition === "DECOMMISSIONED") {
+                    if (dev.condition !== "IN_USE") {
                         failedMarkup = `<span class="badge risk-critical">Physical: ${escapeHTML(dev.condition.replace("_", " "))}</span>`;
                     } else if (dev.is_isolated) {
                         failedMarkup = `<span class="badge risk-critical">Host Containment Active</span>`;
