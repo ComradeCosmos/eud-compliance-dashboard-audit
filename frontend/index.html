@@ -595,6 +595,23 @@
                             <option value="macOS">macOS</option>
                             <option value="Linux">Linux</option>
                         </select>
+
+                        <select id="fleet-filter-policy" onchange="handleFleetQueryChange()"
+                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            <option value="ALL">All Core Policies</option>
+                            <option value="ad:COMPLIANT">AD Enrollment: Compliant</option>
+                            <option value="ad:NON_COMPLIANT">AD Enrollment: Non-Compliant</option>
+                            <option value="bitlocker:COMPLIANT">BitLocker: Compliant</option>
+                            <option value="bitlocker:NON_COMPLIANT">BitLocker: Non-Compliant</option>
+                            <option value="zscaler:COMPLIANT">Zscaler: Compliant</option>
+                            <option value="zscaler:NON_COMPLIANT">Zscaler: Non-Compliant</option>
+                            <option value="nessus:COMPLIANT">Nessus: Compliant</option>
+                            <option value="nessus:NON_COMPLIANT">Nessus: Non-Compliant</option>
+                            <option value="sentinelone:COMPLIANT">SentinelOne EDR: Compliant</option>
+                            <option value="sentinelone:NON_COMPLIANT">SentinelOne EDR: Non-Compliant</option>
+                            <option value="sccm:COMPLIANT">SCCM Agent: Compliant</option>
+                            <option value="sccm:NON_COMPLIANT">SCCM Agent: Non-Compliant</option>
+                        </select>
                     </div>
 
                     <div class="fleet-table-container">
@@ -1630,6 +1647,7 @@
             const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
             const locGroupFilter = (document.getElementById("fleet-filter-loc-group") || {}).value || "ALL";
             const osPlatformFilter = (document.getElementById("fleet-filter-os-platform") || {}).value || "ALL";
+            const policyFilter = (document.getElementById("fleet-filter-policy") || {}).value || "ALL";
 
             filteredDataset = fleetDataset.filter(item => {
                 const matchesSearch =
@@ -1650,7 +1668,19 @@
                     (item.os_family && String(item.os_family).toLowerCase() === osPlatformFilter.toLowerCase()) ||
                     (item.os && String(item.os).toLowerCase().includes(osPlatformFilter.toLowerCase()));
 
-                return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS;
+                let matchesPolicy = true;
+                if (policyFilter !== "ALL") {
+                    const [policyKey, requiredStatus] = policyFilter.split(":");
+                    const sw = item.software && item.software.find(s => s.key === policyKey);
+                    if (sw) {
+                        matchesPolicy = (sw.status === requiredStatus);
+                    } else {
+                        // If software key not found on the device, treat it as missing (NON_COMPLIANT)
+                        matchesPolicy = (requiredStatus === "NON_COMPLIANT");
+                    }
+                }
+
+                return matchesSearch && matchesRisk && matchesCondition && matchesLocGroup && matchesOS && matchesPolicy;
             });
 
             currentPage = 1;
