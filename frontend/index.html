@@ -551,7 +551,7 @@
                     </div>
 
                     <!-- Client Filter & Search Box -->
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
                         <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
                             oninput="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
@@ -576,14 +576,6 @@
                             <option value="ALL">All Location Groups</option>
                             <option value="Sift">Sift</option>
                             <option value="Non-Sift">Non-Sift</option>
-                        </select>
-
-                        <select id="fleet-filter-os-platform" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-                            <option value="ALL">All OS Families</option>
-                            <option value="Windows">Windows</option>
-                            <option value="macOS">macOS</option>
-                            <option value="Linux">Linux</option>
                         </select>
 
                         <select id="fleet-filter-policy" onchange="handleFleetQueryChange()"
@@ -1639,7 +1631,7 @@
             const riskFilter = "ALL";
             const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
             const locGroupFilter = (document.getElementById("fleet-filter-loc-group") || {}).value || "ALL";
-            const osPlatformFilter = (document.getElementById("fleet-filter-os-platform") || {}).value || "ALL";
+            const osPlatformFilter = "ALL";
             const policyFilter = (document.getElementById("fleet-filter-policy") || {}).value || "ALL";
 
             filteredDataset = fleetDataset.filter(item => {
