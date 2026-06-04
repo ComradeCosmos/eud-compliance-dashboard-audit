@@ -143,22 +143,7 @@ header h1 {
     color: var(--text-primary);
 }
 
-.sla-badge-container {
-    display: flex;
-    gap: 1.5rem;
-}
 
-.sla-badge {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-secondary);
-}
-
-.sla-badge span {
-    color: var(--color-accent);
-}
 
 /* Swiss Metric Grid */
 .telemetry-row {
@@ -456,6 +441,12 @@ header h1 {
     background: var(--bg-secondary);
     color: var(--text-muted);
     border-color: var(--border-clean);
+}
+
+.badge.state-unknown {
+    background: #fffbeb;
+    color: #92400e;
+    border-color: #fcd34d;
 }
 
 /* Location Group Badges */

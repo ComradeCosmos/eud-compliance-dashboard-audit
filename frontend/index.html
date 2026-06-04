@@ -126,10 +126,7 @@
                     <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;"
                         id="dashboard-date">Q2 2026 | Fleet Telemetry Report</p>
                 </div>
-                <div class="sla-badge-container">
-                    <div class="sla-badge">Freshness SLA: <span>2 MIN</span></div>
-                    <div class="sla-badge">Availability SLA: <span>99.9%</span></div>
-                </div>
+
             </header>
 
             <!-- Section: Analytics -->
@@ -575,10 +572,11 @@
                             <option value="EXPIRED">Expired</option>
                             <option value="IN_REPAIR">In Repair</option>
                             <option value="IN_STORE">In Store</option>
-                            <option value="IN_USE">In Use</option>
+                            <option value="IN_USE" selected>In Use</option>
                             <option value="LOANABLE_RESERVED">Loanable Reserved</option>
                             <option value="NOT_TRACEABLE">Not Traceable</option>
                             <option value="RESERVED">Reserved</option>
+                            <option value="UNKNOWN">Unknown</option>
                         </select>
 
                         <select id="fleet-filter-loc-group" onchange="handleFleetQueryChange()"
@@ -1679,10 +1677,10 @@
                     if (type === "core") {
                         const sw = item.software && item.software.find(s => s.key === keyOrName);
                         if (sw) {
-                            const isAd = sw.key === "ad";
                             const isUploaded = isSheetUploadedForSoftware(sw.key);
                             const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
-                            if (!isAd && !isUploaded && !isEverMerged) {
+                            const alwaysReported = sw.key === "ad";
+                            if (!alwaysReported && !isUploaded && !isEverMerged) {
                                 isCompliant = true; // Bypassed core agent compliance
                             } else {
                                 isCompliant = (sw.status === "COMPLIANT");
@@ -1702,6 +1700,7 @@
 
             currentPage = 1;
             populateFleetTable();
+            renderCorePoliciesComparison(); // re-score based on active condition filter
         }
 
         function changePage(direction) {
@@ -1717,6 +1716,7 @@
                 case "IN_USE": return "state-use";
                 case "IN_REPAIR": return "state-repair";
                 case "BROKEN": return "state-broken";
+                case "UNKNOWN": return "state-unknown";
                 default: return "state-decom";
             }
         }
@@ -1856,7 +1856,7 @@
                 dev.level = "NON_COMPLIANT";
                 return;
             }
-            if (dev.condition !== "IN_USE") {
+            if (dev.condition !== "IN_USE" && dev.condition !== "UNKNOWN") {
                 dev.score = 0.00;
                 dev.level = "NON_COMPLIANT";
                 return;
@@ -1879,12 +1879,12 @@
                     // Check core software agent compliance
                     const sw = dev.software && dev.software.find(s => s.name === name);
                     if (sw) {
-                        const isAd = sw.key === "ad";
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                        const alwaysReported = sw.key === "ad";
                         
-                        // If the sheet is NOT uploaded, was NEVER merged, and is not Active Directory, we bypass compliance verification
-                        if (!isAd && !isUploaded && !isEverMerged) {
+                        // If the sheet is NOT uploaded and was NEVER merged, we bypass compliance verification
+                        if (!alwaysReported && !isUploaded && !isEverMerged) {
                             continue;
                         }
 
@@ -2136,16 +2136,17 @@
                 "SCCM Management Agent"
             ];
 
+            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
             let html = "";
             corePolicies.forEach(name => {
                 const isRequired = enforcedPolicies[name] !== false;
-                const stats = getPolicyStats(name);
-                const compliantCount = stats.compliantCount;
-                const totalCount = stats.totalCount;
+                const stats = getPolicyStats(name, conditionFilter);
                 const isUnreported = stats.isUnreported;
 
-                const passRate = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
-                const failCount = totalCount - compliantCount;
+                // Pass rate % and counts scoped to the active condition filter
+                const passRate = stats.filteredTotal > 0 ? (stats.filteredCompliant / stats.filteredTotal) * 100 : 0;
+                const compliantCount = stats.filteredCompliant;
+                const failCount = stats.filteredTotal - stats.filteredCompliant;
 
                 // Color schemes based on compliance and enforcement
                 let statusBadgeText = isRequired ? "Enforced" : "Optional";
@@ -3321,76 +3322,109 @@
             document.getElementById("reporting-pag-total").innerText = total.toLocaleString();
         }
 
-        function getPolicyStats(name) {
-            let compliantCount = 0;
-            let totalCount = 0;
-
+        function getPolicyStats(name, conditionFilter) {
+            if (!conditionFilter) {
+                const filterEl = document.getElementById("fleet-filter-condition");
+                conditionFilter = filterEl ? filterEl.value : "ALL";
+            }
             const isCore = !name.startsWith('[');
             let isUnreported = false;
 
             if (isCore) {
                 const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
                 const swKey = swCatalogItem ? swCatalogItem.key : "";
-                const isAd = swKey === "ad";
                 const isUploaded = isSheetUploadedForSoftware(swKey);
                 const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
-
-                if (!isAd && !isUploaded && !isEverMerged) {
-                    isUnreported = true;
-                }
+                const alwaysReported = swKey === "ad";
+                if (!alwaysReported && !isUploaded && !isEverMerged) isUnreported = true;
             } else {
                 const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
-                if (!hasProperty) {
-                    isUnreported = true;
-                }
+                if (!hasProperty) isUnreported = true;
             }
 
             if (isUnreported) {
-                return { compliantCount: 0, totalCount: 0, isUnreported: true };
+                return {
+                    filteredCompliant: 0,
+                    filteredTotal: 0,
+                    inUseCompliant: 0,
+                    inUseTotal: 0,
+                    allCompliant: 0,
+                    allTotal: 0,
+                    isUnreported: true,
+                    get compliantCount() { return 0; },
+                    get totalCount() { return 0; }
+                };
             }
 
             const isRequired = enforcedPolicies[name] !== false;
 
+            // filteredCompliant/filteredTotal — scoped to the active condition filter (drives % and counts)
+            // inUse* and all* retained for any future reference
+            let filteredCompliant = 0, filteredTotal = 0;
+            let inUseCompliant = 0, inUseTotal = 0;
+            let allCompliant = 0, allTotal = 0;
+
             fleetDataset.forEach(dev => {
-                if (dev.condition !== "IN_USE") return; // active devices only
+                const isActive = dev.condition === "IN_USE";
+                // UNKNOWN assets (unverified reconciliation merges) never count toward compliance
+                const matchesFilter = (conditionFilter === "ALL" || dev.condition === conditionFilter)
+                    && !dev.is_rogue;
 
                 if (isCore) {
                     const sw = dev.software && dev.software.find(s => s.name === name);
                     if (isRequired) {
-                        totalCount++;
-                        if (sw && sw.status === "COMPLIANT") {
-                            compliantCount++;
-                        }
+                        allTotal++;
+                        if (isActive) inUseTotal++;
+                        if (matchesFilter) filteredTotal++;
+                        const compliant = sw && sw.status === "COMPLIANT";
+                        if (compliant) allCompliant++;
+                        if (compliant && isActive) inUseCompliant++;
+                        if (compliant && matchesFilter) filteredCompliant++;
                     } else {
-                        // Optional: only count if reported/available (not missing)
                         if (sw && sw.installed && !sw.installed.toLowerCase().includes("missing")) {
-                            totalCount++;
-                            if (sw.status === "COMPLIANT") {
-                                compliantCount++;
-                            }
+                            allTotal++;
+                            if (isActive) inUseTotal++;
+                            if (matchesFilter) filteredTotal++;
+                            const compliant = sw.status === "COMPLIANT";
+                            if (compliant) allCompliant++;
+                            if (compliant && isActive) inUseCompliant++;
+                            if (compliant && matchesFilter) filteredCompliant++;
                         }
                     }
                 } else {
                     const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
-                    const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                    const compliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
                     if (isRequired) {
-                        totalCount++;
-                        if (isCompliant) {
-                            compliantCount++;
-                        }
+                        allTotal++;
+                        if (isActive) inUseTotal++;
+                        if (matchesFilter) filteredTotal++;
+                        if (compliant) allCompliant++;
+                        if (compliant && isActive) inUseCompliant++;
+                        if (compliant && matchesFilter) filteredCompliant++;
                     } else {
-                        // Optional: only count if reported/available (not missing)
                         if (val !== "MISSING") {
-                            totalCount++;
-                            if (isCompliant) {
-                                compliantCount++;
-                            }
+                            allTotal++;
+                            if (isActive) inUseTotal++;
+                            if (matchesFilter) filteredTotal++;
+                            if (compliant) allCompliant++;
+                            if (compliant && isActive) inUseCompliant++;
+                            if (compliant && matchesFilter) filteredCompliant++;
                         }
                     }
                 }
             });
 
-            return { compliantCount, totalCount, isUnreported: false };
+            return {
+                filteredCompliant,
+                filteredTotal,
+                inUseCompliant,
+                inUseTotal,
+                allCompliant,
+                allTotal,
+                isUnreported: false,
+                get compliantCount() { return this.filteredCompliant; },
+                get totalCount() { return this.filteredTotal; }
+            };
         }
 
         function getFailedControlsForDevice(dev) {
@@ -3404,11 +3438,11 @@
                 if (!name.startsWith('[')) {
                     const sw = dev.software && dev.software.find(s => s.name === name);
                     if (sw) {
-                        const isAd = sw.key === "ad";
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                        const alwaysReported = sw.key === "ad";
                         
-                        if (!isAd && !isUploaded && !isEverMerged) {
+                        if (!alwaysReported && !isUploaded && !isEverMerged) {
                             return; // bypassed
                         }
                         if (sw.status === "NON_COMPLIANT") {
@@ -3863,19 +3897,10 @@
 
         function registerMergedSoftwareAgents() {
             reconcilerSheets.forEach(sheet => {
-                const swKeys = ["ad", "bitlocker", "zscaler", "nessus", "sentinelone", "sccm"];
-                swKeys.forEach(k => {
-                    const fn = sheet.filename.toLowerCase();
-                    const isForSw = fn.includes(k) || 
-                        (k === "sentinelone" && (fn.includes("sentinelone") || fn.includes("sentinel one") || fn.includes("sentinel") || fn.includes("sentinels") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) || 
-                        (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) || 
-                        (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("encryption") || fn.includes("disk"))) || 
-                        (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("vpn")));
-                    
-                    if (isForSw || sheet.headers.some(h => matchSoftwareKey(h, k))) {
-                        mergedSoftwareAgents.add(k);
-                    }
-                });
+                const k = getSheetSoftwareKey(sheet);
+                if (k) {
+                    mergedSoftwareAgents.add(k);
+                }
             });
         }
 
@@ -4533,15 +4558,15 @@
             const k = swKey.toLowerCase().trim();
 
             if (k === "ad") {
-                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment")) {
+                if (h.includes("active directory") || h.includes("active_directory") || h.includes("ad enrollment") || h.includes("ad_enrollment") || h.includes("ad status") || h.includes("ad_status") || h.includes("directory enrollment") || h.includes("directory_enrollment")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("ad");
+                return words.includes("ad") && !words.includes("domain");
             }
 
             if (k === "bitlocker") {
-                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("bit_locker") || h.includes("bit-locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("bit_locker") || h.includes("bit-locker") || h.includes("encryption state") || h.includes("encryption_state") || h.includes("encryption status") || h.includes("encryption_status") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption") || h.includes("disk_encryption")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
@@ -4565,7 +4590,7 @@
             }
 
             if (k === "sentinelone") {
-                if (h.includes("sentinel") || h.includes("sentiel") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                if (h.includes("sentinel") || h.includes("sentiel") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus") || h.includes("operational state") || h.includes("operational_state") || h.includes("health status") || h.includes("health_status") || h.includes("scan status") || h.includes("scan_status") || h.includes("agent uuid") || h.includes("agent_uuid")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
@@ -4587,36 +4612,52 @@
             return h.includes(k);
         }
 
+        function getSheetSoftwareKey(sheet) {
+            if (!sheet || !sheet.filename) return null;
+            const fn = sheet.filename.toLowerCase();
+            const words = fn.split(/[^a-z0-9]+/);
+            
+            // Check filename matches first
+            if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
+                return "sentinelone";
+            }
+            if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
+                return "bitlocker";
+            }
+            if (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
+                return "zscaler";
+            }
+            if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
+                return "nessus";
+            }
+            if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
+                return "sccm";
+            }
+            
+            // "ad" is too short for simple includes, use word list
+            if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
+                if (sheet.role !== "primary") {
+                    return "ad";
+                }
+            }
+            
+            // If filename doesn't match any key, fall back to matching headers
+            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
+            for (const k of swKeys) {
+                if (k === "ad" && sheet.role === "primary") continue;
+                if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                    return k;
+                }
+            }
+            
+            return null; // unknown classification
+        }
+
         function isSheetUploadedForSoftware(swKey) {
             if (!swKey) return false;
             const k = swKey.toLowerCase();
             return reconcilerSheets.some(sheet => {
-                const fn = sheet.filename.toLowerCase();
-                
-                if (k === "ad" && (fn.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("domain") || fn.includes("enrollment"))) {
-                    const words = fn.split(/[^a-z0-9]+/);
-                    if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("domain") || fn.includes("enrollment")) {
-                        return true;
-                    }
-                }
-                if (k === "bitlocker" && (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk"))) return true;
-                if (k === "zscaler" && (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn"))) return true;
-                if (k === "nessus" && (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner"))) return true;
-                if (k === "sentinelone" && (fn.includes("sentinel") || fn.includes("sentinels") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus"))) {
-                    return true;
-                }
-                if (k === "sccm" && (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management"))) return true;
-                
-                if (fn.includes(k)) {
-                    if (k.length <= 3) {
-                        const words = fn.split(/[^a-z0-9]+/);
-                        if (words.includes(k)) return true;
-                    } else {
-                        return true;
-                    }
-                }
-                
-                return sheet.headers.some(h => matchSoftwareKey(h, swKey));
+                return getSheetSoftwareKey(sheet) === k;
             });
         }
 
@@ -4862,6 +4903,74 @@
             return { nameVal, serialVal, macVal };
         }
 
+        /**
+         * Extracts and normalises the physical condition from any reconciliation item.
+         * Scans the primary-sheet row, mergedProperties, and secondary sheets for a
+         * "condition", "status", or "state" column in that order.
+         * Returns the canonical condition string (e.g. "IN_USE", "IN_REPAIR") or
+         * "UNKNOWN" if no condition information is present in the Excel data.
+         */
+        function extractConditionFromItem(item) {
+            const condKeywords = ["condition", "status", "state"];
+
+            function normaliseCondition(raw) {
+                const normCond = String(raw).trim().toUpperCase().replace(/[\s-]+/g, "_").replace(/[^A-Z0-9_]/g, "");
+                if (!normCond) return null;
+                if (normCond === "IN_USE" || normCond === "USE" || normCond === "ACTIVE") return "IN_USE";
+                if (normCond === "IN_REPAIR" || normCond === "REPAIR") return "IN_REPAIR";
+                if (normCond === "IN_STORE" || normCond === "STORE") return "IN_STORE";
+                if (normCond === "EXPIRED") return "EXPIRED";
+                if (normCond === "DISPOSED" || normCond === "DECOMMISSIONED" || normCond === "RETIRED") return "DISPOSED";
+                if (normCond === "DONATED_UNDER_CSR" || normCond === "DONATED" || normCond === "CSR") return "DONATED_UNDER_CSR";
+                if (normCond === "LOANABLE_RESERVED" || normCond === "LOANABLE") return "LOANABLE_RESERVED";
+                if (normCond === "NOT_TRACEABLE" || normCond === "NOTTRACEABLE" || normCond === "UNTRACEABLE") return "NOT_TRACEABLE";
+                if (normCond === "RESERVED") return "RESERVED";
+                if (normCond === "UNKNOWN") return "UNKNOWN";
+                return null;
+            }
+
+            // 1) Try primary sheet row
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (primarySheet && item.primaryRow) {
+                const pHeaders = primarySheet.headers.map(h => h.toLowerCase().trim());
+                for (const kw of condKeywords) {
+                    const idx = pHeaders.findIndex(h => h === kw || h.includes(kw));
+                    if (idx !== -1 && item.primaryRow[idx] !== undefined && String(item.primaryRow[idx]).trim()) {
+                        const result = normaliseCondition(item.primaryRow[idx]);
+                        if (result) return result;
+                    }
+                }
+            }
+
+            // 2) Try mergedProperties
+            if (item.mergedProperties) {
+                for (const p of item.mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    if (condKeywords.some(kw => propName === kw || propName.includes(kw))) {
+                        const result = normaliseCondition(p.value);
+                        if (result) return result;
+                    }
+                }
+            }
+
+            // 3) Try secondary sheet rows
+            if (item.sheets) {
+                for (const s of item.sheets) {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+                    for (const kw of condKeywords) {
+                        const idx = sHeaders.findIndex(h => h === kw || h.includes(kw));
+                        if (idx !== -1 && s.row[idx] !== undefined && String(s.row[idx]).trim()) {
+                            const result = normaliseCondition(s.row[idx]);
+                            if (result) return result;
+                        }
+                    }
+                }
+            }
+
+            // No condition data in the Excel — default to UNKNOWN for new assets
+            return "UNKNOWN";
+        }
+
         function isolateRogueAsset(rogueId) {
             const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
             if (!rogue) return;
@@ -4895,7 +5004,7 @@
                     os_family: "Windows",
                     score: 10.00,
                     level: "NON_COMPLIANT",
-                    condition: "IN_USE",
+                    condition: extractConditionFromItem(rogue),
                     user_assigned: "rogue.unmanaged",
                     last_login: "-",
                     location: "Unknown / Network Trace",
@@ -4971,13 +5080,25 @@
                     location_group: "Sift",
                     is_isolated: false,
                     is_rogue: false,
-                    software: sampleSoftwareCatalog.map(sw => ({
-                        name: sw.name,
-                        key: sw.key,
-                        installed: "INSTALLED",
-                        required: "REQUIRED",
-                        status: "COMPLIANT"
-                    })),
+                    software: sampleSoftwareCatalog.map(sw => {
+                        // Only mark COMPLIANT if we actually have a sheet for this agent
+                        if (isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: "INSTALLED",
+                                required: "REQUIRED",
+                                status: "COMPLIANT"
+                            };
+                        }
+                        return {
+                            name: sw.name,
+                            key: sw.key,
+                            installed: "MISSING (AGENT UNREPORTED)",
+                            required: "REQUIRED",
+                            status: "NON_COMPLIANT"
+                        };
+                    }),
                     custom_properties: newCustomProps
                 });
             }
@@ -5060,10 +5181,7 @@
 
                 if (existing) {
                     existing.software.forEach(sw => {
-                        if (sw.key === "ad") {
-                            sw.installed = "INSTALLED";
-                            sw.status = "COMPLIANT";
-                        } else if (isSheetUploadedForSoftware(sw.key)) {
+                        if (isSheetUploadedForSoftware(sw.key)) {
                             sw.installed = "INSTALLED";
                             sw.status = "COMPLIANT";
                         }
@@ -5085,7 +5203,7 @@
                         os_family: "Windows",
                         score: 100.00,
                         level: "COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "reconciler.user",
                         last_login: new Date().toISOString().substring(0, 16).replace("T", " "),
                         location: "Corporate Head Office",
@@ -5125,13 +5243,10 @@
                     existing.level = "NON_COMPLIANT";
                     
                     existing.software.forEach(sw => {
-                        if (sw.key === "ad") {
-                            sw.installed = "INSTALLED";
-                            sw.status = "COMPLIANT";
-                        } else if (isSheetUploadedForSoftware(sw.key)) {
+                        if (isSheetUploadedForSoftware(sw.key)) {
                             const isMissing = item.missingInSheets.some(filename => {
                                 const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                const isSheetForSw = sheet && (sheet.filename.toLowerCase().includes(sw.key) || sheet.headers.some(h => matchSoftwareKey(h, sw.key)));
+                                const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
                                 return isSheetForSw;
                             });
                             if (isMissing) {
@@ -5161,26 +5276,17 @@
                         os_family: "Windows",
                         score: 0.00,
                         level: "NON_COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "unassigned",
                         last_login: "-",
                         location: "Remote - Untrusted",
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            if (sw.key === "ad") {
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: "INSTALLED",
-                                    required: "REQUIRED",
-                                    status: "COMPLIANT"
-                                };
-                            }
-                            if (isSheetUploadedForSoftware(sw.key)) {
+                            if (isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
                                 const isMissing = item.missingInSheets.some(filename => {
                                     const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                    const isSheetForSw = sheet && (sheet.filename.toLowerCase().includes(sw.key) || sheet.headers.some(h => matchSoftwareKey(h, sw.key)));
+                                    const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
                                     return isSheetForSw;
                                 });
                                 return {
@@ -5240,7 +5346,7 @@
                         os_family: "Windows",
                         score: item.is_isolated ? 10.00 : 0.00,
                         level: "NON_COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "rogue.unmanaged",
                         last_login: "-",
                         location: "Unknown / Network Trace",
