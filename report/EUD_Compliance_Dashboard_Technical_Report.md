@@ -8,7 +8,7 @@ An enterprise-grade **End-User Device (EUD) Compliance & Risk Management Platfor
 
 In a modern enterprise network, ensuring endpoint security posture is critical. The **EUD Compliance Dashboard** provides real-time visibility into the security agent coverage and compliance status of the fleet. 
 
-By integrating telemetry from multiple sources (Active Directory, EDR, MDM, vulnerability scanners), the platform automatically calculates compliance states, tracks coverage gaps, discovers unmanaged rogue devices, and provides instant mitigation controls.
+By integrating telemetry from multiple sources (Active Directory, EDR, MDM, vulnerability scanners), the platform automatically calculates compliance states, tracks coverage gaps, and discovers unmanaged rogue devices.
 
 ---
 
@@ -100,7 +100,7 @@ The platform is designed around **6 Core Mandated Policies** and dynamic custom 
 ## How it is Used
 
 ### 1. Operations Persona Matrix
-*   **Administrator**: Full access to globally toggle policy mandates, trigger network mitigations, and execute reconciliation merges.
+*   **Administrator**: Full access to globally toggle policy mandates and execute reconciliation merges.
 *   **Security Analyst**: Access to override risk scores, investigate anomalies, and track threat events.
 *   **System Operator**: Access to load telemetries and execute safe maintenance actions.
 *   **External Auditor**: Read-only access to view the compliance ledger.
@@ -112,8 +112,4 @@ The platform is designed around **6 Core Mandated Policies** and dynamic custom 
 4.  Click **Execute Deep Reconciliation** to audit matches, coverage gaps, and rogue assets.
 5.  Click **Merge Reconciliation Into Fleet** to commit anomalies and custom properties to the ledger.
 
-### 3. Incident Mitigation Panel
-For any non-compliant or rogue device, operators can trigger:
-*   **Network Isolation**: Immediately isolates the device at the firewall level.
-*   **Deploy Security Hotfix**: Pushes configuration or patches to fix agent state.
-*   **Force Agent Re-Enrollment**: Re-registers telemetry check-in profiles.
+

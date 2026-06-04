@@ -43,7 +43,7 @@ graph TD
 
 ### 1. Premium Frontend Dashboard
 *   **Aesthetics**: Harmonious high-contrast dark mode tailored for Security Operations Centers (SOCs) with modern glassmorphism.
-*   **Security Actions**: Context-isolated network mitigation controls (e.g. isolate compromised devices, trigger immediate hotfix patch deploys, force re-enrollment).
+*   **Security Actions**: Role-based access controls to authorize and view device audits.
 *   **Granular RBAC**: strict interface gating for four customized operational personas:
     *   **Administrator**: Full administrative & mutation capabilities.
     *   **Security Analyst**: Incident inspection, risk scoring overrides, threat tracking.
@@ -174,7 +174,7 @@ To deliver streamlined SOC operations, the platform implements a tight feedback 
 *   **Executive Reporting Policy Isolation**: Restricts the SLA compliance gauge, toggles checklist, Audit Summary, Ledger badges, and exception lists to evaluate and render compliance metrics using ONLY the 6 core mandated policies, preventing uploaded custom dynamic policies from polluting executive reporting metrics.
 *   **Real-time Fleet Audits**: Summarizes aggregate managed endpoint counts, perfect compliance rates, and exception metrics dynamically across whatever dataset has been loaded.
 *   **Control Performance Audits**: Audits pass/fail statistics, pass rate percentage, and displays visual compliance verification progress bars for every loaded mandate.
-*   **Click-to-Remediate Redirection**: Identifies the top 10 systems violating active mandates and lists their exact control gaps. Clicking the `Remediate` link immediately switches the dashboard view to the Compliance Ledger, auto-selects the endpoint, and focuses the detailed MECM/EDR remediation tools panel.
+*   **Click-to-Remediate Redirection**: Identifies the top 10 systems violating active mandates and lists their exact control gaps. Clicking the `Remediate` link immediately switches the dashboard view to the Compliance Ledger and auto-selects the endpoint to view its detailed compliance audit.
 
 ### 3. Real-time Spreadsheet Ingestion & Export
 *   **Fuzzy Header Mapping**: Smart index mapping rules identify device names, serials, macs, locations, and condition keys automatically from imported Excel (`.xlsx`, `.xls`) or CSV sheets.
