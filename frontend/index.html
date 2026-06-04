@@ -2131,9 +2131,10 @@
                 const isRequired = enforcedPolicies[name] !== false;
                 const stats = getPolicyStats(name, conditionFilter);
                 const isUnreported = stats.isUnreported;
+                const showBlank = isUnreported || stats.filteredTotal === 0;
 
                 // Pass rate % and counts scoped to the active condition filter
-                const passRate = stats.filteredTotal > 0 ? (stats.filteredCompliant / stats.filteredTotal) * 100 : 100;
+                const passRate = stats.filteredTotal > 0 ? (stats.filteredCompliant / stats.filteredTotal) * 100 : 0;
                 const compliantCount = stats.filteredCompliant;
                 const failCount = stats.filteredTotal - stats.filteredCompliant;
 
@@ -2148,10 +2149,12 @@
                     progressColor = "var(--text-muted)"; // Dimmed if optional
                 }
 
-                if (isUnreported) {
+                if (showBlank) {
                     progressColor = "var(--border-clean)";
-                    statusBadgeText = "Unreported";
-                    statusBadgeClass = "badge"; // default style
+                    if (isUnreported) {
+                        statusBadgeText = "Unreported";
+                        statusBadgeClass = "badge"; // default style
+                    }
                 }
 
                 html += `
@@ -2164,13 +2167,13 @@
 
                         <!-- Big compliance number -->
                         <div style="display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.25rem;">
-                            <span style="font-size: 1.8rem; font-family: var(--font-mono); font-weight: 800; color: ${progressColor};">${isUnreported ? '-' : passRate.toFixed(1) + '%'}</span>
+                            <span style="font-size: 1.8rem; font-family: var(--font-mono); font-weight: 800; color: ${progressColor};">${showBlank ? '-' : passRate.toFixed(1) + '%'}</span>
                             <span style="font-size: 0.75rem; color: var(--text-muted);">pass rate</span>
                         </div>
 
                         <!-- Progress Bar container -->
                         <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden;">
-                            <div style="width: ${isUnreported ? 0 : passRate}%; height: 100%; background: ${progressColor}; transition: width 0.4s ease-out;"></div>
+                            <div style="width: ${showBlank ? 0 : passRate}%; height: 100%; background: ${progressColor}; transition: width 0.4s ease-out;"></div>
                         </div>
 
                         <!-- Bottom detail statistics -->
