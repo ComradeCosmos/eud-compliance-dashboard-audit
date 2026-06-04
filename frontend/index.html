@@ -3289,7 +3289,10 @@
             headHtml += `<th style="text-align: center;">Overall Compliance</th>`;
             tableHead.innerHTML = headHtml;
 
-            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
+            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
+            const activeFleet = fleetDataset.filter(dev => {
+                return (conditionFilter === "ALL") || (dev.condition === conditionFilter);
+            });
             const filtered = activeFleet.filter(dev => {
                 const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
                 const name = dev.canonical_name || "";
@@ -3640,7 +3643,9 @@
 
         function isDeviceCompliantForReporting(dev) {
             if (dev.is_isolated) return false;
-            if (dev.condition !== "IN_USE" && dev.condition !== "UNKNOWN") return false;
+            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
+            const targetCondition = conditionFilter === "ALL" ? ["IN_USE", "UNKNOWN"] : [conditionFilter];
+            if (!targetCondition.includes(dev.condition)) return false;
             if (dev.is_rogue) return false;
 
             const corePolicies = [
@@ -3688,7 +3693,10 @@
             const container = document.getElementById("reporting-dashboard-content");
             if (!container) return;
 
-            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
+            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
+            const activeFleet = fleetDataset.filter(dev => {
+                return (conditionFilter === "ALL") || (dev.condition === conditionFilter);
+            });
             const totalDevices = activeFleet.length;
             let compliantCount = 0;
             let nonCompliantCount = 0;
@@ -3827,7 +3835,7 @@
                 </div>
             `;
 
-            const nonCompliantDevices = fleetDataset.filter(dev => dev.condition === "IN_USE" && !isDeviceCompliantForReporting(dev)).slice(0, 10);
+            const nonCompliantDevices = activeFleet.filter(dev => !isDeviceCompliantForReporting(dev)).slice(0, 10);
             let exceptionsRowsHtml = "";
 
             if (nonCompliantDevices.length === 0) {
