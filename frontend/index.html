@@ -494,13 +494,13 @@
                     </div>
 
                     <!-- Client Filter & Search Box -->
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; width: 100%; box-sizing: border-box; overflow: hidden;">
                         <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
                             oninput="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            style="flex: 1 1 180px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
 
                         <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            style="flex: 0 1 160px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
                             <option value="ALL">All Conditions</option>
                             <option value="DISPOSED">Disposed</option>
                             <option value="DONATED_UNDER_CSR">Donated Under CSR</option>
@@ -515,14 +515,14 @@
                         </select>
 
                         <select id="fleet-filter-loc-group" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            style="flex: 0 1 160px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
                             <option value="ALL">All Location Groups</option>
                             <option value="Sift">Sift</option>
                             <option value="Non-Sift">Non-Sift</option>
                         </select>
 
                         <select id="fleet-filter-policy" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
+                            style="flex: 1 1 180px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
                             <option value="ALL">All Core Policies</option>
                             <option value="ad:COMPLIANT">AD Enrollment: Compliant</option>
                             <option value="ad:NON_COMPLIANT">AD Enrollment: Non-Compliant</option>
@@ -1053,8 +1053,8 @@
         }
 
         // Global variables for dynamic table headers and keys
-        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
-        let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
+        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
+        let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
 
         // Global registry of enforced compliance policies (true = Required, false = Optional)
         let enforcedPolicies = {};
@@ -1529,8 +1529,8 @@
             selectedDevice = null;
 
             // Reset headers
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Score", "Compliance Status"];
-            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "score", "level"];
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
+            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
 
             // Clear spreadsheet reconciler cache and workspace data
             reconcilerSheets = [];
@@ -3623,7 +3623,6 @@
                                 The fleet composite score is <strong style="color: ${gaugeColor};">${compliantPct.toFixed(2)}%</strong> compliant. Calculated dynamically across all <strong>${totalDevices.toLocaleString()}</strong> active endpoint assets.
                             </p>
                             <div style="display: flex; gap: 0.75rem; margin-top: 0.25rem;">
-                                <span class="badge" style="background: rgba(21, 128, 61, 0.1); border: 1px solid rgba(21, 128, 61, 0.3); color: var(--status-low); font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.35rem;">SLA Target: 85.0%</span>
                                 <span class="badge" style="background: ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border: 1px solid ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.3)' : 'rgba(220, 53, 69, 0.3)'}; color: ${compliantPct >= 85 ? 'var(--status-low)' : 'var(--status-critical)'}; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.35rem;">
                                     ${compliantPct >= 85 ? 'COMPLIANT ▲' : 'VIOLATION ▼'}
                                 </span>
