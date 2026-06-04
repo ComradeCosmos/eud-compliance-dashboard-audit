@@ -87,16 +87,20 @@
         <aside class="sidebar">
             <div class="brand-section">
                 <div class="brand-logo">Thrawn <span>EUD.</span></div>
-                <p style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">Security & Compliance</p>
+                <p
+                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                    Security & Compliance</p>
             </div>
 
             <!-- Top navigation menu -->
             <nav>
                 <ul class="sidebar-menu">
-                    <li class="menu-item active" id="menu-compliance" onclick="switchNavSection('compliance')">Compliance</li>
+                    <li class="menu-item active" id="menu-compliance" onclick="switchNavSection('compliance')">
+                        Compliance</li>
                     <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Scoring & Controls</li>
                     <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
-                    <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">Reconciliation</li>
+                    <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">Reconciliation
+                    </li>
                 </ul>
             </nav>
 
@@ -123,7 +127,7 @@
                 <div>
                     <h1 id="main-section-title">Executive Overview</h1>
                     <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;"
-                        id="dashboard-date">Q2 2026 | Fleet Telemetry Report</p>
+                        id="dashboard-date">Fleet Telemetry Report</p>
                 </div>
 
             </header>
@@ -131,27 +135,43 @@
             <!-- Section: Scoring & Controls -->
             <div id="section-risk" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Security Policies Governance Board</h2>
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Security Policies Governance Board</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Configure active compliance mandates for the fleet. Toggling a security policy to <strong style="color: var(--color-accent);">Optional</strong> will exclude it from the zero-tolerance compliance engine. The fleet's composite scores, status badges, donut charts, and reporting audits will instantly recalculate in real-time.
+                            Configure active compliance mandates for the fleet. Toggling a security policy to <strong
+                                style="color: var(--color-accent);">Optional</strong> will exclude it from the
+                            zero-tolerance compliance engine. The fleet's composite scores, status badges, donut charts,
+                            and reporting audits will instantly recalculate in real-time.
                         </p>
                     </div>
 
                     <!-- Admin-Only Config Alert -->
-                    <div id="policy-admin-alert" style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
-                         ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security) privileges are required to override compliance requirements.
+                    <div id="policy-admin-alert"
+                        style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
+                        ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security)
+                        privileges are required to override compliance requirements.
                     </div>
 
                     <!-- Policy Grid Filter Tabs -->
-                    <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">
-                        <button id="policy-filter-btn-all" class="tab-btn active" style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('all')">All Policies (<span id="policy-count-all">0</span>)</button>
-                        <button id="policy-filter-btn-core" class="tab-btn" style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('core')">Core Mandates (<span id="policy-count-core">0</span>)</button>
-                        <button id="policy-filter-btn-excel" class="tab-btn" style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('excel')">Spreadsheet Telemetries (<span id="policy-count-excel">0</span>)</button>
+                    <div
+                        style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">
+                        <button id="policy-filter-btn-all" class="tab-btn active"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('all')">All Policies
+                            (<span id="policy-count-all">0</span>)</button>
+                        <button id="policy-filter-btn-core" class="tab-btn"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('core')">Core
+                            Mandates (<span id="policy-count-core">0</span>)</button>
+                        <button id="policy-filter-btn-excel" class="tab-btn"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('excel')">Spreadsheet
+                            Telemetries (<span id="policy-count-excel">0</span>)</button>
                     </div>
 
                     <!-- Dynamic Policies Grid -->
-                    <div id="policies-governance-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                    <div id="policies-governance-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
                         <!-- Dynamic policy cards render here -->
                     </div>
                 </div>
@@ -167,28 +187,44 @@
             <!-- Section: Reconciliation -->
             <div id="section-reconciler" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Multi-Sheet Asset Reconciliation Workspace</h2>
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Multi-Sheet Asset Reconciliation Workspace</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Bulk import multiple device directories or agent telemetries (Active Directory, EDR, SCCM, Zscaler, etc.). The engine will align them by <strong>Device Name / Hostname</strong> as the matching key and evaluate compliance parameters across all datasets.
+                            Bulk import multiple device directories or agent telemetries (Active Directory, EDR, SCCM,
+                            Zscaler, etc.). The engine will align them by <strong>Device Name / Hostname</strong> as the
+                            matching key and evaluate compliance parameters across all datasets.
                         </p>
                     </div>
 
                     <!-- Multi-upload zone -->
                     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div class="card" style="border: 2px dashed var(--border-clean); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-radius: 4px;">
+                        <div class="card"
+                            style="border: 2px dashed var(--border-clean); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-radius: 4px;">
                             <span style="font-size: 2.5rem;"></span>
-                            <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Bulk Upload Compliance Sheets</h3>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">Select multiple CSV or Excel files (.xlsx, .xls) representing different asset inventories or agent check-ins.</p>
-                            
-                            <label for="reconciler-multi-files" class="btn" style="font-size: 0.8rem; padding: 0.55rem 1.5rem; cursor: pointer; margin-top: 0.5rem; background: var(--color-accent); border-color: var(--color-accent);">Select Sheets to Add</label>
-                            <input type="file" id="reconciler-multi-files" accept=".csv, .xlsx, .xls" style="display: none;" multiple onchange="handleMultiSheetUpload(event)">
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Bulk
+                                Upload Compliance Sheets</h3>
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">
+                                Select multiple CSV or Excel files (.xlsx, .xls) representing different asset
+                                inventories or agent check-ins.</p>
+
+                            <label for="reconciler-multi-files" class="btn"
+                                style="font-size: 0.8rem; padding: 0.55rem 1.5rem; cursor: pointer; margin-top: 0.5rem; background: var(--color-accent); border-color: var(--color-accent);">Select
+                                Sheets to Add</label>
+                            <input type="file" id="reconciler-multi-files" accept=".csv, .xlsx, .xls"
+                                style="display: none;" multiple onchange="handleMultiSheetUpload(event)">
                         </div>
 
                         <!-- Queue Table Card -->
-                        <div id="reconciler-queue-card" class="card" style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; border-radius: 4px; display: none;">
-                            <h4 style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Uploaded Compliance Sheets Queue</h4>
-                            
+                        <div id="reconciler-queue-card" class="card"
+                            style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; border-radius: 4px; display: none;">
+                            <h4
+                                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">
+                                Uploaded Compliance Sheets Queue</h4>
+
                             <div class="fleet-table-container">
                                 <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
                                     <thead>
@@ -210,54 +246,100 @@
                     </div>
 
                     <!-- Comparison Action Center -->
-                    <div style="display: flex; justify-content: center; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
-                        <button id="btn-execute-reconciliation" class="btn" style="font-size: 0.85rem; padding: 0.75rem 2.5rem; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; display: flex; gap: 0.5rem; align-items: center; opacity: 0.6; cursor: not-allowed;" onclick="executeDeepReconciliation()" disabled>
+                    <div
+                        style="display: flex; justify-content: center; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
+                        <button id="btn-execute-reconciliation" class="btn"
+                            style="font-size: 0.85rem; padding: 0.75rem 2.5rem; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; display: flex; gap: 0.5rem; align-items: center; opacity: 0.6; cursor: not-allowed;"
+                            onclick="executeDeepReconciliation()" disabled>
                             <span> Execute Multi-Sheet Reconciliation</span>
                         </button>
                     </div>
 
                     <!-- Reconciliation Results Area (Initially Hidden) -->
-                    <div id="reconciler-results-wrapper" style="display: none; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
+                    <div id="reconciler-results-wrapper"
+                        style="display: none; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
                         <div style="border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
-                            <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Audit Reconciliation Metrics</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time analysis of the alignment and audits across all compliance sheets.</p>
+                            <h3
+                                style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                                Audit Reconciliation Metrics</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time
+                                analysis of the alignment and audits across all compliance sheets.</p>
                         </div>
 
                         <!-- KPI widgets row -->
                         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Reconciled Matches</span>
-                                <div id="recon-stat-matches" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--text-primary); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Found across required sheets</p>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Reconciled
+                                    Matches</span>
+                                <div id="recon-stat-matches"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--text-primary); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Found across
+                                    required sheets</p>
                             </div>
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--status-critical); text-transform: uppercase; font-weight: 700;">Coverage Gaps (Non-Compliant)</span>
-                                <div id="recon-stat-gaps" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-critical); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--status-critical); margin-top: 0.2rem;">Missing from one or more sheets</p>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-critical); text-transform: uppercase; font-weight: 700;">Coverage
+                                    Gaps (Non-Compliant)</span>
+                                <div id="recon-stat-gaps"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-critical); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--status-critical); margin-top: 0.2rem;">Missing
+                                    from one or more sheets</p>
                             </div>
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--status-medium); text-transform: uppercase; font-weight: 700;">Rogue / Unmanaged Assets</span>
-                                <div id="recon-stat-rogues" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-medium); margin-top: 0.4rem;">0</div>
-                                <p style="font-size: 0.7rem; color: var(--status-medium); margin-top: 0.2rem;">Missing from Corporate Directory</p>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-medium); text-transform: uppercase; font-weight: 700;">Rogue
+                                    / Unmanaged Assets</span>
+                                <div id="recon-stat-rogues"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-medium); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--status-medium); margin-top: 0.2rem;">Missing
+                                    from Corporate Directory</p>
                             </div>
-                            <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
-                                <span style="font-size: 0.7rem; color: var(--status-low); text-transform: uppercase; font-weight: 700;">Reconciliation Match Rate</span>
-                                <div id="recon-stat-match-rate" style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-low); margin-top: 0.4rem;">0.0%</div>
-                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Goal SLA: 100% directory alignment</p>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-low); text-transform: uppercase; font-weight: 700;">Reconciliation
+                                    Match Rate</span>
+                                <div id="recon-stat-match-rate"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-low); margin-top: 0.4rem;">
+                                    0.0%</div>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Goal SLA:
+                                    100% directory alignment</p>
                             </div>
                         </div>
 
                         <!-- Reconciled Anomalies Table Panel -->
-                        <div class="card" style="padding: 1.5rem; border: 1px solid var(--border-clean); border-radius: 4px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
-                                <div style="display: flex; gap: 0.5rem; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 4px; background: var(--bg-secondary);">
-                                    <button id="btn-recon-tab-gaps" class="tab-btn active" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('gaps')">Coverage Gaps (<span id="recon-tab-count-gaps">0</span>)</button>
-                                    <button id="btn-recon-tab-rogues" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('rogues')">Rogue Assets (<span id="recon-tab-count-rogues">0</span>)</button>
-                                    <button id="btn-recon-tab-matches" class="tab-btn" style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;" onclick="switchReconTab('matches')">Reconciled Matches (<span id="recon-tab-count-matches">0</span>)</button>
+                        <div class="card"
+                            style="padding: 1.5rem; border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                                <div
+                                    style="display: flex; gap: 0.5rem; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 4px; background: var(--bg-secondary);">
+                                    <button id="btn-recon-tab-gaps" class="tab-btn active"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('gaps')">Coverage Gaps (<span
+                                            id="recon-tab-count-gaps">0</span>)</button>
+                                    <button id="btn-recon-tab-rogues" class="tab-btn"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('rogues')">Rogue Assets (<span
+                                            id="recon-tab-count-rogues">0</span>)</button>
+                                    <button id="btn-recon-tab-matches" class="tab-btn"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('matches')">Reconciled Matches (<span
+                                            id="recon-tab-count-matches">0</span>)</button>
                                 </div>
                                 <div style="display: flex; gap: 1rem;">
-                                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;" onclick="exportReconciliationReport()">Export Recon CSV</button>
-                                    <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--status-low); border-color: var(--status-low); color: var(--bg-main);" onclick="mergeReconciliationIntoFleet()">Merge Reconciled to Fleet</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                        onclick="exportReconciliationReport()">Export Recon CSV</button>
+                                    <button class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--status-low); border-color: var(--status-low); color: var(--bg-main);"
+                                        onclick="mergeReconciliationIntoFleet()">Merge Reconciled to Fleet</button>
                                 </div>
                             </div>
 
@@ -273,11 +355,15 @@
                             </div>
 
                             <!-- Reconciler Pagination -->
-                            <div id="recon-pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-clean);">
+                            <div id="recon-pagination-container"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-clean);">
                                 <div style="font-size: 0.82rem; color: var(--text-secondary);">
-                                    Showing <span id="recon-pag-start" style="font-weight: 700; color: var(--text-primary);">0</span>
-                                    to <span id="recon-pag-end" style="font-weight: 700; color: var(--text-primary);">0</span> of
-                                    <span id="recon-pag-total" style="font-weight: 700; color: var(--text-primary);">0</span>
+                                    Showing <span id="recon-pag-start"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span>
+                                    to <span id="recon-pag-end"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span> of
+                                    <span id="recon-pag-total"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span>
                                     records
                                 </div>
                                 <div style="display: flex; gap: 0.5rem;">
@@ -377,13 +463,14 @@
                                     </table>
                                 </div>
                             </div>
-                            
+
                             <!-- Dynamic Custom Metadata Panel -->
                             <div id="det-custom-params-section" style="display: none; margin-top: 1.25rem;">
                                 <h4
                                     style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
                                     Custom Telemetry & Asset Properties</h4>
-                                <div class="fleet-table-container" style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-clean); border-radius: 4px; margin-top: 0.75rem;">
+                                <div class="fleet-table-container"
+                                    style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-clean); border-radius: 4px; margin-top: 0.75rem;">
                                     <table class="fleet-table" style="font-size: 0.85rem; margin: 0;">
                                         <thead>
                                             <tr>
@@ -461,14 +548,19 @@
 
                 <!-- Core Policies Comparison Section -->
                 <div class="card" id="core-policies-comparison-card" style="margin-top: 1.5rem; padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Core Policies Compliance Comparison</h2>
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Core Policies Compliance Comparison</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Live auditing and comparative metrics for the 6 core endpoint protection agents across all active assets.
+                            Live auditing and comparative metrics for the 6 core endpoint protection agents across all
+                            active assets.
                         </p>
                     </div>
-                    
-                    <div id="core-policies-comparison-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+
+                    <div id="core-policies-comparison-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
                         <!-- Dynamic policy comparison widgets render here -->
                     </div>
                 </div>
@@ -488,13 +580,15 @@
                                 Import Sheet</label>
                             <input type="file" id="csv-import-file" accept=".csv, .xlsx, .xls" style="display: none;"
                                 onchange="handleCsvImport(event)">
-                            <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 1rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 600;"
+                            <button class="btn"
+                                style="font-size: 0.75rem; padding: 0.5rem 1rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 600;"
                                 onclick="triggerClearFleetData()">Clear Fleet</button>
                         </div>
                     </div>
 
                     <!-- Client Filter & Search Box -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; width: 100%; box-sizing: border-box; overflow: hidden;">
+                    <div
+                        style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; width: 100%; box-sizing: border-box; overflow: hidden;">
                         <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
                             oninput="handleFleetQueryChange()"
                             style="flex: 1 1 180px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
@@ -993,10 +1087,22 @@
                 const software = sampleSoftwareCatalog.map((sw, swIdx) => {
                     let status = "COMPLIANT";
                     let installed = "INSTALLED";
-                    if (score === 0.00 && (swIdx + i) % 3 === 0) {
-                        status = "NON_COMPLIANT";
-                        installed = "MISSING";
-                        hasMissing = true;
+
+                    if (sw.key === "ad") {
+                        // AD Enrollment: independent ~1.6% non-compliance rate (not gated on score)
+                        // Affects ~161 devices across the full fleet for a realistic baseline gap
+                        if (i % 62 === 1) {
+                            status = "NON_COMPLIANT";
+                            installed = "NOT ENROLLED";
+                            hasMissing = true;
+                        }
+                    } else {
+                        // All other agents: non-compliant only on devices already scored 0
+                        if (score === 0.00 && (swIdx + i) % 3 === 0) {
+                            status = "NON_COMPLIANT";
+                            installed = "MISSING";
+                            hasMissing = true;
+                        }
                     }
                     return { name: sw.name, key: sw.key, installed: installed, required: "REQUIRED", status: status };
                 });
@@ -1188,7 +1294,7 @@
         function triggerCsvExport() {
             logToTerminal(`[Export] Extracting active query records for export...`);
             let csvLines = [];
-            
+
             // Dynamically compile CSV headers from activeTableHeaders
             const headerLine = activeTableHeaders.map(h => `"${sanitizeCSVCell(h)}"`).join(",");
             csvLines.push(headerLine);
@@ -1199,7 +1305,7 @@
                     let isCustom = key.startsWith("custom:");
                     let isCompliance = key.startsWith("compliance:");
                     let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
-                    
+
                     if (isCustom) {
                         val = (row.custom_properties && row.custom_properties[actualKey] !== undefined) ? row.custom_properties[actualKey] : "-";
                     } else if (isCompliance) {
@@ -1215,7 +1321,7 @@
                     }
                     return val;
                 });
-                
+
                 const line = lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",");
                 csvLines.push(line);
             });
@@ -1267,7 +1373,7 @@
                 }
 
                 const headers = rows[0].map(h => String(h).replace(/["\r]/g, "").trim().toLowerCase());
-                
+
                 // Helper to find column index by multiple fuzzy keywords
                 function findIndex(keywords) {
                     for (let kw of keywords) {
@@ -1360,7 +1466,7 @@
                     } else if (row[2] !== undefined && String(row[2]).trim()) {
                         mac = String(row[2]).trim();
                     } else {
-                        mac = `00:1A:2B:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`;
+                        mac = `00:1A:2B:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
                     }
 
                     let manufacturer = "";
@@ -1435,11 +1541,11 @@
                         const parsed = parseFloat(row[scoreColIdx]);
                         if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
                     }
-                    
+
                     if (condition !== "IN_USE") {
                         finalScore = 0.00;
                     }
-                    
+
                     let level = (finalScore === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
 
                     if (!name || !serial) continue;
@@ -1450,7 +1556,7 @@
                         deviceNameIdx, serialIdx, macIdx, manufacturerIdx,
                         conditionIdx, userIdx, lastLoginIdx, locationIdx, locationGroupIdx
                     ];
-                    
+
                     headers.forEach((header, idx) => {
                         if (!standardKeys.includes(idx) && row[idx] !== undefined && String(row[idx]).trim() !== "") {
                             const displayHeader = String(rows[0][idx]).trim();
@@ -1470,11 +1576,11 @@
                         existing.location = location;
                         existing.location_group = locationGroup;
                         existing.software = software;
-                        
+
                         // Merge new custom properties
                         if (!existing.custom_properties) existing.custom_properties = {};
                         Object.assign(existing.custom_properties, customProperties);
-                        
+
                         mergedItems++;
                     } else {
                         fleetDataset.push({
@@ -1711,11 +1817,11 @@
             // Populate custom dynamic parameters
             const customSection = document.getElementById("det-custom-params-section");
             const customTbody = document.getElementById("det-custom-params-tbody");
-            
+
             if (dev.custom_properties && Object.keys(dev.custom_properties).length > 0) {
                 customSection.style.display = "block";
                 customTbody.innerHTML = "";
-                
+
                 Object.entries(dev.custom_properties).forEach(([key, val]) => {
                     const tr = document.createElement("tr");
                     tr.innerHTML = `
@@ -1806,6 +1912,11 @@
                 const isRequired = enforcedPolicies[name] !== false; // Required by default
                 if (!isRequired) continue;
 
+                // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
+                const isWindows = dev.os_family === "Windows";
+                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
+                if (!isApplicable) continue;
+
                 if (!name.startsWith('[')) {
                     // Check core software agent compliance
                     const sw = dev.software && dev.software.find(s => s.name === name);
@@ -1813,7 +1924,7 @@
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
                         const alwaysReported = sw.key === "ad";
-                        
+
                         // If the sheet is NOT uploaded and was NEVER merged, we bypass compliance verification
                         if (!alwaysReported && !isUploaded && !isEverMerged) {
                             continue;
@@ -1988,7 +2099,7 @@
                         let isCustom = key.startsWith("custom:");
                         let isCompliance = key.startsWith("compliance:");
                         let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
-                        
+
                         if (isCustom) {
                             val = (dev.custom_properties && dev.custom_properties[actualKey] !== undefined) ? dev.custom_properties[actualKey] : "-";
                         } else if (isCompliance) {
@@ -2084,7 +2195,7 @@
                 // Color schemes based on compliance and enforcement
                 let statusBadgeText = isRequired ? "Enforced" : "Optional";
                 let statusBadgeClass = isRequired ? "group-sift" : "group-non-sift";
-                
+
                 let progressColor = "var(--status-low)"; // Compliant (Green)
                 if (isRequired && passRate < 100) {
                     progressColor = passRate < 80 ? "var(--status-critical)" : "#eab308"; // Red or Yellow
@@ -2433,7 +2544,7 @@
                 const mapY = (val) => padTop + plotHeight - (((val - minY) / ySpan) * plotHeight);
 
                 let svgContent = `<svg width="100%" height="100%" viewBox="0 0 ${width} ${height}" style="overflow: visible;">`;
-                
+
                 // Define linear gradient for glowing line area
                 svgContent += `
                     <defs>
@@ -3073,7 +3184,7 @@
         }
 
         // --- Simplified Compliance & Policy Governance Scripting Blocks ---
-        
+
         currentPolicyTab = "all";
 
         function switchPolicyTab(tabId) {
@@ -3093,7 +3204,7 @@
                 "SentinelOne Endpoint Protection",
                 "SCCM Management Agent"
             ];
-            
+
             // Gather all custom properties from fleetDataset that represent spreadsheet compliance columns
             const customKeys = new Set();
             fleetDataset.forEach(dev => {
@@ -3105,7 +3216,7 @@
                     });
                 }
             });
-            
+
             customKeys.forEach(k => list.push(k));
             return list;
         }
@@ -3122,7 +3233,7 @@
             policies.forEach(name => {
                 const isCore = !name.startsWith('[');
                 const displayName = isCore ? name : name.replace(/^\[.*?\]\s*/, '') + ' (' + name.match(/^\[(.*?)\]/)[1] + ')';
-                
+
                 if (isCore) {
                     const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
                     const key = swCatalogItem ? swCatalogItem.key : "";
@@ -3157,25 +3268,25 @@
                 const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
                 const name = dev.canonical_name || "";
                 const id = dev.id || "";
-                return assetTag.toLowerCase().includes(reportingSearchQuery) || 
-                       name.toLowerCase().includes(reportingSearchQuery) ||
-                       id.toLowerCase().includes(reportingSearchQuery);
+                return assetTag.toLowerCase().includes(reportingSearchQuery) ||
+                    name.toLowerCase().includes(reportingSearchQuery) ||
+                    id.toLowerCase().includes(reportingSearchQuery);
             });
 
             const maxPage = Math.ceil(filtered.length / reportingPageSize) || 1;
             reportingCurrentPage += dir;
             if (reportingCurrentPage < 1) reportingCurrentPage = 1;
             if (reportingCurrentPage > maxPage) reportingCurrentPage = maxPage;
-            
+
             renderReportingAgentTable();
         }
 
         function toggleReportingPolicy(name) {
             const current = enforcedPolicies[name] !== false;
             enforcedPolicies[name] = !current;
-            
+
             logToTerminal(`[Reporting Audit] Excluded policy "${name}" status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL (Negated)'}.`, enforcedPolicies[name] ? 'info' : 'warning');
-            
+
             recalculateAllScores();
             generateComplianceReport();
         }
@@ -3210,9 +3321,9 @@
                 const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
                 const name = dev.canonical_name || "";
                 const id = dev.id || "";
-                return assetTag.toLowerCase().includes(reportingSearchQuery) || 
-                       name.toLowerCase().includes(reportingSearchQuery) ||
-                       id.toLowerCase().includes(reportingSearchQuery);
+                return assetTag.toLowerCase().includes(reportingSearchQuery) ||
+                    name.toLowerCase().includes(reportingSearchQuery) ||
+                    id.toLowerCase().includes(reportingSearchQuery);
             });
 
             const total = filtered.length;
@@ -3228,7 +3339,7 @@
             } else {
                 displaySlice.forEach(dev => {
                     const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "-";
-                    
+
                     let rowHtml = `
                         <td><strong>${escapeHTML(assetTag)}</strong></td>
                         <td>${escapeHTML(dev.canonical_name.toUpperCase())} <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono);">(${dev.id})</span></td>
@@ -3236,7 +3347,7 @@
 
                     policies.forEach(policyName => {
                         const isRequired = enforcedPolicies[policyName] !== false;
-                        
+
                         const coreSw = sampleSoftwareCatalog.find(sw => sw.name === policyName);
                         if (coreSw) {
                             const sw = dev.software && dev.software.find(s => s.name === policyName);
@@ -3277,13 +3388,14 @@
             }
             const isCore = !name.startsWith('[');
             let isUnreported = false;
+            let alwaysReported = false; // hoisted so the counting loop can reference it
 
             if (isCore) {
                 const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
                 const swKey = swCatalogItem ? swCatalogItem.key : "";
                 const isUploaded = isSheetUploadedForSoftware(swKey);
                 const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
-                const alwaysReported = swKey === "ad";
+                alwaysReported = swKey === "ad";
                 if (!alwaysReported && !isUploaded && !isEverMerged) isUnreported = true;
             } else {
                 const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
@@ -3317,6 +3429,11 @@
                 // UNKNOWN assets (unverified reconciliation merges) never count toward compliance
                 const matchesFilter = (conditionFilter === "ALL" || dev.condition === conditionFilter)
                     && !dev.is_rogue;
+
+                // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
+                const isWindows = dev.os_family === "Windows";
+                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
+                if (!isApplicable) return;
 
                 if (isCore) {
                     const sw = dev.software && dev.software.find(s => s.name === name);
@@ -3389,7 +3506,7 @@
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
                         const alwaysReported = sw.key === "ad";
-                        
+
                         if (!alwaysReported && !isUploaded && !isEverMerged) {
                             return; // bypassed
                         }
@@ -3417,7 +3534,7 @@
             });
             updateFleetWideMetrics();
             handleFleetQueryChange();
-            
+
             // Re-render active views if open
             const reportingSection = document.getElementById("section-reporting");
             if (reportingSection && reportingSection.style.display !== "none") {
@@ -3440,7 +3557,7 @@
             }
 
             const policies = getAvailablePolicies();
-            
+
             // Calculate tab totals dynamically
             const allCount = policies.length;
             const coreCount = policies.filter(p => !p.startsWith('[')).length;
@@ -3471,7 +3588,7 @@
                 grid.style.display = "grid";
                 filteredPolicies.forEach(name => {
                     const isRequired = enforcedPolicies[name] !== false; // default true
-                    
+
                     // Count telemetry passes via unified stats helper
                     const stats = getPolicyStats(name);
                     const compliantCount = stats.compliantCount;
@@ -3567,12 +3684,17 @@
                 const isRequired = enforcedPolicies[name] !== false; // Required by default
                 if (!isRequired) continue;
 
+                // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
+                const isWindows = dev.os_family === "Windows";
+                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
+                if (!isApplicable) continue;
+
                 const sw = dev.software && dev.software.find(s => s.name === name);
                 if (sw) {
                     const isUploaded = isSheetUploadedForSoftware(sw.key);
                     const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
                     const alwaysReported = sw.key === "ad";
-                    
+
                     if (!alwaysReported && !isUploaded && !isEverMerged) {
                         continue;
                     }
@@ -3741,7 +3863,7 @@
                 nonCompliantDevices.forEach(dev => {
                     const failedControls = getFailedControlsForDevice(dev).filter(name => !name.startsWith('['));
                     let failedMarkup = "";
-                    
+
                     if (dev.condition !== "IN_USE") {
                         failedMarkup = `<span class="badge risk-critical">Physical: ${escapeHTML(dev.condition.replace("_", " "))}</span>`;
                     } else if (dev.is_isolated) {
@@ -3876,9 +3998,9 @@
         }
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
-        
+
         // reconcilerSheets and reconciliationResults are declared globally at the top of the script block to prevent TDZ ReferenceErrors on page reload
-        reconcilerSheets = []; 
+        reconcilerSheets = [];
         reconciliationResults = {
             matches: [],
             gaps: [],
@@ -3903,20 +4025,20 @@
             const lines = [];
             let row = [""];
             let inQuotes = false;
-            
+
             let sep = ",";
             const firstLine = text.split(/\r?\n/)[0] || "";
             let commaCount = (firstLine.match(/,/g) || []).length;
             let semiCount = (firstLine.match(/;/g) || []).length;
             let tabCount = (firstLine.match(/\t/g) || []).length;
-            
+
             if (semiCount > commaCount && semiCount > tabCount) sep = ";";
             else if (tabCount > commaCount && tabCount > semiCount) sep = "\t";
-            
+
             for (let i = 0; i < text.length; i++) {
                 const c = text[i];
-                const next = text[i+1];
-                
+                const next = text[i + 1];
+
                 if (c === '"') {
                     if (inQuotes && next === '"') {
                         row[row.length - 1] += '"';
@@ -3948,7 +4070,7 @@
 
             Array.from(files).forEach(file => {
                 logToTerminal(`[Reconciler] Upload request received for source file: "${file.name}"`);
-                
+
                 const reader = new FileReader();
                 const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
 
@@ -4001,7 +4123,7 @@
                         // Auto-detect the key column (Device Name / Hostname)
                         let keyIdx = -1;
                         const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                        
+
                         for (let kw of keyKeywords) {
                             const idx = lowerHeaders.findIndex(h => {
                                 if (kw.length <= 3) {
@@ -4127,7 +4249,7 @@
         function updateSheetRole(id, role) {
             const sheet = reconcilerSheets.find(s => s.id === id);
             if (!sheet) return;
-            
+
             if (role === "primary") {
                 reconcilerSheets.forEach(s => {
                     if (s.id !== id && s.role === "primary") {
@@ -4135,7 +4257,7 @@
                     }
                 });
             }
-            
+
             sheet.role = role;
             logToTerminal(`[Reconciler] Role for "${sheet.filename}" updated to ${role.toUpperCase()}`);
             renderReconcilerQueue();
@@ -4154,11 +4276,11 @@
             if (!sheet) return;
             reconcilerSheets = reconcilerSheets.filter(s => s.id !== id);
             logToTerminal(`[Reconciler] File "${sheet.filename}" removed from queue.`);
-            
+
             if (reconcilerSheets.length > 0 && !reconcilerSheets.some(s => s.role === "primary")) {
                 reconcilerSheets[0].role = "primary";
             }
-            
+
             renderReconcilerQueue();
         }
 
@@ -4174,7 +4296,7 @@
             logToTerminal(`[Reconciler] Executing asset alignment across ${reconcilerSheets.length} spreadsheet inventories...`);
 
             const primaryKeyIdx = primarySheet.keyIdx;
-            
+
             const primaryHeaders = primarySheet.headers.map(h => String(h || "").trim().toLowerCase());
             let assetTagIdx = primaryHeaders.indexOf("asset tag");
             let orgSerialIdx = primaryHeaders.indexOf("org serial number");
@@ -4285,7 +4407,7 @@
 
                     if (isMatch) {
                         presentInSheets.push(sec.filename);
-                        
+
                         sec.headers.forEach((h, idx) => {
                             if (idx !== sec.keyIdx) {
                                 mergedProperties.push({
@@ -4372,7 +4494,7 @@
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
             document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
-            
+
             const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
             let subtext = matchesWidget.querySelector("p");
             if (subtext) {
@@ -4381,7 +4503,7 @@
 
             document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
             document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-            
+
             const matchRateEl = document.getElementById("recon-stat-match-rate");
             matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
             matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
@@ -4453,7 +4575,7 @@
                         const primarySheet = reconcilerSheets.find(s => s.role === "primary");
                         const primaryHeaders = primarySheet ? primarySheet.headers : [];
                         const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
-                        
+
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
@@ -4466,16 +4588,16 @@
                             const details = s.headers.slice(0, 4).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(s.row[idx] || "-")}`).join(" | ");
                             return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
                         }).join("");
-                        
+
                         const isIsolated = item.is_isolated;
-                        const isolateBtnHtml = isIsolated 
+                        const isolateBtnHtml = isIsolated
                             ? `<button class="btn" style="background:var(--border-clean); color:var(--text-muted); border-color:var(--border-clean); font-size:0.7rem; padding:0.35rem 0.65rem; cursor:not-allowed;" disabled>Isolated</button>`
                             : `<button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="isolateRogueAsset('${item.id}')"> Isolate</button>`;
-                        
+
                         const registerBtnHtml = `<button class="btn" style="background:rgba(21,128,61,0.15); border:1px solid rgba(21,128,61,0.4); color:#15803d; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="registerRogueAsset('${item.id}')">Register</button>`;
-                        
+
                         const actionButtons = `<div style="display:flex; gap:0.5rem; justify-content:flex-end;">${isolateBtnHtml}${registerBtnHtml}</div>`;
-                        
+
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;">
@@ -4611,7 +4733,7 @@
             if (!sheet || !sheet.filename) return null;
             const fn = sheet.filename.toLowerCase();
             const words = fn.split(/[^a-z0-9]+/);
-            
+
             // Check filename matches first
             if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
                 return "sentinelone";
@@ -4628,14 +4750,14 @@
             if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
                 return "sccm";
             }
-            
+
             // "ad" is too short for simple includes, use word list
-            if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
+            if (words.includes("ad") || fn.includes("adcomputers") || fn.includes("ad computers") || fn.includes("ad_computers") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
                 if (sheet.role !== "primary") {
                     return "ad";
                 }
             }
-            
+
             // If filename doesn't match any key, fall back to matching headers
             const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
             for (const k of swKeys) {
@@ -4644,7 +4766,7 @@
                     return k;
                 }
             }
-            
+
             return null; // unknown classification
         }
 
@@ -4659,25 +4781,25 @@
         function mergeDistinctProperties(target, source) {
             for (let key in source) {
                 if (!source.hasOwnProperty(key)) continue;
-                
+
                 const newValue = source[key];
-                
+
                 // Extract base property name from the source key
                 let baseKey = key;
                 if (key.startsWith('[') && key.includes('] ')) {
                     baseKey = key.substring(key.indexOf('] ') + 2);
                 }
-                
+
                 // Let's check if the target already contains a matching property with the same value
                 let hasMatchingInfo = false;
                 for (let targetKey in target) {
                     if (!target.hasOwnProperty(targetKey)) continue;
-                    
+
                     let targetBaseKey = targetKey;
                     if (targetKey.startsWith('[') && targetKey.includes('] ')) {
                         targetBaseKey = targetKey.substring(targetKey.indexOf('] ') + 2);
                     }
-                    
+
                     if (targetBaseKey.toLowerCase() === baseKey.toLowerCase()) {
                         if (target[targetKey] === newValue) {
                             hasMatchingInfo = true;
@@ -4685,7 +4807,7 @@
                         }
                     }
                 }
-                
+
                 // If the target does NOT have matching information, then we merge it!
                 if (!hasMatchingInfo) {
                     target[key] = newValue;
@@ -4695,14 +4817,14 @@
 
         function findExistingDeviceByItem(item, fleetByName = null, fleetBySerial = null, fleetByMac = null) {
             if (!item) return null;
-            
+
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
-            
+
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
-            
+
             function getPrimaryColValue(row, keywords) {
                 if (!primarySheet) return null;
                 for (let kw of keywords) {
@@ -4719,7 +4841,7 @@
                 }
                 return null;
             }
-            
+
             function getMergedPropValue(mergedProperties, keywords) {
                 if (!mergedProperties) return null;
                 for (let p of mergedProperties) {
@@ -4741,23 +4863,23 @@
             let nameVal = null;
             let serialVal = null;
             let macVal = null;
-            
+
             if (item.primaryRow && primarySheet) {
                 nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
                 serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
                 macVal = getPrimaryColValue(item.primaryRow, macKeywords);
             }
-            
+
             if (item.mergedProperties) {
                 if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
                 if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
                 if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
             }
-            
+
             if (item.sheets) {
                 item.sheets.forEach(s => {
                     const sHeaders = s.headers.map(h => h.toLowerCase().trim());
-                    
+
                     function getSecondaryColValue(row, keywords) {
                         for (let kw of keywords) {
                             const idx = sHeaders.findIndex(h => {
@@ -4773,37 +4895,37 @@
                         }
                         return null;
                     }
-                    
+
                     if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
                     if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
                     if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
                 });
             }
-            
+
             if (!nameVal) nameVal = item.name || item.normalized || "";
-            
+
             const normName = nameVal ? nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
             const normSerial = serialVal ? serialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
             const normMac = macVal ? macVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
-            
+
             if (!normName && !normSerial && !normMac) return null;
-            
+
             if (fleetByName && fleetBySerial && fleetByMac) {
                 if (normName && fleetByName.has(normName)) return fleetByName.get(normName);
                 if (normSerial && fleetBySerial.has(normSerial)) return fleetBySerial.get(normSerial);
                 if (normMac && fleetByMac.has(normMac)) return fleetByMac.get(normMac);
                 return null;
             }
-            
+
             return fleetDataset.find(dev => {
                 const devName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
                 const devSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
                 const devMac = String(dev.mac || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                
+
                 if (normName && devName === normName) return true;
                 if (normSerial && devSerial === normSerial) return true;
                 if (normMac && devMac === normMac) return true;
-                
+
                 return false;
             });
         }
@@ -4812,10 +4934,10 @@
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
-            
+
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
-            
+
             function getPrimaryColValue(row, keywords) {
                 if (!primarySheet) return null;
                 for (let kw of keywords) {
@@ -4832,7 +4954,7 @@
                 }
                 return null;
             }
-            
+
             function getMergedPropValue(mergedProperties, keywords) {
                 if (!mergedProperties) return null;
                 for (let p of mergedProperties) {
@@ -4854,7 +4976,7 @@
             let nameVal = null;
             let serialVal = null;
             let macVal = null;
-            
+
             if (item.primaryRow && primarySheet) {
                 nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
                 serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
@@ -4868,7 +4990,7 @@
             if (item.sheets) {
                 item.sheets.forEach(s => {
                     const sHeaders = s.headers.map(h => h.toLowerCase().trim());
-                    
+
                     function getSecondaryColValue(row, keywords) {
                         for (let kw of keywords) {
                             const idx = sHeaders.findIndex(h => {
@@ -4884,17 +5006,17 @@
                         }
                         return null;
                     }
-                    
+
                     if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
                     if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
                     if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
                 });
             }
-            
+
             if (!nameVal) nameVal = item.name || item.normalized || "Unknown Reconciled";
             if (!serialVal) serialVal = `SN-RECON-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-            if (!macVal) macVal = `00:1A:2B:3C:${Math.floor(Math.random()*89+10)}:${Math.floor(Math.random()*89+10)}`;
-            
+            if (!macVal) macVal = `00:1A:2B:3C:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
+
             return { nameVal, serialVal, macVal };
         }
 
@@ -4969,7 +5091,7 @@
         function isolateRogueAsset(rogueId) {
             const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
             if (!rogue) return;
-            
+
             // Check if already in fleetDataset using robust matching
             let existing = findExistingDeviceByItem(rogue);
             if (existing) {
@@ -4987,7 +5109,7 @@
                         }
                     });
                 });
-                
+
                 const ids = extractDeviceIdentifiers(rogue);
                 fleetDataset.push({
                     id: `dev-${Math.random().toString(36).substring(2, 8)}`,
@@ -5016,11 +5138,11 @@
                     custom_properties: newCustomProps
                 });
             }
-            
+
             rogue.is_isolated = true;
             logToTerminal(`[EDR Containment] Dispatched zero-trust network containment isolation for rogue host ${rogue.name.toUpperCase()} (ID: ${rogue.id}).`, "error");
             alert(`Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
-            
+
             recalculateAllScores();
             renderReconTableBody();
         }
@@ -5028,11 +5150,11 @@
         function registerRogueAsset(rogueId) {
             const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
             if (!rogue) return;
-            
+
             // Register it! Add it to fleetDataset as a fully compliant managed asset using robust matching
             let existing = findExistingDeviceByItem(rogue);
-            
-            const newCustomProps = { 
+
+            const newCustomProps = {
                 "Reconciliation Match": "SUCCESS",
                 "Authorized Registration": "MANUALLY APPROVED"
             };
@@ -5043,7 +5165,7 @@
                     }
                 });
             });
-            
+
             if (existing) {
                 existing.is_rogue = false;
                 existing.is_isolated = false;
@@ -5096,14 +5218,14 @@
                     custom_properties: newCustomProps
                 });
             }
-            
+
             // Remove from rogues, add to matches!
             reconciliationResults.rogues = reconciliationResults.rogues.filter(r => r.id !== rogueId);
             reconciliationResults.matches.push({
                 id: rogueId,
                 name: rogue.name,
                 normalized: rogue.normalized,
-                mergedProperties: rogue.sheets.flatMap(s => 
+                mergedProperties: rogue.sheets.flatMap(s =>
                     s.headers.slice(1).map((h, idx) => ({
                         source: s.filename,
                         sheetRole: "Secondary",
@@ -5113,16 +5235,16 @@
                 ),
                 status: "MATCHED"
             });
-            
+
             // Update counts in the tab header
             const roguesTabCount = document.getElementById("recon-tab-count-rogues");
             const matchesTabCount = document.getElementById("recon-tab-count-matches");
             if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
             if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
-            
+
             logToTerminal(`[Reconciler] Manually authorized and enrolled rogue asset ${rogue.name.toUpperCase()} into Corporate Directory context.`, "info");
             alert(`Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
-            
+
             recalculateAllScores();
             switchReconTab("matches");
         }
@@ -5175,7 +5297,7 @@
 
                 if (existing) {
                     existing.software.forEach(sw => {
-                        if (sw.key === "ad" || isSheetUploadedForSoftware(sw.key)) {
+                        if (isSheetUploadedForSoftware(sw.key)) {
                             sw.installed = "INSTALLED";
                             sw.status = "COMPLIANT";
                         }
@@ -5204,15 +5326,13 @@
                         location_group: "Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isAd = sw.key === "ad";
                             const isUploaded = isSheetUploadedForSoftware(sw.key);
-                            const isCompliant = isAd || isUploaded;
                             return {
                                 name: sw.name,
                                 key: sw.key,
-                                installed: isCompliant ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
+                                installed: isUploaded ? "INSTALLED" : (sw.key === "ad" ? "INSTALLED" : "MISSING (AGENT UNREPORTED)"),
                                 required: "REQUIRED",
-                                status: isCompliant ? "COMPLIANT" : "NON_COMPLIANT"
+                                status: isUploaded ? "COMPLIANT" : (sw.key === "ad" ? "COMPLIANT" : "NON_COMPLIANT")
                             };
                         }),
                         custom_properties: newCustomProps
@@ -5224,7 +5344,7 @@
             gaps.forEach(item => {
                 let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
-                const customProps = { 
+                const customProps = {
                     "Reconciliation Match": "COVERAGE_GAP",
                     "Missing Telemetries": item.missingInSheets.join(", ")
                 };
@@ -5235,19 +5355,16 @@
                 if (existing) {
                     existing.score = 0.00;
                     existing.level = "NON_COMPLIANT";
-                    
+
                     existing.software.forEach(sw => {
-                        if (sw.key === "ad") {
-                            sw.installed = "INSTALLED";
-                            sw.status = "COMPLIANT";
-                        } else if (isSheetUploadedForSoftware(sw.key)) {
+                        if (isSheetUploadedForSoftware(sw.key)) {
                             const isMissing = item.missingInSheets.some(filename => {
                                 const sheet = reconcilerSheets.find(s => s.filename === filename);
                                 const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
                                 return isSheetForSw;
                             });
                             if (isMissing) {
-                                sw.installed = "MISSING (AGENT UNREPORTED)";
+                                sw.installed = sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)";
                                 sw.status = "NON_COMPLIANT";
                             } else {
                                 sw.installed = "INSTALLED";
@@ -5280,16 +5397,8 @@
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            if (sw.key === "ad") {
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: "INSTALLED",
-                                    required: "REQUIRED",
-                                    status: "COMPLIANT"
-                                };
-                            }
-                            if (isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
+                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            if (isUploaded) {
                                 const isMissing = item.missingInSheets.some(filename => {
                                     const sheet = reconcilerSheets.find(s => s.filename === filename);
                                     const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
@@ -5298,17 +5407,18 @@
                                 return {
                                     name: sw.name,
                                     key: sw.key,
-                                    installed: isMissing ? "MISSING (AGENT UNREPORTED)" : "INSTALLED",
+                                    installed: isMissing ? (sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)") : "INSTALLED",
                                     required: "REQUIRED",
                                     status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
                                 };
                             } else {
+                                const isAd = sw.key === "ad";
                                 return {
                                     name: sw.name,
                                     key: sw.key,
-                                    installed: "MISSING (AGENT UNREPORTED)",
+                                    installed: isAd ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
                                     required: "REQUIRED",
-                                    status: "NON_COMPLIANT"
+                                    status: isAd ? "COMPLIANT" : "NON_COMPLIANT"
                                 };
                             }
                         }),
@@ -5391,7 +5501,7 @@
                     const cleanName = k.replace(/^\[.*?\]\s*/, '');
                     const sourceName = k.match(/^\[(.*?)\]/) ? k.match(/^\[(.*?)\]/)[1] : 'Excel';
                     const headerLabel = `${cleanName} (${sourceName})`;
-                    
+
                     activeTableHeaders.push(headerLabel);
                     activeTableKeys.push(customKey);
                 }
@@ -5399,7 +5509,7 @@
 
             recalculateAllScores();
             switchNavSection("compliance");
-            
+
             const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
             logToTerminal(`[Reconciler] ${successMsg}`, "info");
             alert(successMsg);
@@ -5407,7 +5517,7 @@
 
         function exportReconciliationReport() {
             logToTerminal("[Reconciler] Generating detailed flat CSV export of cross-sheet anomalies report...");
-            
+
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             if (!primarySheet) {
                 alert("No Primary Corporate Directory sheet loaded. Cannot export reconciliation report.");
@@ -5490,7 +5600,7 @@
 
             logToTerminal("[Reconciler] Export successful. Dispatched flat matrix report download stream.", "info");
         }
-</script>
+    </script>
 </body>
 
 </html>
