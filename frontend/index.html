@@ -383,8 +383,18 @@
                                 <h4
                                     style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
                                     Custom Telemetry & Asset Properties</h4>
-                                <div id="det-custom-params-grid" class="det-metadata-grid">
-                                    <!-- Dynamic elements go here -->
+                                <div class="fleet-table-container" style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-clean); border-radius: 4px; margin-top: 0.75rem;">
+                                    <table class="fleet-table" style="font-size: 0.85rem; margin: 0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Telemetry Property</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="det-custom-params-tbody">
+                                            <!-- Dynamic elements go here -->
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -1700,19 +1710,19 @@
 
             // Populate custom dynamic parameters
             const customSection = document.getElementById("det-custom-params-section");
-            const customGrid = document.getElementById("det-custom-params-grid");
+            const customTbody = document.getElementById("det-custom-params-tbody");
             
             if (dev.custom_properties && Object.keys(dev.custom_properties).length > 0) {
                 customSection.style.display = "block";
-                customGrid.innerHTML = "";
+                customTbody.innerHTML = "";
                 
                 Object.entries(dev.custom_properties).forEach(([key, val]) => {
-                    const item = document.createElement("div");
-                    item.innerHTML = `
-                        <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">${escapeHTML(key)}</span>
-                        <strong style="font-size: 0.95rem; color: var(--text-primary);">${escapeHTML(val)}</strong>
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td><strong>${escapeHTML(key)}</strong></td>
+                        <td style="font-family: var(--font-mono); color: var(--text-primary);">${escapeHTML(val)}</td>
                     `;
-                    customGrid.appendChild(item);
+                    customTbody.appendChild(tr);
                 });
             } else {
                 customSection.style.display = "none";
