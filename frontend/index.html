@@ -2133,7 +2133,7 @@
                 const isUnreported = stats.isUnreported;
 
                 // Pass rate % and counts scoped to the active condition filter
-                const passRate = stats.filteredTotal > 0 ? (stats.filteredCompliant / stats.filteredTotal) * 100 : 0;
+                const passRate = stats.filteredTotal > 0 ? (stats.filteredCompliant / stats.filteredTotal) * 100 : 100;
                 const compliantCount = stats.filteredCompliant;
                 const failCount = stats.filteredTotal - stats.filteredCompliant;
 
