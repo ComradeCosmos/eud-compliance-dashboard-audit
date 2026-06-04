@@ -93,8 +93,7 @@
             <!-- Top navigation menu -->
             <nav>
                 <ul class="sidebar-menu">
-                    <li class="menu-item active" id="menu-analytics" onclick="switchNavSection('analytics')">Analytics</li>
-                    <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">Compliance</li>
+                    <li class="menu-item active" id="menu-compliance" onclick="switchNavSection('compliance')">Compliance</li>
                     <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Scoring & Controls</li>
                     <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
                     <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">Reconciliation</li>
@@ -128,72 +127,6 @@
                 </div>
 
             </header>
-
-            <!-- Section: Analytics -->
-            <div id="section-analytics" class="section-view">
-                <!-- Swiss KPI Metrics Grid -->
-                <div class="telemetry-row">
-                    <div class="metric-widget">
-                        <span>Active Fleet Scale</span>
-                        <div class="val" id="fleet-scale-val">10,029</div>
-                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;">+8.2% ▲ <span
-                                style="color: var(--text-muted); font-weight: 500;">QoQ</span></p>
-                    </div>
-                    <div class="metric-widget">
-                        <span>Average Fleet Score</span>
-                        <div class="val" id="fleet-score-val">87.50</div>
-                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;"
-                            id="fleet-risk-label">+2.4% ▲ LOW RISK</p>
-                    </div>
-                    <div class="metric-widget">
-                        <span>Active Threat Alerts</span>
-                        <div class="val" style="color: var(--status-critical);">234</div>
-                        <p style="font-size: 0.75rem; color: var(--status-low); font-weight: 700;">-12.5% ▼ Incidents
-                        </p>
-                    </div>
-                    <div class="metric-widget" style="border-right: none;">
-                        <span>Daily Ingest Events</span>
-                        <div class="val">142.4 M</div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Kafka pipeline SLA
-                            compliant</p>
-                    </div>
-                </div>
-
-                <!-- Charts and Telemetry Summary Section -->
-                <div class="charts-grid">
-                    <!-- Line Chart Card -->
-                    <div class="chart-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; border: none; padding: 0;">Fleet Analytics & Diagnostics</h3>
-                            <select id="analysis-chart-dimension" onchange="renderActiveTrendChart()" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); cursor: pointer; border-radius: 4px; font-weight: 700; color: var(--text-primary);">
-                                <option value="trend">Compliance Trend Line</option>
-                                <option value="os">OS Platform Breakdown</option>
-                                <option value="location">Location Group Distribution</option>
-                            </select>
-                        </div>
-                        <div id="analytics-trend-chart-container" style="position: relative; width: 100%; height: 220px;">
-                            <!-- Dynamic SVG chart renders here -->
-                        </div>
-                        <div id="analytics-trend-legend" style="display: flex; gap: 2rem; justify-content: center; font-size: 0.85rem; margin-top: 0.5rem;">
-                            <!-- Dynamic legend renders here -->
-                        </div>
-                    </div>
-
-                    <!-- Pie/Donut Chart Card -->
-                    <div class="chart-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1rem;">
-                            <h3 style="margin: 0; border: none; padding: 0;">Fleet Distribution Profile</h3>
-                            <select id="analysis-risk-dimension" onchange="renderActiveRiskChart()" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); cursor: pointer; border-radius: 4px; font-weight: 700; color: var(--text-primary);">
-                                <option value="risk">Compliance Status (Donut)</option>
-                                <option value="condition">Physical Conditions (Donut)</option>
-                            </select>
-                        </div>
-                        <div id="analytics-risk-chart-container" style="position: relative; width: 100%; height: 220px; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
-                            <!-- Dynamic SVG donut and legend renders here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Section: Scoring & Controls -->
             <div id="section-risk" class="section-view" style="display: none;">
@@ -2424,16 +2357,21 @@
         function updateFleetWideMetrics() {
             const activeFleet = fleetDataset.filter(d => d.condition === "IN_USE");
             const scaleVal = activeFleet.length;
-            document.getElementById("fleet-scale-val").innerText = scaleVal.toLocaleString();
+            const fleetScaleEl = document.getElementById("fleet-scale-val");
+            if (fleetScaleEl) fleetScaleEl.innerText = scaleVal.toLocaleString();
 
             const avg = scaleVal > 0 ? activeFleet.reduce((sum, item) => sum + item.score, 0) / scaleVal : 100;
             const scoreDisplay = document.getElementById("fleet-score-val");
-            scoreDisplay.innerText = avg.toFixed(2);
-            scoreDisplay.style.color = getScoreColor(avg);
+            if (scoreDisplay) {
+                scoreDisplay.innerText = avg.toFixed(2);
+                scoreDisplay.style.color = getScoreColor(avg);
+            }
 
             const riskLabel = document.getElementById("fleet-risk-label");
-            if (avg < 100) { riskLabel.innerText = "NON-COMPLIANT FLEET"; riskLabel.style.color = "#b91c1c"; }
-            else { riskLabel.innerText = "FULLY COMPLIANT FLEET"; riskLabel.style.color = "#15803d"; }
+            if (riskLabel) {
+                if (avg < 100) { riskLabel.innerText = "NON-COMPLIANT FLEET"; riskLabel.style.color = "#b91c1c"; }
+                else { riskLabel.innerText = "FULLY COMPLIANT FLEET"; riskLabel.style.color = "#15803d"; }
+            }
 
             // Recalculate and update charts in real-time
             renderActiveTrendChart();
@@ -3073,7 +3011,7 @@
             document.getElementById("main-app-container").style.display = "flex";
 
             // Switch to overview view
-            switchNavSection("analytics");
+            switchNavSection("compliance");
             logToTerminal(`[Session Active] Successfully logged in. Session established for tenant: "${tenant}"`, "info");
         }
 
@@ -3120,8 +3058,8 @@
             logToTerminal(`[Settings] Vault provider path synchronized with server: "${vaultAddr}" (mount: "${vaultEngine}")`, "info");
             logToTerminal("[Settings] Configuration successfully committed and replicated to downstream gateway.", "info");
 
-            // Switch back to analytics overview as active view
-            switchNavSection("analytics");
+            // Switch back to compliance overview as active view
+            switchNavSection("compliance");
         }
 
         // --- Simplified Compliance & Policy Governance Scripting Blocks ---
