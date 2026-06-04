@@ -513,35 +513,6 @@
                                     style="font-size: 0.7rem; color: var(--text-muted); font-style: italic; text-align: center; margin-top: -0.25rem;">
                                     NIST compliance trajectory</p>
                             </div>
-
-                            <!-- Remediation Actions -->
-                            <div
-                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                                <h4
-                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
-                                    Remediation Controls</h4>
-                                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                    <button class="btn btn-secondary"
-                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('PATCH')"><span>Push Patch Updates</span>
-                                        <span style="font-weight:400; color:var(--text-muted);">SCCM</span></button>
-                                    <button class="btn btn-secondary"
-                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('EDR')"><span>Run Endpoint Threat
-                                            Scan</span> <span
-                                            style="font-weight:400; color:var(--text-muted);">EDR</span></button>
-                                    <button class="btn btn-secondary"
-                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between;"
-                                        onclick="triggerDeviceRemediation('VAULT')"><span>Escrow BitLocker
-                                            Keys</span> <span
-                                            style="font-weight:400; color:var(--text-muted);">Vault</span></button>
-                                    <button class="btn"
-                                        style="font-size: 0.75rem; padding: 0.55rem; width: 100%; text-align: left; display: flex; justify-content: space-between; background: var(--status-critical); border-color: var(--status-critical); color: var(--bg-main);"
-                                        id="btn-isolate-device" onclick="toggleDeviceIsolation()"><span> Isolate
-                                            Network Host</span> <span
-                                            style="font-weight:400; opacity: 0.8;">Block</span></button>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -1871,14 +1842,16 @@
 
             // Update Network Isolation Button state
             const isolateBtn = document.getElementById("btn-isolate-device");
-            if (dev.is_isolated) {
-                isolateBtn.innerHTML = `<span>Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
-                isolateBtn.style.background = "var(--status-low)";
-                isolateBtn.style.borderColor = "var(--status-low)";
-            } else {
-                isolateBtn.innerHTML = `<span>Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
-                isolateBtn.style.background = "var(--status-critical)";
-                isolateBtn.style.borderColor = "var(--status-critical)";
+            if (isolateBtn) {
+                if (dev.is_isolated) {
+                    isolateBtn.innerHTML = `<span>Reconnect Host</span> <span style="font-weight:400; opacity: 0.8;">Active</span>`;
+                    isolateBtn.style.background = "var(--status-low)";
+                    isolateBtn.style.borderColor = "var(--status-low)";
+                } else {
+                    isolateBtn.innerHTML = `<span>Isolate Network Host</span> <span style="font-weight:400; opacity: 0.8;">Block</span>`;
+                    isolateBtn.style.background = "var(--status-critical)";
+                    isolateBtn.style.borderColor = "var(--status-critical)";
+                }
             }
 
             logToTerminal(`[Audit] Loaded software and corporate metadata audits for device ID ${dev.id}`);
