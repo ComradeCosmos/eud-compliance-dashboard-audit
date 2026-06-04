@@ -1252,11 +1252,11 @@
         // CSV Ingestion & Export
         function triggerCsvExport() {
             logToTerminal(`[Export] Extracting active query records for export...`);
-            let csvContent = "data:text/csv;charset=utf-8,";
+            let csvLines = [];
             
             // Dynamically compile CSV headers from activeTableHeaders
             const headerLine = activeTableHeaders.map(h => `"${sanitizeCSVCell(h)}"`).join(",");
-            csvContent += headerLine + "\n";
+            csvLines.push(headerLine);
 
             filteredDataset.forEach(row => {
                 const lineValues = activeTableKeys.map((key, headerIdx) => {
@@ -1282,16 +1282,19 @@
                 });
                 
                 const line = lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",");
-                csvContent += line + "\n";
+                csvLines.push(line);
             });
 
-            const encodedUri = encodeURI(csvContent);
+            const csvContent = csvLines.join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
+            link.setAttribute("href", url);
             link.setAttribute("download", `eud_compliance_export_${Date.now()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            URL.revokeObjectURL(url);
 
             logToTerminal(`[Export] File successfully compiled. Dispatched ${filteredDataset.length} rows as CSV download stream.`, "info");
         }
