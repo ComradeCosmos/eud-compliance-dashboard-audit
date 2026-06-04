@@ -62,6 +62,7 @@ graph TD
 *   **Composite Compliance Engine**:
     *   Computes normalized compliance scores ($0.00$ or $100.00$).
     *   Applies a **Zero-Tolerance Binary Compliance Model**: If even a single core or dynamic control agent evaluates as non-compliant/missing, the entire asset's score instantly drops to `0.00` and its state is set to `NON_COMPLIANT`.
+    *   **OS-Applicable Compliance Enforcement**: Automatically restricts Windows-specific policies (`Active Directory (AD) Enrollment`, `BitLocker Drive Encryption`, and `SCCM Management Agent`) to evaluate and score only Windows operating system family devices, dynamically bypassing non-Windows endpoints (macOS/Linux) so they are not falsely penalized.
 
 ### 3. Cryptographic & Edit-Distance Reconciler
 *   **Cryptographic Hardware Fingerprinting**: Calculates deterministic SHA-256 signatures from serials, MAC addresses, and manufacturer profiles to uniquely identify physical endpoints.
@@ -71,6 +72,7 @@ graph TD
     *   **Stage 2: Cryptographic Match**: Hardware fingerprint matching (95% confidence).
     *   **Stage 3: Edit-Distance Match**: Dynamic Levenshtein alignments (calculated trust boundaries).
     *   **Stage 5: Review Queue**: Programmatically routes untrusted records to the manual verification queue.
+*   **Fuzzy AD File Matching & Gap Reconciliation**: Dynamically identifies AD telemetry CSV files by checking for the term `ADcomputers` in their filename. During merge, devices registered in the Corporate Directory but missing checking records on the AD telemetry sheet are programmatically merged as `NOT ENROLLED` and marked `NON_COMPLIANT`.
 
 ### 4. Timeseries Database Schemas (`/schemas`)
 *   Optimized PostgreSQL schema blueprints.
@@ -95,6 +97,8 @@ graph TD
 ├── schemas/
 │   ├── postgres/              # Relational core table schemas
 │   └── timescale/             # Hypertable definitions for compliance history log
+├── *.js                       # Node JS test and verification scripts (relocated to root)
+├── *.py                       # Python analysis and telemetry auditing scripts (relocated to root)
 └── .gitignore                 # Safe, comprehensive exclude list
 ```
 
@@ -119,19 +123,28 @@ go test ./pkg/evaluator/...
 ```
 
 ### 3. Running Automated Tests
-Run standard automated test suites located in the workspace root directory:
+Run standard automated test suites located in the dashboard root directory:
 ```bash
+# Navigate to the dashboard directory
+cd eud-compliance-dashboard
+
 # Verify JavaScript Syntax
 node test-syntax.js
 
 # Verify DOM Runtime Initialization
 node test-runtime.js
 
-# Verify Successive Merges & Leakage Check
+# Verify Detailed Interaction & Reconciliation
+node test-interaction.js
+
+# Verify Telemetry Leakage & Successive Merges
 node test-telemetry-leakage.js
 
-# Verify Full Ingest-to-Clear Sequence Verification
-node test-clear-after-reconciliation.js
+# Verify Core Reporting Policies Isolation
+node verify-reporting-policies.js
+
+# Verify Windows-Only AD Enrollment
+node verify-ad-windows-only.js
 ```
 
 ---
@@ -158,6 +171,7 @@ To deliver streamlined SOC operations, the platform implements a tight feedback 
 *   **RBAC Protected**: Modification of global policy constraints is strictly gated to the Global Security Administrator (`admin.security`). Other operators/auditors are restricted to read-only views.
 
 ### 2. Compliance Telemetry Reporting Center
+*   **Executive Reporting Policy Isolation**: Restricts the SLA compliance gauge, toggles checklist, Audit Summary, Ledger badges, and exception lists to evaluate and render compliance metrics using ONLY the 6 core mandated policies, preventing uploaded custom dynamic policies from polluting executive reporting metrics.
 *   **Real-time Fleet Audits**: Summarizes aggregate managed endpoint counts, perfect compliance rates, and exception metrics dynamically across whatever dataset has been loaded.
 *   **Control Performance Audits**: Audits pass/fail statistics, pass rate percentage, and displays visual compliance verification progress bars for every loaded mandate.
 *   **Click-to-Remediate Redirection**: Identifies the top 10 systems violating active mandates and lists their exact control gaps. Clicking the `Remediate` link immediately switches the dashboard view to the Compliance Ledger, auto-selects the endpoint, and focuses the detailed MECM/EDR remediation tools panel.
