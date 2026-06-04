@@ -551,17 +551,10 @@
                     </div>
 
                     <!-- Client Filter & Search Box -->
-                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; margin-top: 1rem;">
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1rem;">
                         <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
                             oninput="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-
-                        <select id="fleet-filter-risk" onchange="handleFleetQueryChange()"
-                            style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
-                            <option value="ALL">All Compliance States</option>
-                            <option value="COMPLIANT">Compliant</option>
-                            <option value="NON_COMPLIANT">Non-Compliant</option>
-                        </select>
 
                         <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
                             style="border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none;">
@@ -1640,7 +1633,7 @@
 
         function handleFleetQueryChange() {
             const query = ((document.getElementById("fleet-search-input") || {}).value || "").toLowerCase();
-            const riskFilter = (document.getElementById("fleet-filter-risk") || {}).value || "ALL";
+            const riskFilter = "ALL";
             const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
             const locGroupFilter = (document.getElementById("fleet-filter-loc-group") || {}).value || "ALL";
             const osPlatformFilter = (document.getElementById("fleet-filter-os-platform") || {}).value || "ALL";
@@ -5082,8 +5075,7 @@
                     is_isolated: false,
                     is_rogue: false,
                     software: sampleSoftwareCatalog.map(sw => {
-                        // Only mark COMPLIANT if we actually have a sheet for this agent
-                        if (isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
+                        if (sw.key === "ad" || isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
                             return {
                                 name: sw.name,
                                 key: sw.key,
@@ -5182,7 +5174,7 @@
 
                 if (existing) {
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
+                        if (sw.key === "ad" || isSheetUploadedForSoftware(sw.key)) {
                             sw.installed = "INSTALLED";
                             sw.status = "COMPLIANT";
                         }
@@ -5244,7 +5236,10 @@
                     existing.level = "NON_COMPLIANT";
                     
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
+                        if (sw.key === "ad") {
+                            sw.installed = "INSTALLED";
+                            sw.status = "COMPLIANT";
+                        } else if (isSheetUploadedForSoftware(sw.key)) {
                             const isMissing = item.missingInSheets.some(filename => {
                                 const sheet = reconcilerSheets.find(s => s.filename === filename);
                                 const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
@@ -5284,6 +5279,15 @@
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
+                            if (sw.key === "ad") {
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: "INSTALLED",
+                                    required: "REQUIRED",
+                                    status: "COMPLIANT"
+                                };
+                            }
                             if (isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
                                 const isMissing = item.missingInSheets.some(filename => {
                                     const sheet = reconcilerSheets.find(s => s.filename === filename);
