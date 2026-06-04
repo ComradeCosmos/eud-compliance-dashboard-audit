@@ -3185,7 +3185,14 @@
             const tbody = document.getElementById("reporting-agent-tbody");
             if (!tableHead || !tbody) return;
 
-            const policies = getAvailablePolicies();
+            const policies = [
+                "Active Directory (AD) Enrollment",
+                "BitLocker Drive Encryption",
+                "Zscaler Client Connector",
+                "Nessus Vulnerability Agent",
+                "SentinelOne Endpoint Protection",
+                "SCCM Management Agent"
+            ];
 
             let headHtml = `
                 <th style="text-align: left;">Asset Tag</th>
@@ -3248,8 +3255,9 @@
                         }
                     });
 
-                    const overallCompliant = dev.level === "COMPLIANT";
-                    rowHtml += `<td style="text-align: center;"><span class="badge ${overallCompliant ? 'risk-low' : 'risk-critical'}">${dev.level}</span></td>`;
+                    const overallCompliant = isDeviceCompliantForReporting(dev);
+                    const levelText = overallCompliant ? "COMPLIANT" : "NON_COMPLIANT";
+                    rowHtml += `<td style="text-align: center;"><span class="badge ${overallCompliant ? 'risk-low' : 'risk-critical'}">${levelText}</span></td>`;
 
                     const tr = document.createElement("tr");
                     tr.innerHTML = rowHtml;
@@ -3540,6 +3548,47 @@
             recalculateAllScores();
         }
 
+        function isDeviceCompliantForReporting(dev) {
+            if (dev.is_isolated) return false;
+            if (dev.condition !== "IN_USE" && dev.condition !== "UNKNOWN") return false;
+            if (dev.is_rogue) return false;
+
+            const corePolicies = [
+                "Active Directory (AD) Enrollment",
+                "BitLocker Drive Encryption",
+                "Zscaler Client Connector",
+                "Nessus Vulnerability Agent",
+                "SentinelOne Endpoint Protection",
+                "SCCM Management Agent"
+            ];
+
+            let hasNonCompliant = false;
+            for (let name of corePolicies) {
+                const isRequired = enforcedPolicies[name] !== false; // Required by default
+                if (!isRequired) continue;
+
+                const sw = dev.software && dev.software.find(s => s.name === name);
+                if (sw) {
+                    const isUploaded = isSheetUploadedForSoftware(sw.key);
+                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
+                    const alwaysReported = sw.key === "ad";
+                    
+                    if (!alwaysReported && !isUploaded && !isEverMerged) {
+                        continue;
+                    }
+
+                    if (sw.status === "NON_COMPLIANT") {
+                        hasNonCompliant = true;
+                        break;
+                    }
+                } else {
+                    hasNonCompliant = true;
+                    break;
+                }
+            }
+            return !hasNonCompliant;
+        }
+
         function generateComplianceReport() {
             const container = document.getElementById("reporting-dashboard-content");
             if (!container) return;
@@ -3550,7 +3599,7 @@
             let nonCompliantCount = 0;
 
             activeFleet.forEach(dev => {
-                if (dev.level === "COMPLIANT") compliantCount++;
+                if (isDeviceCompliantForReporting(dev)) compliantCount++;
                 else nonCompliantCount++;
             });
 
@@ -3610,7 +3659,14 @@
                 </div>
             `;
 
-            const policies = getAvailablePolicies();
+            const policies = [
+                "Active Directory (AD) Enrollment",
+                "BitLocker Drive Encryption",
+                "Zscaler Client Connector",
+                "Nessus Vulnerability Agent",
+                "SentinelOne Endpoint Protection",
+                "SCCM Management Agent"
+            ];
             let controlRowsHtml = "";
 
             if (policies.length === 0) {
@@ -3677,14 +3733,14 @@
                 </div>
             `;
 
-            const nonCompliantDevices = fleetDataset.filter(dev => dev.level === "NON_COMPLIANT").slice(0, 10);
+            const nonCompliantDevices = fleetDataset.filter(dev => dev.condition === "IN_USE" && !isDeviceCompliantForReporting(dev)).slice(0, 10);
             let exceptionsRowsHtml = "";
 
             if (nonCompliantDevices.length === 0) {
                 exceptionsRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;"> No non-compliance exceptions detected! Active fleet is 100% compliant.</td></tr>`;
             } else {
                 nonCompliantDevices.forEach(dev => {
-                    const failedControls = getFailedControlsForDevice(dev);
+                    const failedControls = getFailedControlsForDevice(dev).filter(name => !name.startsWith('['));
                     let failedMarkup = "";
                     
                     if (dev.condition !== "IN_USE") {
