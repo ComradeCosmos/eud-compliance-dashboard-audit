@@ -522,3 +522,38 @@ header h1 {
     fill: var(--text-secondary);
     font-family: var(--font-sans);
 }
+
+/* Responsive overrides for Detailed Asset Audit panel */
+#details-content-box {
+    display: none;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 1200px) {
+    #details-content-box {
+        grid-template-columns: 1fr;
+    }
+}
+
+.det-metadata-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-clean);
+    padding: 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .det-metadata-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .det-metadata-grid {
+        grid-template-columns: 1fr;
+    }
+}

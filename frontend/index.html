@@ -369,8 +369,7 @@
                         Select any device row in the fleet table below to audit installed software compliance, user
                         assignments, physical conditions, and secure location groups.
                     </div>
-                    <div id="details-content-box"
-                        style="display: none; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+                    <div id="details-content-box">
                         <!-- Column 1: Details & Software compliance -->
                         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                             <!-- Dynamic isolation alert banner -->
@@ -395,8 +394,7 @@
                             </div>
 
                             <!-- Detailed Corporate Metadata Grid -->
-                            <div
-                                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem;">
+                            <div class="det-metadata-grid">
                                 <div>
                                     <span
                                         style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">User
@@ -430,19 +428,21 @@
                                 <h4
                                     style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
                                     Monitored Software compliance status (SCCM/MECM Audit)</h4>
-                                <table class="fleet-table" style="font-size: 0.85rem;">
-                                    <thead>
-                                        <tr>
-                                            <th>Compliance Control Name</th>
-                                            <th>Control Status</th>
-                                            <th>Audit Requirement</th>
-                                            <th>Audit Result</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="det-software-tbody">
-                                        <!-- Dynamic -->
-                                    </tbody>
-                                </table>
+                                <div class="fleet-table-container">
+                                    <table class="fleet-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>Compliance Control Name</th>
+                                                <th>Control Status</th>
+                                                <th>Audit Requirement</th>
+                                                <th>Audit Result</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="det-software-tbody">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                             
                             <!-- Dynamic Custom Metadata Panel -->
@@ -450,8 +450,7 @@
                                 <h4
                                     style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
                                     Custom Telemetry & Asset Properties</h4>
-                                <div id="det-custom-params-grid"
-                                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem;">
+                                <div id="det-custom-params-grid" class="det-metadata-grid">
                                     <!-- Dynamic elements go here -->
                                 </div>
                             </div>
@@ -532,7 +531,7 @@
                 </div>
 
                 <!-- Fleet Table Card -->
-                <div class="card">
+                <div class="card" style="margin-top: 1.5rem;">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
                         <h2>Active Reconciled Fleet</h2>
@@ -1744,7 +1743,7 @@
             condBadge.className = `badge ${getConditionBadgeClass(dev.condition)}`;
 
             const levelBadge = document.getElementById("det-level-badge");
-            levelBadge.innerText = dev.level.replace("_", "-");
+            levelBadge.innerText = dev.level === "COMPLIANT" ? "Compliant" : "Non-Compliant";
             levelBadge.className = `badge ${getRiskBadgeClass(dev.level)}`;
 
             // Toggle isolation alert banner
@@ -1768,11 +1767,12 @@
             tbody.innerHTML = "";
             dev.software.forEach(sw => {
                 const tr = document.createElement("tr");
+                const statusText = sw.status === "COMPLIANT" ? "Compliant" : "Non-Compliant";
                 tr.innerHTML = `
                     <td><strong>${escapeHTML(sw.name)}</strong></td>
                     <td style="font-family: var(--font-mono);">${escapeHTML(sw.installed)}</td>
                     <td style="font-family: var(--font-mono); color: var(--text-secondary);">${escapeHTML(sw.required)}</td>
-                    <td><span class="badge ${sw.status === 'COMPLIANT' ? 'risk-low' : 'risk-critical'}">${escapeHTML(sw.status)}</span></td>
+                    <td><span class="badge ${sw.status === 'COMPLIANT' ? 'risk-low' : 'risk-critical'}">${escapeHTML(statusText)}</span></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -2088,7 +2088,8 @@
                             const numScore = parseFloat(val) || 0;
                             rowHtml += `<td style="font-weight: 700; font-family: var(--font-mono); color: ${getScoreColor(numScore)};">${numScore.toFixed(2)}</td>`;
                         } else if (actualKey === "level") {
-                            rowHtml += `<td><span class="badge ${getRiskBadgeClass(val)}">${escapeHTML(String(val))}</span></td>`;
+                            const displayText = val === "COMPLIANT" ? "Compliant" : "Non-Compliant";
+                            rowHtml += `<td><span class="badge ${getRiskBadgeClass(val)}">${escapeHTML(displayText)}</span></td>`;
                         } else if (actualKey === "condition") {
                             rowHtml += `<td><span class="badge ${getConditionBadgeClass(val)}">${escapeHTML(String(val).replace("_", " "))}</span></td>`;
                         } else if (actualKey === "location_group") {
