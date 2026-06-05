@@ -486,35 +486,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Column 2: Sparkline & Controls -->
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            <!-- Individual 30-Day Score sparkline -->
-                            <div
-                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                                <h4
-                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">
-                                    30-Day Score Sparkline</h4>
-                                <div style="height: 100px; position: relative;">
-                                    <svg viewBox="0 0 250 80" style="width: 100%; height: 100%;">
-                                        <!-- Grid sparkline background lines -->
-                                        <line x1="10" y1="10" x2="240" y2="10" stroke="var(--border-clean)"
-                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
-                                        <line x1="10" y1="40" x2="240" y2="40" stroke="var(--border-clean)"
-                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
-                                        <line x1="10" y1="70" x2="240" y2="70" stroke="var(--border-clean)"
-                                            stroke-width="0.5" stroke-dasharray="2, 2"></line>
-
-                                        <path id="det-sparkline-path" fill="none" stroke="var(--color-accent)"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d=""></path>
-                                        <g id="det-sparkline-dots"></g>
-                                    </svg>
-                                </div>
-                                <p
-                                    style="font-size: 0.7rem; color: var(--text-muted); font-style: italic; text-align: center; margin-top: -0.25rem;">
-                                    NIST compliance trajectory</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -1807,39 +1778,44 @@
             }
 
             // Generate deterministic scoring trend sparkline points (6 historical intervals)
-            const trendScores = [];
-            const seed = dev.id.charCodeAt(dev.id.length - 1) || 42;
-            for (let k = 0; k < 5; k++) {
-                const modifier = Math.sin(k + seed) * 10;
-                let prevScore = dev.score - (5 - k) * 2.5 + modifier;
-                prevScore = Math.min(100, Math.max(0, parseFloat(prevScore.toFixed(2))));
-                trendScores.push(prevScore);
+            const sparklinePath = document.getElementById("det-sparkline-path");
+            if (sparklinePath) {
+                const trendScores = [];
+                const seed = dev.id.charCodeAt(dev.id.length - 1) || 42;
+                for (let k = 0; k < 5; k++) {
+                    const modifier = Math.sin(k + seed) * 10;
+                    let prevScore = dev.score - (5 - k) * 2.5 + modifier;
+                    prevScore = Math.min(100, Math.max(0, parseFloat(prevScore.toFixed(2))));
+                    trendScores.push(prevScore);
+                }
+                trendScores.push(dev.score);
+
+                const mapX = (idx) => 10 + (idx * 46);
+                const mapY = (score) => 70 - ((score / 100) * 60);
+
+                let pathD = `M ${mapX(0)},${mapY(trendScores[0])}`;
+                for (let k = 1; k < trendScores.length; k++) {
+                    pathD += ` L ${mapX(k)},${mapY(trendScores[k])}`;
+                }
+                sparklinePath.setAttribute("d", pathD);
+
+                const dotsContainer = document.getElementById("det-sparkline-dots");
+                if (dotsContainer) {
+                    dotsContainer.innerHTML = "";
+                    trendScores.forEach((score, idx) => {
+                        const cx = mapX(idx);
+                        const cy = mapY(score);
+
+                        // Adaptive vertical text offset: if dot near top, render numeric score below it, else above it
+                        const textYOffset = cy < 20 ? cy + 12 : cy - 8;
+
+                        dotsContainer.innerHTML += `
+                            <circle cx="${cx}" cy="${cy}" r="3" fill="#ffffff" stroke="var(--color-accent)" stroke-width="1.5"></circle>
+                            <text x="${cx}" y="${textYOffset}" font-size="8px" fill="var(--text-secondary)" font-family="var(--font-mono)" font-weight="700" text-anchor="middle">${score.toFixed(1)}</text>
+                        `;
+                    });
+                }
             }
-            trendScores.push(dev.score);
-
-            const mapX = (idx) => 10 + (idx * 46);
-            const mapY = (score) => 70 - ((score / 100) * 60);
-
-            let pathD = `M ${mapX(0)},${mapY(trendScores[0])}`;
-            for (let k = 1; k < trendScores.length; k++) {
-                pathD += ` L ${mapX(k)},${mapY(trendScores[k])}`;
-            }
-            document.getElementById("det-sparkline-path").setAttribute("d", pathD);
-
-            const dotsContainer = document.getElementById("det-sparkline-dots");
-            dotsContainer.innerHTML = "";
-            trendScores.forEach((score, idx) => {
-                const cx = mapX(idx);
-                const cy = mapY(score);
-
-                // Adaptive vertical text offset: if dot near top, render numeric score below it, else above it
-                const textYOffset = cy < 20 ? cy + 12 : cy - 8;
-
-                dotsContainer.innerHTML += `
-                    <circle cx="${cx}" cy="${cy}" r="3" fill="#ffffff" stroke="var(--color-accent)" stroke-width="1.5"></circle>
-                    <text x="${cx}" y="${textYOffset}" font-size="8px" fill="var(--text-secondary)" font-family="var(--font-mono)" font-weight="700" text-anchor="middle">${score.toFixed(1)}</text>
-                `;
-            });
 
             // Update Network Isolation Button state
             const isolateBtn = document.getElementById("btn-isolate-device");

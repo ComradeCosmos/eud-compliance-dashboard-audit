@@ -527,14 +527,8 @@ header h1 {
 #details-content-box {
     display: none;
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
-}
-
-@media (max-width: 1200px) {
-    #details-content-box {
-        grid-template-columns: 1fr;
-    }
 }
 
 .det-metadata-grid {
