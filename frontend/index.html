@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EUD Compliance Dashboard - Executive Console</title>
-    <link rel="icon" type="image/jpeg" href="favicon.jpg">
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
@@ -16,13 +16,16 @@
         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, var(--text-secondary) 0%, var(--text-primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999;">
         <div class="card"
             style="width: 460px; padding: 2.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-radius: 4px;">
-            <div style="text-align: center; margin-bottom: 0.5rem;">
-                <div
-                    style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
-                    Thrawn <span style="color: var(--color-accent);">EUD.</span></div>
-                <p
-                    style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
-                    Security & Ingest Portal Gateway</p>
+            <div style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                <img src="logo.png" alt="Thrawn EUD Logo" style="height: 54px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                <div>
+                    <div
+                        style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
+                        Thrawn <span style="color: var(--color-accent);">EUD.</span></div>
+                    <p
+                        style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
+                        Security & Ingest Portal Gateway</p>
+                </div>
             </div>
 
             <div id="portal-login-error-msg"
@@ -86,11 +89,14 @@
     <div class="app-container" id="main-app-container" style="display: none;">
         <!-- Sidebar Navigation matching Aethelred Corp style -->
         <aside class="sidebar">
-            <div class="brand-section">
-                <div class="brand-logo">Thrawn <span>EUD.</span></div>
-                <p
-                    style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
-                    Security & Compliance</p>
+            <div class="brand-section" style="flex-direction: row; align-items: center; gap: 0.75rem;">
+                <img src="logo.png" alt="Thrawn EUD Logo" style="height: 36px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                <div style="display: flex; flex-direction: column; gap: 0.1rem;">
+                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;">Thrawn <span>EUD.</span></div>
+                    <p
+                        style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+                        Security & Compliance</p>
+                </div>
             </div>
 
             <!-- Top navigation menu -->
