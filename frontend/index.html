@@ -16,12 +16,15 @@
         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, var(--text-secondary) 0%, var(--text-primary) 100%); display: flex; align-items: center; justify-content: center; z-index: 99999;">
         <div class="card"
             style="width: 460px; padding: 2.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-radius: 4px;">
-            <div style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-                <img src="logo.png" alt="Thrawn EUD Logo" style="height: 54px; border-radius: 4px; border: 1px solid var(--border-clean);">
+            <div
+                style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                <img src="logo.png" alt="Thrawn EUD Logo"
+                    style="height: 54px; border-radius: 4px; border: 1px solid var(--border-clean);">
                 <div>
                     <div
                         style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
-                        Thrawn <span style="color: var(--color-accent);">EUD.</span></div>
+                        <span style="color: var(--color-accent);">EUD.</span>
+                    </div>
                     <p
                         style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
                         Security & Ingest Portal Gateway</p>
@@ -90,9 +93,10 @@
         <!-- Sidebar Navigation matching Aethelred Corp style -->
         <aside class="sidebar">
             <div class="brand-section" style="flex-direction: row; align-items: center; gap: 0.75rem;">
-                <img src="logo.png" alt="Thrawn EUD Logo" style="height: 36px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                <img src="logo.png" alt="Thrawn EUD Logo"
+                    style="height: 36px; border-radius: 4px; border: 1px solid var(--border-clean);">
                 <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;">Thrawn <span>EUD.</span></div>
+                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;"> <span>EUD.</span></div>
                     <p
                         style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
                         Security & Compliance</p>
@@ -1294,9 +1298,66 @@
             if (!file) return;
 
             logToTerminal(`[Import] Upload request recognized for file: "${file.name}"`);
-            const reader = new FileReader();
             const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
+            if (usePython) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const bytes = new Uint8Array(arrayBuffer);
+                        let binary = "";
+                        for (let i = 0; i < bytes.byteLength; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        const base64 = btoa(binary);
+
+                        logToTerminal(`[Import] Uploading "${file.name}" to Python backend for validation...`, "info");
+
+                        fetch('/api/validate-sheet', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ filename: file.name, content: base64 })
+                        })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    logToTerminal(`[Import] Python validation completed for "${file.name}"`, "info");
+                                    if (data.validation_report && data.validation_report.warnings.length > 0) {
+                                        data.validation_report.warnings.forEach(warn => {
+                                            logToTerminal(`[Validation Warning] ${warn}`, "warn");
+                                        });
+                                    }
+                                    if (data.validation_report && data.validation_report.errors.length > 0) {
+                                        data.validation_report.errors.forEach(err => {
+                                            logToTerminal(`[Validation Error] ${err}`, "error");
+                                        });
+                                    }
+                                    ingestParsedRows(data.rows);
+                                } else {
+                                    logToTerminal(`[Import] Python validation failed: ${data.message}`, "error");
+                                    alert(`❌ Python Validation Failed: ${data.message}`);
+                                }
+                            })
+                            .catch(err => {
+                                logToTerminal(`[Import] Backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
+                                runFallbackCsvParse(file, isExcel);
+                            });
+                    } catch (err) {
+                        logToTerminal(`[Import] Error preparing backend upload: ${err.message}. Falling back to client-side parsing.`, "warn");
+                        runFallbackCsvParse(file, isExcel);
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                runFallbackCsvParse(file, isExcel);
+            }
+            event.target.value = "";
+        }
+
+        function runFallbackCsvParse(file, isExcel) {
+            const reader = new FileReader();
             reader.onload = function (e) {
                 let data = e.target.result;
                 let workbook;
@@ -1315,257 +1376,7 @@
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-
-                if (rows.length < 2) {
-                    logToTerminal("[Import] Failed: Incompatible empty or corrupted file template.", "error");
-                    return;
-                }
-
-                const headers = rows[0].map(h => String(h).replace(/["\r]/g, "").trim().toLowerCase());
-
-                // Helper to find column index by multiple fuzzy keywords
-                function findIndex(keywords) {
-                    for (let kw of keywords) {
-                        const idx = headers.findIndex(h => {
-                            if (kw.length <= 3) {
-                                // Short keywords like "ad", "s1", "mac", "sn" require matching as a whole word
-                                const words = h.split(/[^a-z0-9]+/);
-                                return words.includes(kw);
-                            }
-                            return h.includes(kw);
-                        });
-                        if (idx !== -1) return idx;
-                    }
-                    return -1;
-                }
-
-                const deviceNameIdx = findIndex(["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]);
-                const serialIdx = findIndex(["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"]);
-                const macIdx = findIndex(["macaddress", "mac", "physical", "ethernet", "hardware"]);
-                const manufacturerIdx = findIndex(["manufacturer", "make", "brand", "vendor"]);
-
-                const conditionIdx = findIndex(["condition", "status", "state"]);
-                const userIdx = findIndex(["userassigned", "user", "owner", "assigned"]);
-                const lastLoginIdx = findIndex(["lastlogin", "login", "active", "date", "time"]);
-                const locationIdx = findIndex(["location", "office", "site", "city"]);
-                const locationGroupIdx = findIndex(["locationgroup", "group", "region"]);
-
-                // Fuzzy match columns for the core compliance controls
-                const adColIdx = findIndex(["active directory", "ad", "active_directory", "domain", "enrollment"]);
-                const bitlockerColIdx = findIndex(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
-                const zscalerColIdx = findIndex(["zscaler", "z-scaler", "zscaler client connector", "vpn"]);
-                const nessusColIdx = findIndex(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
-                const sentinelOneColIdx = findIndex(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
-                const sccmColIdx = findIndex(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
-
-                // Fuzzy match column for pre-calculated score if it exists in the imported sheet
-                const scoreColIdx = findIndex(["score", "compliance score", "compliance_score", "risk score", "risk_score", "device score", "device_score"]);
-
-                // Map the spreadsheet headers dynamically in original order
-                activeTableHeaders = rows[0].map(h => String(h).trim());
-                activeTableKeys = headers.map((header, idx) => {
-                    if (idx === deviceNameIdx) return "canonical_name";
-                    if (idx === serialIdx) return "serial";
-                    if (idx === macIdx) return "mac";
-                    if (idx === manufacturerIdx) return "manufacturer";
-                    if (idx === conditionIdx) return "condition";
-                    if (idx === userIdx) return "user_assigned";
-                    if (idx === lastLoginIdx) return "last_login";
-                    if (idx === locationIdx) return "location";
-                    if (idx === locationGroupIdx) return "location_group";
-                    if (idx === scoreColIdx) return "score";
-                    if (idx === adColIdx) return "ad";
-                    if (idx === bitlockerColIdx) return "bitlocker";
-                    if (idx === zscalerColIdx) return "zscaler";
-                    if (idx === nessusColIdx) return "nessus";
-                    if (idx === sentinelOneColIdx) return "sentinelone";
-                    if (idx === sccmColIdx) return "sccm";
-                    return `custom:${rows[0][idx].trim()}`;
-                });
-
-                let newItems = 0;
-                let mergedItems = 0;
-
-                for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    if (!row || row.length === 0) continue;
-
-                    // Extract values with flexible indexes & robust fallbacks
-                    let name = "";
-                    if (deviceNameIdx !== -1 && row[deviceNameIdx] !== undefined && String(row[deviceNameIdx]).trim()) {
-                        name = String(row[deviceNameIdx]).trim();
-                    } else if (row[0] !== undefined && String(row[0]).trim()) {
-                        name = String(row[0]).trim();
-                    } else {
-                        name = `Device-${i}`;
-                    }
-
-                    let serial = "";
-                    if (serialIdx !== -1 && row[serialIdx] !== undefined && String(row[serialIdx]).trim()) {
-                        serial = String(row[serialIdx]).trim();
-                    } else if (row[1] !== undefined && String(row[1]).trim()) {
-                        serial = String(row[1]).trim();
-                    } else {
-                        serial = `SN-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-                    }
-
-                    let mac = "";
-                    if (macIdx !== -1 && row[macIdx] !== undefined && String(row[macIdx]).trim()) {
-                        mac = String(row[macIdx]).trim();
-                    } else if (row[2] !== undefined && String(row[2]).trim()) {
-                        mac = String(row[2]).trim();
-                    } else {
-                        mac = `00:1A:2B:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
-                    }
-
-                    let manufacturer = "";
-                    if (manufacturerIdx !== -1 && row[manufacturerIdx] !== undefined && String(row[manufacturerIdx]).trim()) {
-                        manufacturer = String(row[manufacturerIdx]).trim();
-                    } else if (row[3] !== undefined && String(row[3]).trim()) {
-                        manufacturer = String(row[3]).trim();
-                    } else {
-                        manufacturer = "Generic Manufacturer";
-                    }
-
-                    let condition = (conditionIdx !== -1 && row[conditionIdx] !== undefined) ? String(row[conditionIdx]).trim() : "IN_USE";
-                    const normCond = condition.toUpperCase().replace(/[\s-]+/g, "_").replace(/[^A-Z0-9_]/g, "");
-                    if (normCond === "IN_USE" || normCond === "USE" || normCond === "ACTIVE") {
-                        condition = "IN_USE";
-                    } else if (normCond === "IN_REPAIR" || normCond === "REPAIR") {
-                        condition = "IN_REPAIR";
-                    } else if (normCond === "IN_STORE" || normCond === "STORE") {
-                        condition = "IN_STORE";
-                    } else if (normCond === "EXPIRED") {
-                        condition = "EXPIRED";
-                    } else if (normCond === "DISPOSED" || normCond === "DECOMMISSIONED" || normCond === "RETIRED") {
-                        condition = "DISPOSED";
-                    } else if (normCond === "DONATED_UNDER_CSR" || normCond === "DONATED" || normCond === "CSR") {
-                        condition = "DONATED_UNDER_CSR";
-                    } else if (normCond === "LOANABLE_RESERVED" || normCond === "LOANABLE") {
-                        condition = "LOANABLE_RESERVED";
-                    } else if (normCond === "NOT_TRACEABLE" || normCond === "NOTTRACEABLE" || normCond === "UNTRACEABLE") {
-                        condition = "NOT_TRACEABLE";
-                    } else if (normCond === "RESERVED") {
-                        condition = "RESERVED";
-                    } else if (normCond) {
-                        condition = normCond;
-                    } else {
-                        condition = "IN_USE";
-                    }
-                    const user = (userIdx !== -1 && row[userIdx] !== undefined) ? String(row[userIdx]).trim() : "unassigned";
-                    const lastLogin = (lastLoginIdx !== -1 && row[lastLoginIdx] !== undefined) ? String(row[lastLoginIdx]).trim() : "2026-05-27 09:00";
-                    const location = (locationIdx !== -1 && row[locationIdx] !== undefined) ? String(row[locationIdx]).trim() : "Remote";
-                    const locationGroup = (locationGroupIdx !== -1 && row[locationGroupIdx] !== undefined) ? String(row[locationGroupIdx]).trim() : "Non-Sift";
-
-                    // Check control status based on cell values
-                    const checkControlVal = (colIdx, colName, fallbackCompliant) => {
-                        if (colIdx !== -1 && row[colIdx] !== undefined) {
-                            const raw = String(row[colIdx]).trim();
-                            const val = raw.toLowerCase();
-                            if (val === "" || val === "missing" || val === "no" || val === "false" || val === "0" || val === "none" || val === "inactive" || val === "disabled" || val === "fail" || val === "failed" || val === "non_compliant" || val === "non-compliant" || val === "offline" || val === "critical") {
-                                return { installed: raw || "MISSING", status: "NON_COMPLIANT" };
-                            }
-                            return { installed: raw || "INSTALLED", status: "COMPLIANT" };
-                        }
-                        return fallbackCompliant ? { installed: "INSTALLED", status: "COMPLIANT" } : { installed: "MISSING", status: "NON_COMPLIANT" };
-                    };
-
-                    const software = [
-                        { name: "Active Directory (AD) Enrollment", key: "ad", required: "REQUIRED", ...checkControlVal(adColIdx, "Active Directory (AD) Enrollment", true) },
-                        { name: "BitLocker Drive Encryption", key: "bitlocker", required: "REQUIRED", ...checkControlVal(bitlockerColIdx, "BitLocker Drive Encryption", true) },
-                        { name: "Zscaler Client Connector", key: "zscaler", required: "REQUIRED", ...checkControlVal(zscalerColIdx, "Zscaler Client Connector", true) },
-                        { name: "Nessus Vulnerability Agent", key: "nessus", required: "REQUIRED", ...checkControlVal(nessusColIdx, "Nessus Vulnerability Agent", true) },
-                        { name: "SentinelOne Endpoint Protection", key: "sentinelone", required: "REQUIRED", ...checkControlVal(sentinelOneColIdx, "SentinelOne Endpoint Protection", true) },
-                        { name: "SCCM Management Agent", key: "sccm", required: "REQUIRED", ...checkControlVal(sccmColIdx, "SCCM Management Agent", true) }
-                    ];
-
-                    let finalScore = 100.00;
-                    const hasNonCompliant = software.some(sw => {
-                        const isRequired = enforcedPolicies[sw.name] !== false;
-                        return isRequired && sw.status === "NON_COMPLIANT";
-                    });
-                    if (hasNonCompliant) {
-                        finalScore = 0.00;
-                    } else if (scoreColIdx !== -1 && row[scoreColIdx] !== undefined) {
-                        const parsed = parseFloat(row[scoreColIdx]);
-                        if (!isNaN(parsed)) finalScore = parseFloat(parsed.toFixed(2));
-                    }
-
-                    if (condition !== "IN_USE") {
-                        finalScore = 0.00;
-                    }
-
-                    let level = (finalScore === 100.00) ? "COMPLIANT" : "NON_COMPLIANT";
-
-                    if (!name || !serial) continue;
-
-                    // Dynamically capture any other custom columns as custom properties
-                    const customProperties = {};
-                    const standardKeys = [
-                        deviceNameIdx, serialIdx, macIdx, manufacturerIdx,
-                        conditionIdx, userIdx, lastLoginIdx, locationIdx, locationGroupIdx
-                    ];
-
-                    headers.forEach((header, idx) => {
-                        if (!standardKeys.includes(idx) && row[idx] !== undefined && String(row[idx]).trim() !== "") {
-                            const displayHeader = String(rows[0][idx]).trim();
-                            customProperties[displayHeader] = String(row[idx]).trim();
-                        }
-                    });
-
-                    const normName = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    let existing = fleetDataset.find(dev => dev.serial === serial || String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase() === normName);
-
-                    if (existing) {
-                        existing.score = finalScore;
-                        existing.level = level;
-                        existing.condition = condition;
-                        existing.user_assigned = user;
-                        existing.last_login = lastLogin;
-                        existing.location = location;
-                        existing.location_group = locationGroup;
-                        existing.software = software;
-
-                        // Merge new custom properties
-                        if (!existing.custom_properties) existing.custom_properties = {};
-                        Object.assign(existing.custom_properties, customProperties);
-
-                        mergedItems++;
-                    } else {
-                        fleetDataset.push({
-                            id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                            canonical_name: name,
-                            serial: serial,
-                            mac: mac,
-                            manufacturer: manufacturer,
-                            os: "Windows 10 Enterprise",
-                            os_family: "Windows",
-                            score: finalScore,
-                            level: level,
-                            condition: condition,
-                            user_assigned: user,
-                            last_login: lastLogin,
-                            location: location,
-                            location_group: locationGroup,
-                            is_isolated: false,
-                            software: software,
-                            custom_properties: customProperties
-                        });
-                        newItems++;
-                    }
-                }
-
-                updateFleetWideMetrics();
-                handleFleetQueryChange();
-
-                if (newItems === 0 && mergedItems === 0) {
-                    logToTerminal(`[Import] Ingestion failed: No valid assets found in your spreadsheet.`, "error");
-                    alert("Import failed: No valid device data found in the spreadsheet. Please verify headers and device entries.");
-                } else {
-                    const successMsg = `Success! Ingested ${newItems} new assets and updated/merged ${mergedItems} entries successfully.`;
-                    logToTerminal(`[Import] ${successMsg}`, "info");
-                    alert(successMsg);
-                }
+                ingestParsedRows(rows);
             };
 
             if (isExcel) {
@@ -1616,7 +1427,7 @@
 
             // Update all views, metrics, and render states
             renderReconcilerQueue();
-            renderReconTableBody();
+            switchReconTab(currentReconTab);
             updateFleetWideMetrics();
             handleFleetQueryChange();
 
@@ -3972,15 +3783,121 @@
         };
 
         let currentReconTab = "gaps";
-        let reconCurrentPage = 1;
-        const reconPageSize = 10;
-        mergedSoftwareAgents = new Set();
+
+        function matchSoftwareKey(header, swKey) {
+            if (!header || !swKey) return false;
+            const h = header.toLowerCase().trim();
+            const k = swKey.toLowerCase().trim();
+
+            if (k === "ad") {
+                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("ad");
+            }
+
+            if (k === "bitlocker") {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("bitlocker");
+            }
+
+            if (k === "zscaler") {
+                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("vpn")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("zscaler");
+            }
+
+            if (k === "nessus") {
+                if (h.includes("nessus") || h.includes("tenable") || h.includes("vulnerability agent") || h.includes("nessus agent") || h.includes("scanner")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("nessus");
+            }
+
+            if (k === "sentinelone") {
+                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sentinelone") || words.includes("s1");
+            }
+
+            if (k === "sccm") {
+                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sccm") || words.includes("mecm");
+            }
+
+            if (k.length <= 3) {
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes(k);
+            }
+            return h.includes(k);
+        }
+
+        function getSheetSoftwareKey(sheet) {
+            if (!sheet || !sheet.filename) return null;
+            const fn = sheet.filename.toLowerCase();
+            const words = fn.split(/[^a-z0-9]+/);
+
+            // Check filename matches first
+            if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
+                return "sentinelone";
+            }
+            if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
+                return "bitlocker";
+            }
+            if (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
+                return "zscaler";
+            }
+            if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
+                return "nessus";
+            }
+            if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
+                return "sccm";
+            }
+
+            // "ad" is too short for simple includes, use word list
+            if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
+                if (sheet.role !== "primary") {
+                    return "ad";
+                }
+            }
+
+            // If filename doesn't match any key, fall back to matching headers
+            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
+            for (const k of swKeys) {
+                if (k === "ad" && sheet.role === "primary") continue;
+                if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                    return k;
+                }
+            }
+
+            return null; // unknown classification
+        }
+
+        function isSheetUploadedForSoftware(swKey) {
+            if (!swKey) return false;
+            const k = swKey.toLowerCase();
+            return reconcilerSheets.some(sheet => {
+                return getSheetSoftwareKey(sheet) === k;
+            });
+        }
 
         function registerMergedSoftwareAgents() {
             reconcilerSheets.forEach(sheet => {
-                const k = getSheetSoftwareKey(sheet);
-                if (k) {
-                    mergedSoftwareAgents.add(k);
+                const key = getSheetSoftwareKey(sheet);
+                if (key) {
+                    mergedSoftwareAgents.add(key);
                 }
             });
         }
@@ -4032,110 +3949,191 @@
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
+
             Array.from(files).forEach(file => {
                 logToTerminal(`[Reconciler] Upload request received for source file: "${file.name}"`);
 
-                const reader = new FileReader();
                 const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
 
-                reader.onload = function (e) {
-                    try {
-                        let data = e.target.result;
-                        let rows;
-
-                        if (!isExcel) {
-                            // CSV file logic - first attempt native parse, then fallback to SheetJS
-                            try {
-                                rows = parseCSVNative(data);
-                                logToTerminal(`[Reconciler] Native CSV parser successfully processed "${file.name}"`, "info");
-                            } catch (csvErr) {
-                                logToTerminal(`[Reconciler] Native CSV parser failed for "${file.name}": ${csvErr.message}. Trying SheetJS...`, "warn");
-                                if (typeof XLSX !== "undefined") {
-                                    let workbook = XLSX.read(data, { type: "string" });
-                                    const sheetName = workbook.SheetNames[0];
-                                    const worksheet = workbook.Sheets[sheetName];
-                                    rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                                } else {
-                                    throw new Error("SheetJS is not loaded and native CSV parse failed.");
-                                }
+                if (usePython) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const arrayBuffer = e.target.result;
+                            const bytes = new Uint8Array(arrayBuffer);
+                            let binary = "";
+                            for (let i = 0; i < bytes.byteLength; i++) {
+                                binary += String.fromCharCode(bytes[i]);
                             }
-                        } else {
-                            // Excel files - require SheetJS (XLSX)
-                            if (typeof XLSX === "undefined") {
-                                const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
-                                logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${cdnError}`, "error");
-                                alert(` Excel Ingestion Failed:\n\n${cdnError}`);
-                                return;
-                            }
+                            const base64 = btoa(binary);
 
-                            const bytes = new Uint8Array(data);
-                            let workbook = XLSX.read(bytes, { type: "array" });
-                            const sheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[sheetName];
-                            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                            logToTerminal(`[Reconciler] Uploading "${file.name}" to Python backend for validation...`, "info");
+
+                            fetch('/api/validate-sheet', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ filename: file.name, content: base64 })
+                            })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        logToTerminal(`[Reconciler] Python validation completed for "${file.name}"`, "info");
+                                        if (data.validation_report && data.validation_report.warnings.length > 0) {
+                                            data.validation_report.warnings.forEach(warn => {
+                                                logToTerminal(`[Reconciler Validation Warning] ${warn}`, "warn");
+                                            });
+                                        }
+                                        if (data.validation_report && data.validation_report.errors.length > 0) {
+                                            data.validation_report.errors.forEach(err => {
+                                                logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
+                                            });
+                                        }
+
+                                        const headers = data.headers;
+                                        const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+                                        let keyIdx = -1;
+                                        const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+                                        for (let kw of keyKeywords) {
+                                            const idx = lowerHeaders.findIndex(h => {
+                                                if (kw.length <= 3) {
+                                                    const words = h.split(/[^a-z0-9]+/);
+                                                    return words.includes(kw);
+                                                }
+                                                return h.includes(kw);
+                                            });
+                                            if (idx !== -1) {
+                                                keyIdx = idx;
+                                                break;
+                                            }
+                                        }
+                                        if (keyIdx === -1) keyIdx = 0;
+
+                                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+                                        const sheetObj = {
+                                            id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                                            filename: data.filename,
+                                            rows: data.rows.slice(1),
+                                            headers: data.headers,
+                                            keyIdx: keyIdx,
+                                            role: role
+                                        };
+                                        reconcilerSheets.push(sheetObj);
+                                        logToTerminal(`[Reconciler] Loaded ${data.rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
+                                        renderReconcilerQueue();
+                                    } else {
+                                        logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
+                                        alert(`❌ Python Validation Failed: ${data.message}`);
+                                    }
+                                })
+                                .catch(err => {
+                                    logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
+                                    runFallbackReconcilerParse(file, isExcel);
+                                });
+                        } catch (err) {
+                            logToTerminal(`[Reconciler] Error preparing backend upload: ${err.message}. Falling back to client-side parsing.`, "warn");
+                            runFallbackReconcilerParse(file, isExcel);
                         }
-
-                        if (!rows || rows.length < 2) {
-                            logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
-                            alert(` Ingestion Failed: "${file.name}" has no data or has too few rows.`);
-                            return;
-                        }
-
-                        const headers = rows[0].map(h => String(h).trim());
-                        const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                        // Auto-detect the key column (Device Name / Hostname)
-                        let keyIdx = -1;
-                        const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-
-                        for (let kw of keyKeywords) {
-                            const idx = lowerHeaders.findIndex(h => {
-                                if (kw.length <= 3) {
-                                    const words = h.split(/[^a-z0-9]+/);
-                                    return words.includes(kw);
-                                }
-                                return h.includes(kw);
-                            });
-                            if (idx !== -1) {
-                                keyIdx = idx;
-                                break;
-                            }
-                        }
-
-                        // Fallback to first column if not auto-detected
-                        if (keyIdx === -1) keyIdx = 0;
-
-                        // Default Role classification: First uploaded sheet is primary, subsequent sheets are secondary
-                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
-
-                        const sheetObj = {
-                            id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
-                            filename: file.name,
-                            rows: rows.slice(1),
-                            headers: headers,
-                            keyIdx: keyIdx,
-                            role: role
-                        };
-
-                        reconcilerSheets.push(sheetObj);
-
-                        logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
-
-                        renderReconcilerQueue();
-
-                    } catch (err) {
-                        logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
-                        alert(` File Import Error: ${err.message}`);
-                    }
-                };
-
-                if (isExcel) {
+                    };
                     reader.readAsArrayBuffer(file);
                 } else {
-                    reader.readAsText(file);
+                    runFallbackReconcilerParse(file, isExcel);
                 }
             });
             event.target.value = "";
+        }
+
+        function runFallbackReconcilerParse(file, isExcel) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    let data = e.target.result;
+                    let rows;
+
+                    if (!isExcel) {
+                        try {
+                            rows = parseCSVNative(data);
+                            logToTerminal(`[Reconciler] Native CSV parser successfully processed "${file.name}"`, "info");
+                        } catch (csvErr) {
+                            logToTerminal(`[Reconciler] Native CSV parser failed for "${file.name}": ${csvErr.message}. Trying SheetJS...`, "warn");
+                            if (typeof XLSX !== "undefined") {
+                                let workbook = XLSX.read(data, { type: "string" });
+                                const sheetName = workbook.SheetNames[0];
+                                const worksheet = workbook.Sheets[sheetName];
+                                rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                            } else {
+                                throw new Error("SheetJS is not loaded and native CSV parse failed.");
+                            }
+                        }
+                    } else {
+                        if (typeof XLSX === "undefined") {
+                            const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
+                            logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${cdnError}`, "error");
+                            alert(`❌ Excel Ingestion Failed:\n\n${cdnError}`);
+                            return;
+                        }
+
+                        const bytes = new Uint8Array(data);
+                        let workbook = XLSX.read(bytes, { type: "array" });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                    }
+
+                    if (!rows || rows.length < 2) {
+                        logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
+                        alert(`❌ Ingestion Failed: "${file.name}" has no data or has too few rows.`);
+                        return;
+                    }
+
+                    const headers = rows[0].map(h => String(h).trim());
+                    const lowerHeaders = headers.map(h => h.toLowerCase());
+
+                    let keyIdx = -1;
+                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+
+                    for (let kw of keyKeywords) {
+                        const idx = lowerHeaders.findIndex(h => {
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
+                        if (idx !== -1) {
+                            keyIdx = idx;
+                            break;
+                        }
+                    }
+
+                    if (keyIdx === -1) keyIdx = 0;
+
+                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+
+                    const sheetObj = {
+                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                        filename: file.name,
+                        rows: rows.slice(1),
+                        headers: headers,
+                        keyIdx: keyIdx,
+                        role: role
+                    };
+
+                    reconcilerSheets.push(sheetObj);
+                    logToTerminal(`[Reconciler] Loaded ${rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
+                    renderReconcilerQueue();
+
+                } catch (err) {
+                    logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
+                    alert(`❌ File Import Error: ${err.message}`);
+                }
+            };
+
+            if (isExcel) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
         }
 
         function renderReconcilerQueue() {
@@ -4158,7 +4156,6 @@
             reconcilerSheets.forEach(sheet => {
                 const tr = document.createElement("tr");
 
-                // Role classification select
                 let roleSelectHtml = `
                     <select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetRole('${sheet.id}', this.value)">
                         <option value="primary" ${sheet.role === 'primary' ? 'selected' : ''}>Corporate Directory (Primary)</option>
@@ -4166,7 +4163,6 @@
                     </select>
                 `;
 
-                // Key column select dropdown
                 let keySelectHtml = `<select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetKey('${sheet.id}', this.value)">`;
                 sheet.headers.forEach((h, idx) => {
                     const selected = idx === sheet.keyIdx ? "selected" : "";
@@ -4174,7 +4170,6 @@
                 });
                 keySelectHtml += `</select>`;
 
-                // All columns listed
                 const allColsHtml = sheet.headers.map((c, idx) => {
                     const isKey = idx === sheet.keyIdx;
                     const badgeClass = isKey ? "badge" : "badge group-sift";
@@ -4195,7 +4190,6 @@
                 tbody.appendChild(tr);
             });
 
-            // Enforce role compliance
             const hasPrimary = reconcilerSheets.some(s => s.role === "primary");
             const hasSecondary = reconcilerSheets.some(s => s.role === "secondary");
 
@@ -4257,43 +4251,50 @@
                 return;
             }
 
-            logToTerminal(`[Reconciler] Executing asset alignment across ${reconcilerSheets.length} spreadsheet inventories...`);
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
+            if (usePython) {
+                logToTerminal(`[Reconciler] Offloading deep asset reconciliation alignment to Python backend...`);
+                fetch('/api/reconcile-sheets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sheets: reconcilerSheets })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            reconciliationResults = data.results;
+                            logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
+                            renderReconciliationUI();
+                        } else {
+                            logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
+                            alert(`❌ Reconciliation Failed: ${data.message}`);
+                        }
+                    })
+                    .catch(err => {
+                        logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to local alignment.`, "warn");
+                        runLocalReconciliation();
+                    });
+            } else {
+                runLocalReconciliation();
+            }
+        }
+
+        function runLocalReconciliation() {
+            logToTerminal(`[Reconciler] Executing local asset alignment...`);
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
             const primaryKeyIdx = primarySheet.keyIdx;
 
-            const primaryHeaders = primarySheet.headers.map(h => String(h || "").trim().toLowerCase());
-            let assetTagIdx = primaryHeaders.indexOf("asset tag");
-            let orgSerialIdx = primaryHeaders.indexOf("org serial number");
-
-            // If not found, fall back to the selected primaryKeyIdx
-            if (assetTagIdx === -1) assetTagIdx = primaryKeyIdx;
-            if (orgSerialIdx === -1) orgSerialIdx = primaryKeyIdx;
-
             const primaryMap = new Map();
-            const assetTagMap = new Map();
-            const orgSerialMap = new Map();
-
             primarySheet.rows.forEach(row => {
                 const nameVal = String(row[primaryKeyIdx] || "").trim();
                 if (!nameVal) return;
                 const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                const primaryRecord = {
+                primaryMap.set(normName, {
                     rawName: nameVal,
                     row: row
-                };
-                primaryMap.set(normName, primaryRecord);
-
-                const assetTagVal = String(row[assetTagIdx] || "").trim();
-                if (assetTagVal) {
-                    const normAssetTag = assetTagVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    assetTagMap.set(normAssetTag, primaryRecord);
-                }
-
-                const orgSerialVal = String(row[orgSerialIdx] || "").trim();
-                if (orgSerialVal) {
-                    const normOrgSerial = orgSerialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    orgSerialMap.set(normOrgSerial, primaryRecord);
-                }
+                });
             });
 
             const secondaryMaps = secondarySheets.map(sheet => {
@@ -4332,45 +4333,10 @@
                     }
                 });
 
-                const assetTagVal = String(primaryData.row[assetTagIdx] || "").trim();
-                const normAssetTag = assetTagVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-
-                const orgSerialVal = String(primaryData.row[orgSerialIdx] || "").trim();
-                const normOrgSerial = orgSerialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-
                 secondaryMaps.forEach(sec => {
-                    const isZscaler = sec.filename.toLowerCase().includes("zscaler");
-                    let isMatch = false;
-                    let rowData = null;
-
-                    const normNameVal = normName; // selected key in corporate directory
-
-                    if (isZscaler) {
-                        if (normOrgSerial && sec.map.has(normOrgSerial)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normOrgSerial);
-                        } else if (normAssetTag && sec.map.has(normAssetTag)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normAssetTag);
-                        } else if (normNameVal && sec.map.has(normNameVal)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normNameVal);
-                        }
-                    } else {
-                        if (normAssetTag && sec.map.has(normAssetTag)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normAssetTag);
-                        } else if (normNameVal && sec.map.has(normNameVal)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normNameVal);
-                        } else if (normOrgSerial && sec.map.has(normOrgSerial)) {
-                            isMatch = true;
-                            rowData = sec.map.get(normOrgSerial);
-                        }
-                    }
-
-                    if (isMatch) {
+                    if (sec.map.has(normName)) {
                         presentInSheets.push(sec.filename);
+                        const rowData = sec.map.get(normName);
 
                         sec.headers.forEach((h, idx) => {
                             if (idx !== sec.keyIdx) {
@@ -4414,16 +4380,8 @@
 
             const roguesMap = new Map();
             secondaryMaps.forEach(sec => {
-                const isZscaler = sec.filename.toLowerCase().includes("zscaler");
                 sec.map.forEach((row, normName) => {
-                    let isRogue = false;
-                    if (isZscaler) {
-                        isRogue = !orgSerialMap.has(normName) && !assetTagMap.has(normName) && !primaryMap.has(normName);
-                    } else {
-                        isRogue = !assetTagMap.has(normName) && !primaryMap.has(normName) && !orgSerialMap.has(normName);
-                    }
-
-                    if (isRogue) {
+                    if (!primaryMap.has(normName)) {
                         if (!roguesMap.has(normName)) {
                             roguesMap.set(normName, {
                                 name: String(row[sec.keyIdx] || "").trim(),
@@ -4453,8 +4411,18 @@
             });
 
             reconciliationResults = { matches, gaps, rogues };
+            renderReconciliationUI();
+        }
 
-            const totalPrimary = primaryMap.size;
+        function renderReconciliationUI() {
+            const matches = reconciliationResults.matches;
+            const gaps = reconciliationResults.gaps;
+            const rogues = reconciliationResults.rogues;
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
+
+            const totalPrimary = primaryMapSizeFallback();
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
             document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
@@ -4478,66 +4446,51 @@
 
             document.getElementById("reconciler-results-wrapper").style.display = "block";
 
-            logToTerminal(`[Reconciler] Alignment complete. Aligned Matches: ${matches.length}, Gaps: ${gaps.length}, Rogue Assets: ${rogues.length}. Match Rate: ${matchRate.toFixed(2)}%`, "info");
-
             const defaultTab = gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues");
-            reconCurrentPage = 1;
             switchReconTab(defaultTab);
+        }
+
+        function primaryMapSizeFallback() {
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return 0;
+            const keyIdx = primarySheet.keyIdx;
+            const nameSet = new Set();
+            primarySheet.rows.forEach(r => {
+                const val = String(r[keyIdx] || "").trim();
+                if (val) nameSet.add(val.replace(/[^a-zA-Z0-9]/g, "").toLowerCase());
+            });
+            return nameSet.size;
         }
 
         function switchReconTab(tabId) {
             currentReconTab = tabId;
 
             document.querySelectorAll("#section-reconciler .tab-btn").forEach(btn => btn.classList.remove("active"));
-            const tabBtn = document.getElementById(`btn-recon-tab-${tabId}`);
-            if (tabBtn) tabBtn.classList.add("active");
+            document.getElementById(`btn-recon-tab-${tabId}`).classList.add("active");
 
             const head = document.getElementById("recon-table-head");
-            if (!head) return;
+            const body = document.getElementById("recon-table-body");
+            if (!head || !body) return;
 
             head.innerHTML = "";
+            body.innerHTML = "";
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
+
+            const primaryHeaders = primarySheet.headers;
+            let rowsToRender = reconciliationResults[tabId];
 
             if (tabId === "gaps") {
                 const headersToRender = ["Device ID", "Hostname", "Missing Sheet Telemetries", "Corporate Detail (Primary)"];
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
-            } else if (tabId === "rogues") {
-                const headersToRender = ["Device ID", "Hostname", "Detected Telemetry Sources", "Agent Properties Details", "Remediation Action"];
-                head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
-            } else if (tabId === "matches") {
-                const headersToRender = ["Device ID", "Hostname", "Alignment", "Merged Excel Sheet Information / Row Details"];
-                head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
-            }
 
-            reconCurrentPage = 1;
-            renderReconTableBody();
-        }
-
-        function renderReconTableBody() {
-            const body = document.getElementById("recon-table-body");
-            if (!body) return;
-            body.innerHTML = "";
-
-            const rowsToRender = reconciliationResults[currentReconTab] || [];
-            const total = rowsToRender.length;
-            const startIdx = (reconCurrentPage - 1) * reconPageSize;
-            const endIdx = Math.min(startIdx + reconPageSize, total);
-
-            const displaySlice = rowsToRender.slice(startIdx, endIdx);
-            const useFragment = typeof document.createDocumentFragment === "function";
-            const fragment = useFragment ? document.createDocumentFragment() : body;
-
-            if (displaySlice.length === 0) {
-                const tr = document.createElement("tr");
-                const colSpan = currentReconTab === "rogues" ? 5 : 4;
-                tr.innerHTML = `<td colspan="${colSpan}" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No entries found.</td>`;
-                fragment.appendChild(tr);
-            } else {
-                displaySlice.forEach(item => {
-                    const tr = document.createElement("tr");
-                    if (currentReconTab === "gaps") {
+                if (rowsToRender.length === 0) {
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 Stellar Alignment! Zero gaps detected.</td></tr>`;
+                } else {
+                    rowsToRender.forEach(item => {
+                        const tr = document.createElement("tr");
                         const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing in: ${escapeHTML(s)}</span>`).join("");
-                        const primarySheet = reconcilerSheets.find(s => s.role === "primary");
-                        const primaryHeaders = primarySheet ? primarySheet.headers : [];
                         const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
 
                         tr.innerHTML = `
@@ -4546,33 +4499,44 @@
                             <td style="vertical-align: middle;">${missingBadges}</td>
                             <td style="vertical-align: middle; font-size: 0.78rem; color: var(--text-secondary);">${primaryDetails}</td>
                         `;
-                    } else if (currentReconTab === "rogues") {
+                        body.appendChild(tr);
+                    });
+                }
+            } else if (tabId === "rogues") {
+                const headersToRender = ["Device ID", "Hostname", "Detected Telemetry Sources", "Agent Properties Details"];
+                head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
+
+                if (rowsToRender.length === 0) {
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No unmanaged rogue assets identified.</td></tr>`;
+                } else {
+                    rowsToRender.forEach(item => {
+                        const tr = document.createElement("tr");
                         const detectedBadges = item.sheets.map(s => `<span class="badge risk-medium" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Source: ${escapeHTML(s.filename)}</span>`).join("");
+
                         const detailsHtml = item.sheets.map(s => {
                             const details = s.headers.slice(0, 4).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(s.row[idx] || "-")}`).join(" | ");
                             return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
                         }).join("");
 
-                        const isIsolated = item.is_isolated;
-                        const isolateBtnHtml = isIsolated
-                            ? `<button class="btn" style="background:var(--border-clean); color:var(--text-muted); border-color:var(--border-clean); font-size:0.7rem; padding:0.35rem 0.65rem; cursor:not-allowed;" disabled>Isolated</button>`
-                            : `<button class="btn" style="background:rgba(220,53,69,0.15); border:1px solid rgba(220,53,69,0.4); color:#ff6b6b; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="isolateRogueAsset('${item.id}')"> Isolate</button>`;
-
-                        const registerBtnHtml = `<button class="btn" style="background:rgba(21,128,61,0.15); border:1px solid rgba(21,128,61,0.4); color:#15803d; font-size:0.7rem; padding:0.35rem 0.65rem; cursor:pointer;" onclick="registerRogueAsset('${item.id}')">Register</button>`;
-
-                        const actionButtons = `<div style="display:flex; gap:0.5rem; justify-content:flex-end;">${isolateBtnHtml}${registerBtnHtml}</div>`;
-
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;">
-                                <strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> 
-                                <span class="badge ${isIsolated ? 'risk-critical' : 'risk-medium'}" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">${isIsolated ? 'CONTAINED' : 'UNMANAGED'}</span>
-                            </td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
                             <td style="vertical-align: middle;">${detectedBadges}</td>
                             <td style="vertical-align: middle;">${detailsHtml}</td>
-                            <td style="vertical-align: middle; text-align: right;">${actionButtons}</td>
                         `;
-                    } else if (currentReconTab === "matches") {
+                        body.appendChild(tr);
+                    });
+                }
+            } else if (tabId === "matches") {
+                const headersToRender = ["Device ID", "Hostname", "Alignment", "Merged Excel Sheet Information / Row Details"];
+                head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
+
+                if (rowsToRender.length === 0) {
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets resolved between directories.</td></tr>`;
+                } else {
+                    rowsToRender.forEach(item => {
+                        const tr = document.createElement("tr");
+
                         const propertiesHtml = item.mergedProperties.map(p => {
                             const sourceLabel = p.source.length > 20 ? p.source.substring(0, 17) + "..." : p.source;
                             return `
@@ -4587,159 +4551,17 @@
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${item.name.toUpperCase()}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
-                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;"> Aligned</td>
+                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">🟢 Aligned</td>
                             <td style="vertical-align: middle; padding: 0.75rem 0;">
                                 <div style="display: flex; flex-wrap: wrap; max-width: 750px;">
                                     ${propertiesHtml}
                                 </div>
                             </td>
                         `;
-                    }
-                    fragment.appendChild(tr);
-                });
-            }
-
-            if (useFragment) {
-                body.appendChild(fragment);
-            }
-
-            // Update pagination displays
-            const pagStart = document.getElementById("recon-pag-start");
-            const pagEnd = document.getElementById("recon-pag-end");
-            const pagTotal = document.getElementById("recon-pag-total");
-
-            if (pagStart) pagStart.innerText = total === 0 ? 0 : (startIdx + 1).toLocaleString();
-            if (pagEnd) pagEnd.innerText = endIdx.toLocaleString();
-            if (pagTotal) pagTotal.innerText = total.toLocaleString();
-
-            const btnPrev = document.getElementById("btn-recon-pag-prev");
-            const btnNext = document.getElementById("btn-recon-pag-next");
-
-            if (btnPrev && btnNext) {
-                btnPrev.disabled = (reconCurrentPage === 1);
-                btnNext.disabled = (endIdx >= total);
-
-                btnPrev.style.opacity = btnPrev.disabled ? 0.4 : 1;
-                btnNext.style.opacity = btnNext.disabled ? 0.4 : 1;
-            }
-        }
-
-        function changeReconPage(direction) {
-            const rowsToRender = reconciliationResults[currentReconTab] || [];
-            const maxPage = Math.ceil(rowsToRender.length / reconPageSize) || 1;
-            reconCurrentPage += direction;
-            if (reconCurrentPage < 1) reconCurrentPage = 1;
-            if (reconCurrentPage > maxPage) reconCurrentPage = maxPage;
-            renderReconTableBody();
-        }
-
-        function matchSoftwareKey(header, swKey) {
-            if (!header || !swKey) return false;
-            const h = header.toLowerCase().trim();
-            const k = swKey.toLowerCase().trim();
-
-            if (k === "ad") {
-                if (h.includes("active directory") || h.includes("active_directory") || h.includes("ad enrollment") || h.includes("ad_enrollment") || h.includes("ad status") || h.includes("ad_status") || h.includes("directory enrollment") || h.includes("directory_enrollment")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("ad") && !words.includes("domain");
-            }
-
-            if (k === "bitlocker") {
-                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("bit_locker") || h.includes("bit-locker") || h.includes("encryption state") || h.includes("encryption_state") || h.includes("encryption status") || h.includes("encryption_status") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption") || h.includes("disk_encryption")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("bitlocker");
-            }
-
-            if (k === "zscaler") {
-                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("z_scaler") || h.includes("z scaler") || h.includes("vpn")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("zscaler");
-            }
-
-            if (k === "nessus") {
-                if (h.includes("nessus") || h.includes("tenable") || h.includes("vulnerability agent") || h.includes("nessus agent") || h.includes("scanner")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("nessus");
-            }
-
-            if (k === "sentinelone") {
-                if (h.includes("sentinel") || h.includes("sentiel") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus") || h.includes("operational state") || h.includes("operational_state") || h.includes("health status") || h.includes("health_status") || h.includes("scan status") || h.includes("scan_status") || h.includes("agent uuid") || h.includes("agent_uuid")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("sentinel") || words.includes("sentiel") || words.includes("sentinelone") || words.includes("s1");
-            }
-
-            if (k === "sccm") {
-                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent")) {
-                    return true;
-                }
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes("sccm") || words.includes("mecm");
-            }
-
-            if (k.length <= 3) {
-                const words = h.split(/[^a-z0-9]+/);
-                return words.includes(k);
-            }
-            return h.includes(k);
-        }
-
-        function getSheetSoftwareKey(sheet) {
-            if (!sheet || !sheet.filename) return null;
-            const fn = sheet.filename.toLowerCase();
-            const words = fn.split(/[^a-z0-9]+/);
-
-            // Check filename matches first
-            if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
-                return "sentinelone";
-            }
-            if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
-                return "bitlocker";
-            }
-            if (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
-                return "zscaler";
-            }
-            if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
-                return "nessus";
-            }
-            if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
-                return "sccm";
-            }
-
-            // "ad" is too short for simple includes, use word list
-            if (words.includes("ad") || fn.includes("adcomputers") || fn.includes("ad computers") || fn.includes("ad_computers") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
-                if (sheet.role !== "primary") {
-                    return "ad";
+                        body.appendChild(tr);
+                    });
                 }
             }
-
-            // If filename doesn't match any key, fall back to matching headers
-            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
-            for (const k of swKeys) {
-                if (k === "ad" && sheet.role === "primary") continue;
-                if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
-                    return k;
-                }
-            }
-
-            return null; // unknown classification
-        }
-
-        function isSheetUploadedForSoftware(swKey) {
-            if (!swKey) return false;
-            const k = swKey.toLowerCase();
-            return reconcilerSheets.some(sheet => {
-                return getSheetSoftwareKey(sheet) === k;
-            });
         }
 
         function mergeDistinctProperties(target, source) {
@@ -4984,13 +4806,6 @@
             return { nameVal, serialVal, macVal };
         }
 
-        /**
-         * Extracts and normalises the physical condition from any reconciliation item.
-         * Scans the primary-sheet row, mergedProperties, and secondary sheets for a
-         * "condition", "status", or "state" column in that order.
-         * Returns the canonical condition string (e.g. "IN_USE", "IN_REPAIR") or
-         * "UNKNOWN" if no condition information is present in the Excel data.
-         */
         function extractConditionFromItem(item) {
             const condKeywords = ["condition", "status", "state"];
 
@@ -5015,7 +4830,13 @@
             if (primarySheet && item.primaryRow) {
                 const pHeaders = primarySheet.headers.map(h => h.toLowerCase().trim());
                 for (const kw of condKeywords) {
-                    const idx = pHeaders.findIndex(h => h === kw || h.includes(kw));
+                    const idx = pHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
                     if (idx !== -1 && item.primaryRow[idx] !== undefined && String(item.primaryRow[idx]).trim()) {
                         const result = normaliseCondition(item.primaryRow[idx]);
                         if (result) return result;
@@ -5039,7 +4860,13 @@
                 for (const s of item.sheets) {
                     const sHeaders = s.headers.map(h => h.toLowerCase().trim());
                     for (const kw of condKeywords) {
-                        const idx = sHeaders.findIndex(h => h === kw || h.includes(kw));
+                        const idx = sHeaders.findIndex(h => {
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
                         if (idx !== -1 && s.row[idx] !== undefined && String(s.row[idx]).trim()) {
                             const result = normaliseCondition(s.row[idx]);
                             if (result) return result;
@@ -5048,7 +4875,7 @@
                 }
             }
 
-            // No condition data in the Excel — default to UNKNOWN for new assets
+            // No condition data in the Excel - default to UNKNOWN for new assets
             return "UNKNOWN";
         }
 
@@ -5108,7 +4935,7 @@
             alert(`Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
 
             recalculateAllScores();
-            renderReconTableBody();
+            switchReconTab(currentReconTab);
         }
 
         function registerRogueAsset(rogueId) {
@@ -5200,7 +5027,7 @@
                 status: "MATCHED"
             });
 
-            // Update counts in the tab header
+            // Update tab counts
             const roguesTabCount = document.getElementById("recon-tab-count-rogues");
             const matchesTabCount = document.getElementById("recon-tab-count-matches");
             if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
@@ -5223,7 +5050,7 @@
                 return;
             }
 
-            const confirmMerge = confirm(`Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
+            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
             if (!confirmMerge) return;
 
             registerMergedSoftwareAgents();
@@ -5462,8 +5289,8 @@
                 const customKey = `custom:${k}`;
                 if (!activeTableKeys.includes(customKey)) {
                     // Extract clean name and source file for header label
-                    const cleanName = k.replace(/^\[.*?\]\s*/, '');
-                    const sourceName = k.match(/^\[(.*?)\]/) ? k.match(/^\[(.*?)\]/)[1] : 'Excel';
+                    const cleanName = k.replace(/^[.*?]s*/, '');
+                    const sourceName = k.match(/^[(.*?)]/) ? k.match(/^[(.*?)]/)[1] : 'Excel';
                     const headerLabel = `${cleanName} (${sourceName})`;
 
                     activeTableHeaders.push(headerLabel);
@@ -5480,89 +5307,38 @@
         }
 
         function exportReconciliationReport() {
-            logToTerminal("[Reconciler] Generating detailed flat CSV export of cross-sheet anomalies report...");
+            logToTerminal("[Reconciler] Generating detailed CSV export of cross-sheet anomalies report...");
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += `"Recon Device ID","Hostname","Audit Status","Details / Properties"\n`;
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
-            if (!primarySheet) {
-                alert("No Primary Corporate Directory sheet loaded. Cannot export reconciliation report.");
-                return;
-            }
+            if (!primarySheet) return;
 
-            const dynamicCols = [];
-            reconcilerSheets.forEach(sheet => {
-                sheet.headers.forEach((h, idx) => {
-                    if (idx !== sheet.keyIdx) {
-                        dynamicCols.push({
-                            filename: sheet.filename,
-                            header: h,
-                            fullName: `[${sheet.filename}] ${h}`
-                        });
-                    }
-                });
-            });
-
-            let csvContent = "\ufeff"; // BOM for Excel UTF-8 compatibility
-            const baseHeaders = ["Recon Device ID", "Hostname", "Audit Status", "Missing In Sheets"];
-            const allHeaders = [...baseHeaders, ...dynamicCols.map(c => c.fullName)];
-            csvContent += allHeaders.map(h => `"${sanitizeCSVCell(h)}"`).join(",") + "\n";
-
-            // 1. Process Gaps
             reconciliationResults.gaps.forEach(item => {
-                const propMap = {};
-                item.mergedProperties.forEach(p => {
-                    propMap[`[${p.source}] ${p.property}`] = p.value;
-                });
-                const lineValues = [item.id, item.name, "COVERAGE_GAP", item.missingInSheets.join("; ")];
-                dynamicCols.forEach(col => {
-                    const val = propMap[col.fullName] !== undefined ? propMap[col.fullName] : "";
-                    lineValues.push(val);
-                });
-                csvContent += lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",") + "\n";
+                const details = item.mergedProperties.map(p => `[${p.source}] ${p.property}:${p.value}`).join(" | ").replace(/"/g, '""');
+                csvContent += `"${item.id}","${item.name}","COVERAGE_GAP","${details} | Missing: ${item.missingInSheets.join('; ')}"\n`;
             });
 
-            // 2. Process Rogues
             reconciliationResults.rogues.forEach(item => {
-                const propMap = {};
-                item.sheets.forEach(s => {
-                    s.headers.forEach((h, idx) => {
-                        if (idx !== s.keyIdx) {
-                            propMap[`[${s.filename}] ${h}`] = String(s.row[idx] || "");
-                        }
-                    });
-                });
-                const lineValues = [item.id, item.name, "ROGUE_UNMANAGED", ""];
-                dynamicCols.forEach(col => {
-                    const val = propMap[col.fullName] !== undefined ? propMap[col.fullName] : "";
-                    lineValues.push(val);
-                });
-                csvContent += lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",") + "\n";
+                const details = item.sheets.map(s => `${s.filename}: [${s.headers.slice(0, 4).map((h, idx) => `${h}:${s.row[idx] || "-"}`).join(', ')}]`).join(" | ").replace(/"/g, '""');
+                csvContent += `"${item.id}","${item.name}","ROGUE_UNMANAGED","${details}"\n`;
             });
 
-            // 3. Process Matches
             reconciliationResults.matches.forEach(item => {
-                const propMap = {};
-                item.mergedProperties.forEach(p => {
-                    propMap[`[${p.source}] ${p.property}`] = p.value;
-                });
-                const lineValues = [item.id, item.name, "ALIGNED_MATCH", ""];
-                dynamicCols.forEach(col => {
-                    const val = propMap[col.fullName] !== undefined ? propMap[col.fullName] : "";
-                    lineValues.push(val);
-                });
-                csvContent += lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",") + "\n";
+                const details = item.mergedProperties.map(p => `[${p.source}] ${p.property}:${p.value}`).join(" | ").replace(/"/g, '""');
+                csvContent += `"${item.id}","${item.name}","ALIGNED_MATCH","${details}"\n`;
             });
 
-            // Create a Blob with UTF-8 character encoding to handle special characters properly
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
+            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", url);
+            link.setAttribute("href", encodedUri);
             link.setAttribute("download", `fleet_reconciliation_report_${Date.now()}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            logToTerminal("[Reconciler] Export successful. Dispatched flat matrix report download stream.", "info");
+            logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
         }
     </script>
 </body>

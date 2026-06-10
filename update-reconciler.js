@@ -36,6 +36,124 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
         let currentReconTab = "gaps";
 
+        function matchSoftwareKey(header, swKey) {
+            if (!header || !swKey) return false;
+            const h = header.toLowerCase().trim();
+            const k = swKey.toLowerCase().trim();
+
+            if (k === "ad") {
+                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("ad");
+            }
+
+            if (k === "bitlocker") {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("bitlocker");
+            }
+
+            if (k === "zscaler") {
+                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("vpn")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("zscaler");
+            }
+
+            if (k === "nessus") {
+                if (h.includes("nessus") || h.includes("tenable") || h.includes("vulnerability agent") || h.includes("nessus agent") || h.includes("scanner")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("nessus");
+            }
+
+            if (k === "sentinelone") {
+                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sentinelone") || words.includes("s1");
+            }
+
+            if (k === "sccm") {
+                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent")) {
+                    return true;
+                }
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes("sccm") || words.includes("mecm");
+            }
+
+            if (k.length <= 3) {
+                const words = h.split(/[^a-z0-9]+/);
+                return words.includes(k);
+            }
+            return h.includes(k);
+        }
+
+        function getSheetSoftwareKey(sheet) {
+            if (!sheet || !sheet.filename) return null;
+            const fn = sheet.filename.toLowerCase();
+            const words = fn.split(/[^a-z0-9]+/);
+            
+            // Check filename matches first
+            if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
+                return "sentinelone";
+            }
+            if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
+                return "bitlocker";
+            }
+            if (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
+                return "zscaler";
+            }
+            if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
+                return "nessus";
+            }
+            if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
+                return "sccm";
+            }
+            
+            // "ad" is too short for simple includes, use word list
+            if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
+                if (sheet.role !== "primary") {
+                    return "ad";
+                }
+            }
+            
+            // If filename doesn't match any key, fall back to matching headers
+            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
+            for (const k of swKeys) {
+                if (k === "ad" && sheet.role === "primary") continue;
+                if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                    return k;
+                }
+            }
+            
+            return null; // unknown classification
+        }
+
+        function isSheetUploadedForSoftware(swKey) {
+            if (!swKey) return false;
+            const k = swKey.toLowerCase();
+            return reconcilerSheets.some(sheet => {
+                return getSheetSoftwareKey(sheet) === k;
+            });
+        }
+
+        function registerMergedSoftwareAgents() {
+            reconcilerSheets.forEach(sheet => {
+                const key = getSheetSoftwareKey(sheet);
+                if (key) {
+                    mergedSoftwareAgents.add(key);
+                }
+            });
+        }
+
         function parseCSVNative(text) {
             const lines = [];
             let row = [""];
@@ -83,110 +201,191 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             const files = event.target.files;
             if (!files || files.length === 0) return;
 
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
+
             Array.from(files).forEach(file => {
                 logToTerminal(\`[Reconciler] Upload request received for source file: "\${file.name}"\`);
                 
-                const reader = new FileReader();
                 const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
 
-                reader.onload = function (e) {
-                    try {
-                        let data = e.target.result;
-                        let rows;
+                if (usePython) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        try {
+                            const arrayBuffer = e.target.result;
+                            const bytes = new Uint8Array(arrayBuffer);
+                            let binary = "";
+                            for (let i = 0; i < bytes.byteLength; i++) {
+                                binary += String.fromCharCode(bytes[i]);
+                            }
+                            const base64 = btoa(binary);
 
-                        if (!isExcel) {
-                            // CSV file logic - first attempt native parse, then fallback to SheetJS
-                            try {
-                                rows = parseCSVNative(data);
-                                logToTerminal(\`[Reconciler] Native CSV parser successfully processed "\${file.name}"\`, "info");
-                            } catch (csvErr) {
-                                logToTerminal(\`[Reconciler] Native CSV parser failed for "\${file.name}": \${csvErr.message}. Trying SheetJS...\`, "warn");
-                                if (typeof XLSX !== "undefined") {
-                                    let workbook = XLSX.read(data, { type: "string" });
-                                    const sheetName = workbook.SheetNames[0];
-                                    const worksheet = workbook.Sheets[sheetName];
-                                    rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                            logToTerminal(\`[Reconciler] Uploading "\${file.name}" to Python backend for validation...\`, "info");
+
+                            fetch('/api/validate-sheet', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ filename: file.name, content: base64 })
+                            })
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    logToTerminal(\`[Reconciler] Python validation completed for "\${file.name}"\`, "info");
+                                    if (data.validation_report && data.validation_report.warnings.length > 0) {
+                                        data.validation_report.warnings.forEach(warn => {
+                                            logToTerminal(\`[Reconciler Validation Warning] \${warn}\`, "warn");
+                                        });
+                                    }
+                                    if (data.validation_report && data.validation_report.errors.length > 0) {
+                                        data.validation_report.errors.forEach(err => {
+                                            logToTerminal(\`[Reconciler Validation Error] \${err}\`, "error");
+                                        });
+                                    }
+
+                                    const headers = data.headers;
+                                    const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+                                    let keyIdx = -1;
+                                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+                                    for (let kw of keyKeywords) {
+                                        const idx = lowerHeaders.findIndex(h => {
+                                            if (kw.length <= 3) {
+                                                const words = h.split(/[^a-z0-9]+/);
+                                                return words.includes(kw);
+                                            }
+                                            return h.includes(kw);
+                                        });
+                                        if (idx !== -1) {
+                                            keyIdx = idx;
+                                            break;
+                                        }
+                                    }
+                                    if (keyIdx === -1) keyIdx = 0;
+
+                                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+                                    const sheetObj = {
+                                        id: \`sheet-\${Math.random().toString(36).substring(2, 8)}\`,
+                                        filename: data.filename,
+                                        rows: data.rows.slice(1),
+                                        headers: data.headers,
+                                        keyIdx: keyIdx,
+                                        role: role
+                                    };
+                                    reconcilerSheets.push(sheetObj);
+                                    logToTerminal(\`[Reconciler] Loaded \${data.rows.length - 1} rows from "\${file.name}". Auto-detected match key: "\${headers[keyIdx]}"\`, "info");
+                                    renderReconcilerQueue();
                                 } else {
-                                    throw new Error("SheetJS is not loaded and native CSV parse failed.");
+                                    logToTerminal(\`[Reconciler] Python validation failed for "\${file.name}": \${data.message}\`, "error");
+                                    alert(\`❌ Python Validation Failed: \${data.message}\`);
                                 }
-                            }
-                        } else {
-                            // Excel files - require SheetJS (XLSX)
-                            if (typeof XLSX === "undefined") {
-                                const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
-                                logToTerminal(\`[Reconciler] Ingestion failed for "\${file.name}": \${cdnError}\`, "error");
-                                alert(\`❌ Excel Ingestion Failed:\\n\\n\${cdnError}\`);
-                                return;
-                            }
-
-                            const bytes = new Uint8Array(data);
-                            let workbook = XLSX.read(bytes, { type: "array" });
-                            const sheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[sheetName];
-                            rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                        }
-
-                        if (!rows || rows.length < 2) {
-                            logToTerminal(\`[Reconciler] Failed: "\${file.name}" contains insufficient rows.\`, "error");
-                            alert(\`❌ Ingestion Failed: "\${file.name}" has no data or has too few rows.\`);
-                            return;
-                        }
-
-                        const headers = rows[0].map(h => String(h).trim());
-                        const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                        // Auto-detect the key column (Device Name / Hostname)
-                        let keyIdx = -1;
-                        const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                        
-                        for (let kw of keyKeywords) {
-                            const idx = lowerHeaders.findIndex(h => {
-                                if (kw.length <= 3) {
-                                    const words = h.split(/[^a-z0-9]+/);
-                                    return words.includes(kw);
-                                }
-                                return h.includes(kw);
+                            })
+                            .catch(err => {
+                                logToTerminal(\`[Reconciler] Python backend connection error: \${err.message}. Falling back to client-side parsing.\`, "warn");
+                                runFallbackReconcilerParse(file, isExcel);
                             });
-                            if (idx !== -1) {
-                                keyIdx = idx;
-                                break;
-                            }
+                        } catch (err) {
+                            logToTerminal(\`[Reconciler] Error preparing backend upload: \${err.message}. Falling back to client-side parsing.\`, "warn");
+                            runFallbackReconcilerParse(file, isExcel);
                         }
-
-                        // Fallback to first column if not auto-detected
-                        if (keyIdx === -1) keyIdx = 0;
-
-                        // Default Role classification: First uploaded sheet is primary, subsequent sheets are secondary
-                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
-
-                        const sheetObj = {
-                            id: \`sheet-\${Math.random().toString(36).substring(2, 8)}\`,
-                            filename: file.name,
-                            rows: rows.slice(1),
-                            headers: headers,
-                            keyIdx: keyIdx,
-                            role: role
-                        };
-
-                        reconcilerSheets.push(sheetObj);
-
-                        logToTerminal(\`[Reconciler] Loaded \${rows.length - 1} rows from "\${file.name}". Auto-detected match key: "\${headers[keyIdx]}"\`, "info");
-
-                        renderReconcilerQueue();
-
-                    } catch (err) {
-                        logToTerminal(\`[Reconciler] Ingestion failed for "\${file.name}": \${err.message}\`, "error");
-                        alert(\`❌ File Import Error: \${err.message}\`);
-                    }
-                };
-
-                if (isExcel) {
+                    };
                     reader.readAsArrayBuffer(file);
                 } else {
-                    reader.readAsText(file);
+                    runFallbackReconcilerParse(file, isExcel);
                 }
             });
             event.target.value = "";
+        }
+
+        function runFallbackReconcilerParse(file, isExcel) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    let data = e.target.result;
+                    let rows;
+
+                    if (!isExcel) {
+                        try {
+                            rows = parseCSVNative(data);
+                            logToTerminal(\`[Reconciler] Native CSV parser successfully processed "\${file.name}"\`, "info");
+                        } catch (csvErr) {
+                            logToTerminal(\`[Reconciler] Native CSV parser failed for "\${file.name}": \${csvErr.message}. Trying SheetJS...\`, "warn");
+                            if (typeof XLSX !== "undefined") {
+                                let workbook = XLSX.read(data, { type: "string" });
+                                const sheetName = workbook.SheetNames[0];
+                                const worksheet = workbook.Sheets[sheetName];
+                                rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                            } else {
+                                throw new Error("SheetJS is not loaded and native CSV parse failed.");
+                            }
+                        }
+                    } else {
+                        if (typeof XLSX === "undefined") {
+                            const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
+                            logToTerminal(\`[Reconciler] Ingestion failed for "\${file.name}": \${cdnError}\`, "error");
+                            alert(\`❌ Excel Ingestion Failed:\\n\\n\${cdnError}\`);
+                            return;
+                        }
+
+                        const bytes = new Uint8Array(data);
+                        let workbook = XLSX.read(bytes, { type: "array" });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                    }
+
+                    if (!rows || rows.length < 2) {
+                        logToTerminal(\`[Reconciler] Failed: "\${file.name}" contains insufficient rows.\`, "error");
+                        alert(\`❌ Ingestion Failed: "\${file.name}" has no data or has too few rows.\`);
+                        return;
+                    }
+
+                    const headers = rows[0].map(h => String(h).trim());
+                    const lowerHeaders = headers.map(h => h.toLowerCase());
+
+                    let keyIdx = -1;
+                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+
+                    for (let kw of keyKeywords) {
+                        const idx = lowerHeaders.findIndex(h => {
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
+                        if (idx !== -1) {
+                            keyIdx = idx;
+                            break;
+                        }
+                    }
+
+                    if (keyIdx === -1) keyIdx = 0;
+
+                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+
+                    const sheetObj = {
+                        id: \`sheet-\${Math.random().toString(36).substring(2, 8)}\`,
+                        filename: file.name,
+                        rows: rows.slice(1),
+                        headers: headers,
+                        keyIdx: keyIdx,
+                        role: role
+                    };
+
+                    reconcilerSheets.push(sheetObj);
+                    logToTerminal(\`[Reconciler] Loaded \${rows.length - 1} rows from "\${file.name}". Auto-detected match key: "\${headers[keyIdx]}"\`, "info");
+                    renderReconcilerQueue();
+
+                } catch (err) {
+                    logToTerminal(\`[Reconciler] Ingestion failed for "\${file.name}": \${err.message}\`, "error");
+                    alert(\`❌ File Import Error: \${err.message}\`);
+                }
+            };
+
+            if (isExcel) {
+                reader.readAsArrayBuffer(file);
+            } else {
+                reader.readAsText(file);
+            }
         }
 
         function renderReconcilerQueue() {
@@ -209,7 +408,6 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             reconcilerSheets.forEach(sheet => {
                 const tr = document.createElement("tr");
 
-                // Role classification select
                 let roleSelectHtml = \`
                     <select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetRole('\${sheet.id}', this.value)">
                         <option value="primary" \${sheet.role === 'primary' ? 'selected' : ''}>Corporate Directory (Primary)</option>
@@ -217,7 +415,6 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     </select>
                 \`;
 
-                // Key column select dropdown
                 let keySelectHtml = \`<select style="border: 1px solid var(--border-clean); padding: 0.35rem 0.5rem; font-size: 0.75rem; background: var(--bg-card); color: var(--text-primary); border-radius: 4px; width: 100%; cursor: pointer;" onchange="updateSheetKey('\${sheet.id}', this.value)">\`;
                 sheet.headers.forEach((h, idx) => {
                     const selected = idx === sheet.keyIdx ? "selected" : "";
@@ -225,7 +422,6 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 });
                 keySelectHtml += \`</select>\`;
 
-                // All columns listed
                 const allColsHtml = sheet.headers.map((c, idx) => {
                     const isKey = idx === sheet.keyIdx;
                     const badgeClass = isKey ? "badge" : "badge group-sift";
@@ -246,7 +442,6 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 tbody.appendChild(tr);
             });
 
-            // Enforce role compliance
             const hasPrimary = reconcilerSheets.some(s => s.role === "primary");
             const hasSecondary = reconcilerSheets.some(s => s.role === "secondary");
 
@@ -308,8 +503,39 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 return;
             }
 
-            logToTerminal(\`[Reconciler] Executing asset alignment across \${reconcilerSheets.length} spreadsheet inventories...\`);
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
+            if (usePython) {
+                logToTerminal(\`[Reconciler] Offloading deep asset reconciliation alignment to Python backend...\`);
+                fetch('/api/reconcile-sheets', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sheets: reconcilerSheets })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        reconciliationResults = data.results;
+                        logToTerminal(\`[Reconciler] Python alignment complete. Matches: \${reconciliationResults.matches.length}, Gaps: \${reconciliationResults.gaps.length}, Rogues: \${reconciliationResults.rogues.length}\`, "info");
+                        renderReconciliationUI();
+                    } else {
+                        logToTerminal(\`[Reconciler] Python Reconciliation failed: \${data.message}\`, "error");
+                        alert(\`❌ Reconciliation Failed: \${data.message}\`);
+                    }
+                })
+                .catch(err => {
+                    logToTerminal(\`[Reconciler] Python backend connection error: \${err.message}. Falling back to local alignment.\`, "warn");
+                    runLocalReconciliation();
+                });
+            } else {
+                runLocalReconciliation();
+            }
+        }
+
+        function runLocalReconciliation() {
+            logToTerminal(\`[Reconciler] Executing local asset alignment...\`);
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
             const primaryKeyIdx = primarySheet.keyIdx;
 
             const primaryMap = new Map();
@@ -437,8 +663,18 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             });
 
             reconciliationResults = { matches, gaps, rogues };
+            renderReconciliationUI();
+        }
 
-            const totalPrimary = primaryMap.size;
+        function renderReconciliationUI() {
+            const matches = reconciliationResults.matches;
+            const gaps = reconciliationResults.gaps;
+            const rogues = reconciliationResults.rogues;
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
+
+            const totalPrimary = primaryMapSizeFallback();
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
             document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
@@ -462,10 +698,20 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
             document.getElementById("reconciler-results-wrapper").style.display = "block";
 
-            logToTerminal(\`[Reconciler] Alignment complete. Aligned Matches: \${matches.length}, Gaps: \${gaps.length}, Rogue Assets: \${rogues.length}. Match Rate: \${matchRate.toFixed(2)}%\`, "info");
-
             const defaultTab = gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues");
             switchReconTab(defaultTab);
+        }
+
+        function primaryMapSizeFallback() {
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return 0;
+            const keyIdx = primarySheet.keyIdx;
+            const nameSet = new Set();
+            primarySheet.rows.forEach(r => {
+                const val = String(r[keyIdx] || "").trim();
+                if (val) nameSet.add(val.replace(/[^a-zA-Z0-9]/g, "").toLowerCase());
+            });
+            return nameSet.size;
         }
 
         function switchReconTab(tabId) {
@@ -570,6 +816,482 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             }
         }
 
+        function mergeDistinctProperties(target, source) {
+            for (let key in source) {
+                if (!source.hasOwnProperty(key)) continue;
+
+                const newValue = source[key];
+
+                // Extract base property name from the source key
+                let baseKey = key;
+                if (key.startsWith('[') && key.includes('] ')) {
+                    baseKey = key.substring(key.indexOf('] ') + 2);
+                }
+
+                // Let's check if the target already contains a matching property with the same value
+                let hasMatchingInfo = false;
+                for (let targetKey in target) {
+                    if (!target.hasOwnProperty(targetKey)) continue;
+
+                    let targetBaseKey = targetKey;
+                    if (targetKey.startsWith('[') && targetKey.includes('] ')) {
+                        targetBaseKey = targetKey.substring(targetKey.indexOf('] ') + 2);
+                    }
+
+                    if (targetBaseKey.toLowerCase() === baseKey.toLowerCase()) {
+                        if (target[targetKey] === newValue) {
+                            hasMatchingInfo = true;
+                            break;
+                        }
+                    }
+                }
+
+                // If the target does NOT have matching information, then we merge it!
+                if (!hasMatchingInfo) {
+                    target[key] = newValue;
+                }
+            }
+        }
+
+        function findExistingDeviceByItem(item, fleetByName = null, fleetBySerial = null, fleetByMac = null) {
+            if (!item) return null;
+
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
+
+            function getPrimaryColValue(row, keywords) {
+                if (!primarySheet) return null;
+                for (let kw of keywords) {
+                    const idx = primaryHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
+                    if (idx !== -1 && row[idx] !== undefined) {
+                        return String(row[idx]).trim();
+                    }
+                }
+                return null;
+            }
+
+            function getMergedPropValue(mergedProperties, keywords) {
+                if (!mergedProperties) return null;
+                for (let p of mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    for (let kw of keywords) {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) {
+                                return p.value;
+                            }
+                        } else if (propName.includes(kw)) {
+                            return p.value;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            let nameVal = null;
+            let serialVal = null;
+            let macVal = null;
+
+            if (item.primaryRow && primarySheet) {
+                nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
+                serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
+                macVal = getPrimaryColValue(item.primaryRow, macKeywords);
+            }
+
+            if (item.mergedProperties) {
+                if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
+                if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
+                if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
+            }
+
+            if (item.sheets) {
+                item.sheets.forEach(s => {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+
+                    function getSecondaryColValue(row, keywords) {
+                        for (let kw of keywords) {
+                            const idx = sHeaders.findIndex(h => {
+                                if (kw.length <= 3) {
+                                    const words = h.split(/[^a-z0-9]+/);
+                                    return words.includes(kw);
+                                }
+                                return h.includes(kw);
+                            });
+                            if (idx !== -1 && row[idx] !== undefined) {
+                                return String(row[idx]).trim();
+                            }
+                        }
+                        return null;
+                    }
+
+                    if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
+                    if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
+                    if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
+                });
+            }
+
+            if (!nameVal) nameVal = item.name || item.normalized || "";
+
+            const normName = nameVal ? nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+            const normSerial = serialVal ? serialVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+            const normMac = macVal ? macVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase() : "";
+
+            if (!normName && !normSerial && !normMac) return null;
+
+            if (fleetByName && fleetBySerial && fleetByMac) {
+                if (normName && fleetByName.has(normName)) return fleetByName.get(normName);
+                if (normSerial && fleetBySerial.has(normSerial)) return fleetBySerial.get(normSerial);
+                if (normMac && fleetByMac.has(normMac)) return fleetByMac.get(normMac);
+                return null;
+            }
+
+            return fleetDataset.find(dev => {
+                const devName = String(dev.canonical_name || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                const devSerial = String(dev.serial || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                const devMac = String(dev.mac || "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+
+                if (normName && devName === normName) return true;
+                if (normSerial && devSerial === normSerial) return true;
+                if (normMac && devMac === normMac) return true;
+
+                return false;
+            });
+        }
+
+        function extractDeviceIdentifiers(item) {
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
+
+            function getPrimaryColValue(row, keywords) {
+                if (!primarySheet) return null;
+                for (let kw of keywords) {
+                    const idx = primaryHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
+                    if (idx !== -1 && row[idx] !== undefined) {
+                        return String(row[idx]).trim();
+                    }
+                }
+                return null;
+            }
+
+            function getMergedPropValue(mergedProperties, keywords) {
+                if (!mergedProperties) return null;
+                for (let p of mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    for (let kw of keywords) {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) {
+                                return p.value;
+                            }
+                        } else if (propName.includes(kw)) {
+                            return p.value;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            let nameVal = null;
+            let serialVal = null;
+            let macVal = null;
+
+            if (item.primaryRow && primarySheet) {
+                nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
+                serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
+                macVal = getPrimaryColValue(item.primaryRow, macKeywords);
+            }
+            if (item.mergedProperties) {
+                if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
+                if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
+                if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
+            }
+            if (item.sheets) {
+                item.sheets.forEach(s => {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+
+                    function getSecondaryColValue(row, keywords) {
+                        for (let kw of keywords) {
+                            const idx = sHeaders.findIndex(h => {
+                                if (kw.length <= 3) {
+                                    const words = h.split(/[^a-z0-9]+/);
+                                    return words.includes(kw);
+                                }
+                                return h.includes(kw);
+                            });
+                            if (idx !== -1 && row[idx] !== undefined) {
+                                return String(row[idx]).trim();
+                            }
+                        }
+                        return null;
+                    }
+
+                    if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
+                    if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
+                    if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
+                });
+            }
+
+            if (!nameVal) nameVal = item.name || item.normalized || "Unknown Reconciled";
+            if (!serialVal) serialVal = \`SN-RECON-\${Math.random().toString(36).substring(2, 8).toUpperCase()}\`;
+            if (!macVal) macVal = \`00:1A:2B:3C:\${Math.floor(Math.random() * 89 + 10)}:\${Math.floor(Math.random() * 89 + 10)}\`;
+
+            return { nameVal, serialVal, macVal };
+        }
+
+        function extractConditionFromItem(item) {
+            const condKeywords = ["condition", "status", "state"];
+
+            function normaliseCondition(raw) {
+                const normCond = String(raw).trim().toUpperCase().replace(/[\\s-]+/g, "_").replace(/[^A-Z0-9_]/g, "");
+                if (!normCond) return null;
+                if (normCond === "IN_USE" || normCond === "USE" || normCond === "ACTIVE") return "IN_USE";
+                if (normCond === "IN_REPAIR" || normCond === "REPAIR") return "IN_REPAIR";
+                if (normCond === "IN_STORE" || normCond === "STORE") return "IN_STORE";
+                if (normCond === "EXPIRED") return "EXPIRED";
+                if (normCond === "DISPOSED" || normCond === "DECOMMISSIONED" || normCond === "RETIRED") return "DISPOSED";
+                if (normCond === "DONATED_UNDER_CSR" || normCond === "DONATED" || normCond === "CSR") return "DONATED_UNDER_CSR";
+                if (normCond === "LOANABLE_RESERVED" || normCond === "LOANABLE") return "LOANABLE_RESERVED";
+                if (normCond === "NOT_TRACEABLE" || normCond === "NOTTRACEABLE" || normCond === "UNTRACEABLE") return "NOT_TRACEABLE";
+                if (normCond === "RESERVED") return "RESERVED";
+                if (normCond === "UNKNOWN") return "UNKNOWN";
+                return null;
+            }
+
+            // 1) Try primary sheet row
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (primarySheet && item.primaryRow) {
+                const pHeaders = primarySheet.headers.map(h => h.toLowerCase().trim());
+                for (const kw of condKeywords) {
+                    const idx = pHeaders.findIndex(h => {
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return h.includes(kw);
+                    });
+                    if (idx !== -1 && item.primaryRow[idx] !== undefined && String(item.primaryRow[idx]).trim()) {
+                        const result = normaliseCondition(item.primaryRow[idx]);
+                        if (result) return result;
+                    }
+                }
+            }
+
+            // 2) Try mergedProperties
+            if (item.mergedProperties) {
+                for (const p of item.mergedProperties) {
+                    const propName = p.property.toLowerCase().trim();
+                    if (condKeywords.some(kw => propName === kw || propName.includes(kw))) {
+                        const result = normaliseCondition(p.value);
+                        if (result) return result;
+                    }
+                }
+            }
+
+            // 3) Try secondary sheet rows
+            if (item.sheets) {
+                for (const s of item.sheets) {
+                    const sHeaders = s.headers.map(h => h.toLowerCase().trim());
+                    for (const kw of condKeywords) {
+                        const idx = sHeaders.findIndex(h => {
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                return words.includes(kw);
+                            }
+                            return h.includes(kw);
+                        });
+                        if (idx !== -1 && s.row[idx] !== undefined && String(s.row[idx]).trim()) {
+                            const result = normaliseCondition(s.row[idx]);
+                            if (result) return result;
+                        }
+                    }
+                }
+            }
+
+            // No condition data in the Excel - default to UNKNOWN for new assets
+            return "UNKNOWN";
+        }
+
+        function isolateRogueAsset(rogueId) {
+            const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
+            if (!rogue) return;
+
+            // Check if already in fleetDataset using robust matching
+            let existing = findExistingDeviceByItem(rogue);
+            if (existing) {
+                existing.is_isolated = true;
+                existing.is_rogue = true;
+                existing.score = 10.00;
+                existing.level = "NON_COMPLIANT";
+            } else {
+                // Add to fleet as isolated rogue!
+                const newCustomProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
+                rogue.sheets.forEach(s => {
+                    s.headers.forEach((h, idx) => {
+                        if (idx !== s.keyIdx) {
+                            newCustomProps[\`[\${s.filename}] \${h}\`] = String(s.row[idx] || "");
+                        }
+                    });
+                });
+
+                const ids = extractDeviceIdentifiers(rogue);
+                fleetDataset.push({
+                    id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
+                    canonical_name: rogue.normalized || ids.nameVal,
+                    serial: ids.serialVal.startsWith("SN-ROGUE-") ? ids.serialVal : \`SN-ROGUE-\${ids.serialVal.replace(/^SN-/, "")}\`,
+                    mac: ids.macVal,
+                    manufacturer: "Unmanaged Rogue",
+                    os: "Unknown Platform",
+                    os_family: "Windows",
+                    score: 10.00,
+                    level: "NON_COMPLIANT",
+                    condition: extractConditionFromItem(rogue),
+                    user_assigned: "rogue.unmanaged",
+                    last_login: "-",
+                    location: "Unknown / Network Trace",
+                    location_group: "Non-Sift",
+                    is_isolated: true,
+                    is_rogue: true,
+                    software: sampleSoftwareCatalog.map(sw => ({
+                        name: sw.name,
+                        key: sw.key,
+                        installed: "MISSING",
+                        required: "REQUIRED",
+                        status: "NON_COMPLIANT"
+                    })),
+                    custom_properties: newCustomProps
+                });
+            }
+
+            rogue.is_isolated = true;
+            logToTerminal(\`[EDR Containment] Dispatched zero-trust network containment isolation for rogue host \${rogue.name.toUpperCase()} (ID: \${rogue.id}).\`, "error");
+            alert(\`Rogue asset \${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.\`);
+
+            recalculateAllScores();
+            switchReconTab(currentReconTab);
+        }
+
+        function registerRogueAsset(rogueId) {
+            const rogue = reconciliationResults.rogues.find(r => r.id === rogueId);
+            if (!rogue) return;
+
+            // Register it! Add it to fleetDataset as a fully compliant managed asset using robust matching
+            let existing = findExistingDeviceByItem(rogue);
+
+            const newCustomProps = {
+                "Reconciliation Match": "SUCCESS",
+                "Authorized Registration": "MANUALLY APPROVED"
+            };
+            rogue.sheets.forEach(s => {
+                s.headers.forEach((h, idx) => {
+                    if (idx !== s.keyIdx) {
+                        newCustomProps[\`[\${s.filename}] \${h}\`] = String(s.row[idx] || "");
+                    }
+                });
+            });
+
+            if (existing) {
+                existing.is_rogue = false;
+                existing.is_isolated = false;
+                existing.score = 100.00;
+                existing.level = "COMPLIANT";
+                existing.user_assigned = "authorized.user";
+                existing.software.forEach(sw => {
+                    sw.installed = "INSTALLED";
+                    sw.status = "COMPLIANT";
+                });
+                if (!existing.custom_properties) existing.custom_properties = {};
+                Object.assign(existing.custom_properties, newCustomProps);
+            } else {
+                const ids = extractDeviceIdentifiers(rogue);
+                fleetDataset.push({
+                    id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
+                    canonical_name: rogue.normalized || ids.nameVal,
+                    serial: ids.serialVal.startsWith("SN-REGISTERED-") ? ids.serialVal : \`SN-REGISTERED-\${ids.serialVal.replace(/^SN-/, "")}\`,
+                    mac: ids.macVal,
+                    manufacturer: "Authorized Manually",
+                    os: "Windows 11 Enterprise",
+                    os_family: "Windows",
+                    score: 100.00,
+                    level: "COMPLIANT",
+                    condition: "IN_USE",
+                    user_assigned: "authorized.user",
+                    last_login: new Date().toISOString().substring(0, 16).replace("T", " "),
+                    location: "Corporate Head Office",
+                    location_group: "Sift",
+                    is_isolated: false,
+                    is_rogue: false,
+                    software: sampleSoftwareCatalog.map(sw => {
+                        if (sw.key === "ad" || isSheetUploadedForSoftware(sw.key) || mergedSoftwareAgents.has(sw.key)) {
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: "INSTALLED",
+                                required: "REQUIRED",
+                                status: "COMPLIANT"
+                            };
+                        }
+                        return {
+                            name: sw.name,
+                            key: sw.key,
+                            installed: "MISSING (AGENT UNREPORTED)",
+                            required: "REQUIRED",
+                            status: "NON_COMPLIANT"
+                        };
+                    }),
+                    custom_properties: newCustomProps
+                });
+            }
+
+            // Remove from rogues, add to matches!
+            reconciliationResults.rogues = reconciliationResults.rogues.filter(r => r.id !== rogueId);
+            reconciliationResults.matches.push({
+                id: rogueId,
+                name: rogue.name,
+                normalized: rogue.normalized,
+                mergedProperties: rogue.sheets.flatMap(s =>
+                    s.headers.slice(1).map((h, idx) => ({
+                        source: s.filename,
+                        sheetRole: "Secondary",
+                        property: h,
+                        value: String(s.row[idx + 1] || "")
+                    }))
+                ),
+                status: "MATCHED"
+            });
+
+            // Update tab counts
+            const roguesTabCount = document.getElementById("recon-tab-count-rogues");
+            const matchesTabCount = document.getElementById("recon-tab-count-matches");
+            if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
+            if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
+
+            logToTerminal(\`[Reconciler] Manually authorized and enrolled rogue asset \${rogue.name.toUpperCase()} into Corporate Directory context.\`, "info");
+            alert(\`Rogue asset \${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!\`);
+
+            recalculateAllScores();
+            switchReconTab("matches");
+        }
+
         function mergeReconciliationIntoFleet() {
             const gaps = reconciliationResults.gaps;
             const rogues = reconciliationResults.rogues;
@@ -583,12 +1305,33 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             const confirmMerge = confirm(\`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\\n\\n- \${matches.length} Matched devices will have their custom Excel information merged.\\n- \${gaps.length} Coverage Gaps will be marked in the database.\\n- \${rogues.length} Rogue Assets will be appended to the active list.\\n\\nDashboard ledger updates instantly.\`);
             if (!confirmMerge) return;
 
+            registerMergedSoftwareAgents();
+
+            // Pre-index fleetDataset by normalized canonical name, serial, and MAC address
+            const fleetByName = new Map();
+            const fleetBySerial = new Map();
+            const fleetByMac = new Map();
+
+            fleetDataset.forEach(dev => {
+                if (dev.canonical_name) {
+                    const normName = String(dev.canonical_name).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normName) fleetByName.set(normName, dev);
+                }
+                if (dev.serial) {
+                    const normSerial = String(dev.serial).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normSerial) fleetBySerial.set(normSerial, dev);
+                }
+                if (dev.mac) {
+                    const normMac = String(dev.mac).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+                    if (normMac) fleetByMac.set(normMac, dev);
+                }
+            });
+
             let newlyCreated = 0;
             let mergedUpdated = 0;
 
             matches.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
@@ -596,44 +1339,55 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 });
 
                 if (existing) {
+                    existing.software.forEach(sw => {
+                        if (isSheetUploadedForSoftware(sw.key)) {
+                            sw.installed = "INSTALLED";
+                            sw.status = "COMPLIANT";
+                        }
+                    });
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
-                        canonical_name: item.name,
-                        serial: \`SN-RECON-\${Math.random().toString(36).substring(2, 8).toUpperCase()}\`,
-                        mac: \`00:1A:2B:3C:\${Math.floor(Math.random()*89+10)}:\${Math.floor(Math.random()*89+10)}\`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal,
+                        mac: ids.macVal,
                         manufacturer: "Generic Reconciled",
                         os: "Windows 11 Enterprise",
                         os_family: "Windows",
                         score: 100.00,
                         level: "COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "reconciler.user",
                         last_login: new Date().toISOString().substring(0, 16).replace("T", " "),
                         location: "Corporate Head Office",
                         location_group: "Sift",
                         is_isolated: false,
-                        software: sampleSoftwareCatalog.map(sw => ({
-                            name: sw.name,
-                            key: sw.key,
-                            installed: "INSTALLED",
-                            required: "REQUIRED",
-                            status: "COMPLIANT"
-                        })),
-                        custom_properties: customProps
+                        software: sampleSoftwareCatalog.map(sw => {
+                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: isUploaded ? "INSTALLED" : (sw.key === "ad" ? "INSTALLED" : "MISSING (AGENT UNREPORTED)"),
+                                required: "REQUIRED",
+                                status: isUploaded ? "COMPLIANT" : (sw.key === "ad" ? "COMPLIANT" : "NON_COMPLIANT")
+                            };
+                        }),
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
             });
 
             gaps.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
-                const customProps = { 
+                const customProps = {
                     "Reconciliation Match": "COVERAGE_GAP",
                     "Missing Telemetries": item.missingInSheets.join(", ")
                 };
@@ -644,60 +1398,81 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 if (existing) {
                     existing.score = 0.00;
                     existing.level = "NON_COMPLIANT";
-                    
+
                     existing.software.forEach(sw => {
-                        const isMissing = item.missingInSheets.some(filename => {
-                            const sheet = reconcilerSheets.find(s => s.filename === filename);
-                            return sheet && sheet.headers.some(h => h.toLowerCase().includes(sw.key));
-                        });
-                        if (isMissing) {
-                            sw.installed = "MISSING (AGENT UNREPORTED)";
-                            sw.status = "NON_COMPLIANT";
+                        if (isSheetUploadedForSoftware(sw.key)) {
+                            const isMissing = item.missingInSheets.some(filename => {
+                                const sheet = reconcilerSheets.find(s => s.filename === filename);
+                                const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
+                                return isSheetForSw;
+                            });
+                            if (isMissing) {
+                                sw.installed = sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)";
+                                sw.status = "NON_COMPLIANT";
+                            } else {
+                                sw.installed = "INSTALLED";
+                                sw.status = "COMPLIANT";
+                            }
                         }
                     });
 
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
-                        canonical_name: item.name,
-                        serial: \`SN-GAP-\${Math.random().toString(36).substring(2, 8).toUpperCase()}\`,
-                        mac: \`00:1A:2B:3C:\${Math.floor(Math.random()*89+10)}:\${Math.floor(Math.random()*89+10)}\`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : \`SN-GAP-\${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}\`,
+                        mac: ids.macVal,
                         manufacturer: "Generic Reconciled Gap",
                         os: "Unknown Platform",
                         os_family: "Windows",
                         score: 0.00,
                         level: "NON_COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "unassigned",
                         last_login: "-",
                         location: "Remote - Untrusted",
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isMissing = item.missingInSheets.some(filename => {
-                                const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                return sheet && sheet.headers.some(h => h.toLowerCase().includes(sw.key));
-                            });
-                            return {
-                                name: sw.name,
-                                key: sw.key,
-                                installed: isMissing ? "MISSING (AGENT UNREPORTED)" : "INSTALLED",
-                                required: "REQUIRED",
-                                status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
-                            };
+                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            if (isUploaded) {
+                                const isMissing = item.missingInSheets.some(filename => {
+                                    const sheet = reconcilerSheets.find(s => s.filename === filename);
+                                    const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
+                                    return isSheetForSw;
+                                });
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: isMissing ? (sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)") : "INSTALLED",
+                                    required: "REQUIRED",
+                                    status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
+                                };
+                            } else {
+                                const isAd = sw.key === "ad";
+                                return {
+                                    name: sw.name,
+                                    key: sw.key,
+                                    installed: isAd ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
+                                    required: "REQUIRED",
+                                    status: isAd ? "COMPLIANT" : "NON_COMPLIANT"
+                                };
+                            }
                         }),
-                        custom_properties: customProps
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
             });
 
             rogues.forEach(item => {
-                const normName = item.normalized;
-                let existing = fleetDataset.find(dev => dev.canonical_name === normName || dev.serial.toLowerCase().includes(normName));
+                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
                 const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
                 item.sheets.forEach(s => {
@@ -709,45 +1484,76 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 });
 
                 if (existing) {
-                    existing.score = 0.00;
+                    existing.score = item.is_isolated ? 10.00 : 0.00;
                     existing.level = "NON_COMPLIANT";
+                    existing.is_rogue = true;
+                    existing.is_isolated = !!item.is_isolated;
                     if (!existing.custom_properties) existing.custom_properties = {};
-                    Object.assign(existing.custom_properties, customProps);
+                    mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
                 } else {
+                    const newCustomProps = {};
+                    mergeDistinctProperties(newCustomProps, customProps);
+                    const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
                         id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
-                        canonical_name: item.name,
-                        serial: \`SN-ROGUE-\${Math.random().toString(36).substring(2, 8).toUpperCase()}\`,
-                        mac: \`00:1A:2B:3C:\${Math.floor(Math.random()*89+10)}:\${Math.floor(Math.random()*89+10)}\`,
+                        canonical_name: ids.nameVal,
+                        serial: ids.serialVal.startsWith("SN-ROGUE-") ? ids.serialVal : \`SN-ROGUE-\${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}\`,
+                        mac: ids.macVal,
                         manufacturer: "Unmanaged Rogue",
                         os: "Unknown Platform",
                         os_family: "Windows",
-                        score: 0.00,
+                        score: item.is_isolated ? 10.00 : 0.00,
                         level: "NON_COMPLIANT",
-                        condition: "IN_USE",
+                        condition: extractConditionFromItem(item),
                         user_assigned: "rogue.unmanaged",
                         last_login: "-",
                         location: "Unknown / Network Trace",
                         location_group: "Non-Sift",
-                        is_isolated: false,
+                        is_isolated: !!item.is_isolated,
+                        is_rogue: true,
                         software: sampleSoftwareCatalog.map(sw => ({
                             name: sw.name,
                             key: sw.key,
-                            installed: "INSTALLED",
+                            installed: "MISSING",
                             required: "REQUIRED",
-                            status: "COMPLIANT"
+                            status: "NON_COMPLIANT"
                         })),
-                        custom_properties: customProps
+                        custom_properties: newCustomProps
                     });
                     newlyCreated++;
                 }
             });
 
+            // Dynamically expand table headers with newly merged custom Excel property columns
+            const mergedKeys = new Set();
+            fleetDataset.forEach(dev => {
+                if (dev.custom_properties) {
+                    for (let key in dev.custom_properties) {
+                        if (key.startsWith('[') && key.includes('] ')) {
+                            mergedKeys.add(key);
+                        }
+                    }
+                }
+            });
+
+            mergedKeys.forEach(k => {
+                const customKey = \`custom:\${k}\`;
+                if (!activeTableKeys.includes(customKey)) {
+                    // Extract clean name and source file for header label
+                    const cleanName = k.replace(/^\[.*?\]\s*/, '');
+                    const sourceName = k.match(/^\[(.*?)\]/) ? k.match(/^\[(.*?)\]/)[1] : 'Excel';
+                    const headerLabel = \`\${cleanName} (\${sourceName})\`;
+
+                    activeTableHeaders.push(headerLabel);
+                    activeTableKeys.push(customKey);
+                }
+            });
+
             recalculateAllScores();
             switchNavSection("compliance");
-            
-            const successMsg = \`⚡ Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added \${newlyCreated} new records and updated \${mergedUpdated} existing records.\`;
+
+            const successMsg = \`Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added \${newlyCreated} new records and updated \${mergedUpdated} existing records.\`;
             logToTerminal(\`[Reconciler] \${successMsg}\`, "info");
             alert(successMsg);
         }
