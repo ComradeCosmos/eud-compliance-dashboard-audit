@@ -1458,7 +1458,16 @@
                 const mac = macIdx !== -1 ? String(row[macIdx]).trim() : `00:1A:2B:3C:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
                 const manufacturer = mfgIdx !== -1 ? String(row[mfgIdx]).trim() : "Imported Asset";
                 const os = osIdx !== -1 ? String(row[osIdx]).trim() : "Windows 11 Enterprise";
-                const os_family = osFamilyIdx !== -1 ? String(row[osFamilyIdx]).trim() : (os.toLowerCase().includes("mac") ? "macOS" : (os.toLowerCase().includes("linux") || os.toLowerCase().includes("ubuntu") ? "Linux" : "Windows"));
+                                let os_family = osFamilyIdx !== -1 ? String(row[osFamilyIdx]).trim() : "";
+                if (!os_family) {
+                    os_family = (os.toLowerCase().includes("mac") ? "macOS" : (os.toLowerCase().includes("linux") || os.toLowerCase().includes("ubuntu") ? "Linux" : "Windows"));
+                } else {
+                    const lowFamily = os_family.toLowerCase();
+                    if (lowFamily.includes("win")) os_family = "Windows";
+                    else if (lowFamily.includes("mac") || lowFamily.includes("osx")) os_family = "macOS";
+                    else if (lowFamily.includes("linux") || lowFamily.includes("ubuntu") || lowFamily.includes("redhat")) os_family = "Linux";
+                    else os_family = "Windows";
+                }
                 const user_assigned = userIdx !== -1 ? String(row[userIdx]).trim() : "unassigned";
                 const last_login = loginIdx !== -1 ? String(row[loginIdx]).trim() : "-";
                 const location = locIdx !== -1 ? String(row[locIdx]).trim() : "Remote";
@@ -1483,7 +1492,7 @@
                     
                     if (agentName.toLowerCase().includes("ad") || agentName.toLowerCase().includes("active directory")) {
                         const lowerVal = val.toLowerCase();
-                        const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-"];
+                        const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-", "not joined", "not_joined", "non-joined", "unjoined", "not domain joined", "not domain-joined", "unassociated", "notregistered", "not registered"];
                         if (lowerVal && !nonCompliantAD.includes(lowerVal)) {
                             return { installed: val, status: "COMPLIANT" };
                         }
@@ -1874,7 +1883,7 @@
                 if (!isRequired) continue;
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family === "Windows";
+                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
                 const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
                 if (!isApplicable) continue;
 
@@ -3395,7 +3404,7 @@
                     && !dev.is_rogue;
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family === "Windows";
+                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
                 const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
                 if (!isApplicable) return;
 
@@ -3651,7 +3660,7 @@
                 if (!isRequired) continue;
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family === "Windows";
+                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
                 const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
                 if (!isApplicable) continue;
 
@@ -4105,7 +4114,8 @@
                 "compliant", "installed", "yes", "true", "1", "active",
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
                 "pass", "passed", "on", "enabled", "running", "secured", "secure",
-                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected"
+                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected",
+                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running"
             ];
 
             const nonCompliantKeywords = [
@@ -4171,7 +4181,7 @@
                             // Specialized logic for AD domain / status values
                             if (swKey === "ad") {
                                 const lowerVal = valString.toLowerCase();
-                                const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-"];
+                                const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-", "not joined", "not_joined", "non-joined", "unjoined", "not domain joined", "not domain-joined", "unassociated", "notregistered", "not registered"];
                                 if (lowerVal && !nonCompliantAD.includes(lowerVal)) {
                                     return { installed: valString, status: "COMPLIANT" };
                                 } else {

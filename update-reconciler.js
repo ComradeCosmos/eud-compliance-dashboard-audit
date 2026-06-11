@@ -163,7 +163,8 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 "compliant", "installed", "yes", "true", "1", "active",
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
                 "pass", "passed", "on", "enabled", "running", "secured", "secure",
-                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected"
+                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected",
+                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running"
             ];
 
             const nonCompliantKeywords = [
@@ -229,7 +230,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                             // Specialized logic for AD domain / status values
                             if (swKey === "ad") {
                                 const lowerVal = valString.toLowerCase();
-                                const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-"];
+                                const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-", "not joined", "not_joined", "non-joined", "unjoined", "not domain joined", "not domain-joined", "unassociated", "notregistered", "not registered"];
                                 if (lowerVal && !nonCompliantAD.includes(lowerVal)) {
                                     return { installed: valString, status: "COMPLIANT" };
                                 } else {
