@@ -36,17 +36,73 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
         let currentReconTab = "gaps";
 
+        function autoDetectKeyIdx(headers, rows) {
+            if (!headers || headers.length === 0) return 0;
+            const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            
+            const candidates = [];
+            lowerHeaders.forEach((h, idx) => {
+                let score = 0;
+                let type = "";
+                
+                if (nameKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 3;
+                    type = "name";
+                } else if (serialKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 2;
+                    type = "serial";
+                } else if (macKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 1;
+                    type = "mac";
+                }
+                
+                if (score > 0) {
+                    // Calculate uniqueness
+                    const vals = rows.slice(1).map(r => {
+                        const cell = r[idx];
+                        return cell !== undefined && cell !== null ? String(cell).trim().toLowerCase() : "";
+                    }).filter(v => v !== "" && v !== "-" && v !== "disabled" && v !== "unknown" && v !== "not available" && v !== "to be filled by o.e.m.");
+                    const uniqueVals = new Set(vals);
+                    const uniqueness = vals.length > 0 ? uniqueVals.size / vals.length : 0;
+                    
+                    candidates.push({
+                        idx,
+                        score,
+                        uniqueness
+                    });
+                }
+            });
+            
+            const validCandidates = candidates.filter(c => c.uniqueness > 0.1);
+            if (validCandidates.length > 0) {
+                validCandidates.sort((a, b) => {
+                    if (Math.abs(a.uniqueness - b.uniqueness) > 0.15) {
+                        return b.uniqueness - a.uniqueness;
+                    }
+                    return b.score - a.score;
+                });
+                return validCandidates[0].idx;
+            } else if (candidates.length > 0) {
+                candidates.sort((a, b) => b.score - a.score);
+                return candidates[0].idx;
+            }
+            return 0;
+        }
+
         function matchSoftwareKey(header, swKey) {
             if (!header || !swKey) return false;
             const h = header.toLowerCase().trim();
             const k = swKey.toLowerCase().trim();
 
             if (k === "ad") {
-                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment")) {
+                if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment") || h.includes("canonicalname") || h.includes("canonical name") || h.includes("distinguishedname") || h.includes("distinguished name")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("ad");
+                return words.includes("ad") || words.includes("adcomputers");
             }
 
             if (k === "bitlocker") {
@@ -119,7 +175,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             }
             
             // "ad" is too short for simple includes, use word list
-            if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
+            if (words.includes("ad") || words.includes("adcomputers") || fn.includes("adcomputers") || fn.includes("ad_computers") || fn.includes("ad-computers") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
                 if (sheet.role !== "primary") {
                     return "ad";
                 }
@@ -164,7 +220,8 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
                 "pass", "passed", "on", "enabled", "running", "secured", "secure",
                 "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected",
-                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running"
+                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running",
+                "registered"
             ];
 
             const nonCompliantKeywords = [
@@ -197,9 +254,9 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
         function getMergedAgentStatus(item, swKey) {
             const agentKeywords = {
-                ad: ["active directory", "ad", "active_directory", "domain"],
+                ad: ["active directory", "ad", "active_directory", "domain", "canonicalname", "canonical name", "distinguishedname", "distinguished name"],
                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn"],
+                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -208,10 +265,17 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             const keywords = agentKeywords[swKey] || [];
 
             if (item.mergedProperties) {
+                // Sort properties to prioritize version/connector/client columns over status/state columns
                 const sortedProps = [...item.mergedProperties].sort((a, b) => {
                     const aIsSec = a.sheetRole === "Secondary" ? 1 : 0;
                     const bIsSec = b.sheetRole === "Secondary" ? 1 : 0;
-                    return bIsSec - aIsSec;
+                    if (aIsSec !== bIsSec) return bIsSec - aIsSec;
+                    
+                    const aProp = a.property.toLowerCase();
+                    const bProp = b.property.toLowerCase();
+                    const aIsVer = (aProp.includes("version") || aProp.includes("connector") || aProp.includes("client")) ? 1 : 0;
+                    const bIsVer = (bProp.includes("version") || bProp.includes("connector") || bProp.includes("client")) ? 1 : 0;
+                    return bIsVer - aIsVer;
                 });
 
                 for (let p of sortedProps) {
@@ -374,32 +438,16 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                                     }
                                     if (data.validation_report && data.validation_report.errors.length > 0) {
                                         data.validation_report.errors.forEach(err => {
-                                            logToTerminal(\`[Reconciler Validation Error] \${err}\`, "error");
+                                            logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
                                         });
                                     }
 
                                     const headers = data.headers;
-                                    const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
-                                    let keyIdx = -1;
-                                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                                    for (let kw of keyKeywords) {
-                                        const idx = lowerHeaders.findIndex(h => {
-                                            if (kw.length <= 3) {
-                                                const words = h.split(/[^a-z0-9]+/);
-                                                return words.includes(kw);
-                                            }
-                                            return h.includes(kw);
-                                        });
-                                        if (idx !== -1) {
-                                            keyIdx = idx;
-                                            break;
-                                        }
-                                    }
-                                    if (keyIdx === -1) keyIdx = 0;
+                                    let keyIdx = autoDetectKeyIdx(headers, data.rows);
 
                                     const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
                                     const sheetObj = {
-                                        id: \`sheet-\${Math.random().toString(36).substring(2, 8)}\`,
+                                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
                                         filename: data.filename,
                                         rows: data.rows.slice(1),
                                         headers: data.headers,
@@ -475,26 +523,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     }
 
                     const headers = rows[0].map(h => String(h).trim());
-                    const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                    let keyIdx = -1;
-                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-
-                    for (let kw of keyKeywords) {
-                        const idx = lowerHeaders.findIndex(h => {
-                            if (kw.length <= 3) {
-                                const words = h.split(/[^a-z0-9]+/);
-                                return words.includes(kw);
-                            }
-                            return h.includes(kw);
-                        });
-                        if (idx !== -1) {
-                            keyIdx = idx;
-                            break;
-                        }
-                    }
-
-                    if (keyIdx === -1) keyIdx = 0;
+                    let keyIdx = autoDetectKeyIdx(headers, rows);
 
                     const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
 
@@ -666,73 +695,170 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             } else {
                 runLocalReconciliation();
             }
+
+            function getColIndices(headers) {
+            const hLow = headers.map(h => String(h).toLowerCase().trim());
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+
+            function findIdx(keywords) {
+                for (let kw of keywords) {
+                    for (let idx = 0; idx < hLow.length; idx++) {
+                        const h = hLow[idx];
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) return idx;
+                        } else {
+                            if (h.includes(kw)) return idx;
+                        }
+                    }
+                }
+                return -1;
+            }
+            return {
+                nameIdx: findIdx(nameKeywords),
+                serialIdx: findIdx(serialKeywords),
+                macIdx: findIdx(macKeywords)
+            };
+        }
+
+        function normMacList(val) {
+            if (!val) return [];
+            const macs = String(val).match(/[0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}/g);
+            if (!macs) return [];
+            return macs.map(m => m.toLowerCase().replace(/\./g, ':').replace(/-/g, ':'));
+        }
+
+        function normalizeValue(val) {
+            if (val === undefined || val === null) return "";
+            const s = String(val).trim();
+            const low = s.toLowerCase();
+            if (["disabled", "unknown", "none", "not available", "to be filled by o.e.m.", "-"].includes(low)) {
+                return "";
+            }
+            return s.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+        }
+
+        function rowMatches(primRow, primMeta, secRow, secMeta) {
+            const primKeyVal = normalizeValue(primRow[primMeta.key_idx]);
+            const secKeyVal = normalizeValue(secRow[secMeta.key_idx]);
+            if (primKeyVal && primKeyVal === secKeyVal) {
+                return true;
+            }
+
+            if (primMeta.name_idx !== -1 && secMeta.name_idx !== -1) {
+                const pName = normalizeValue(primRow[primMeta.name_idx]);
+                const sName = normalizeValue(secRow[secMeta.name_idx]);
+                if (pName && pName === sName) {
+                    return true;
+                }
+            }
+
+            if (primMeta.serial_idx !== -1 && secMeta.serial_idx !== -1) {
+                const pSerial = normalizeValue(primRow[primMeta.serial_idx]);
+                const sSerial = normalizeValue(secRow[secMeta.serial_idx]);
+                if (pSerial && pSerial === sSerial) {
+                    return true;
+                }
+            }
+
+            if (primMeta.mac_idx !== -1 && secMeta.mac_idx !== -1) {
+                const pMacVal = primRow[primMeta.mac_idx];
+                const sMacVal = secRow[secMeta.mac_idx];
+                const pMacs = normMacList(pMacVal);
+                const sMacs = normMacList(sMacVal);
+                if (pMacs.length > 0 && sMacs.length > 0) {
+                    for (let pm of pMacs) {
+                        if (sMacs.includes(pm)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         function runLocalReconciliation() {
-            logToTerminal(\`[Reconciler] Executing local asset alignment...\`);
+            logToTerminal(`[Reconciler] Executing local asset alignment...`);
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
+
+            if (!primarySheet || secondarySheets.length === 0) return;
+
+            const primaryHeaders = primarySheet.headers;
             const primaryKeyIdx = primarySheet.keyIdx;
+            
+            const primIndices = getColIndices(primaryHeaders);
+            const primMeta = {
+                key_idx: primaryKeyIdx,
+                name_idx: primIndices.nameIdx,
+                serial_idx: primIndices.serialIdx,
+                mac_idx: primIndices.macIdx
+            };
 
-            const primaryMap = new Map();
-            primarySheet.rows.forEach(row => {
-                const nameVal = String(row[primaryKeyIdx] || "").trim();
-                if (!nameVal) return;
-                const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                primaryMap.set(normName, {
-                    rawName: nameVal,
-                    row: row
-                });
-            });
-
-            const secondaryMaps = secondarySheets.map(sheet => {
-                const map = new Map();
-                sheet.rows.forEach(row => {
-                    const nameVal = String(row[sheet.keyIdx] || "").trim();
-                    if (!nameVal) return;
-                    const normName = nameVal.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
-                    map.set(normName, row);
-                });
+            const secSheetsProcessed = secondarySheets.map(sheet => {
+                const secIndices = getColIndices(sheet.headers);
+                const validRows = sheet.rows.filter(r => r && !r.every(cell => String(cell).trim() === ""));
                 return {
-                    sheetId: sheet.id,
                     filename: sheet.filename,
                     headers: sheet.headers,
-                    keyIdx: sheet.keyIdx,
-                    map: map
+                    rows: validRows,
+                    meta: {
+                        key_idx: sheet.keyIdx,
+                        name_idx: secIndices.nameIdx,
+                        serial_idx: secIndices.serialIdx,
+                        mac_idx: secIndices.macIdx
+                    },
+                    matchedIndices: new Set()
                 };
             });
 
             const matches = [];
             const gaps = [];
 
-            primaryMap.forEach((primaryData, normName) => {
+            primarySheet.rows.forEach((pRow, pRowIdx) => {
+                if (!pRow || pRow.every(cell => String(cell).trim() === "")) return;
+
+                const rawName = String(pRow[primaryKeyIdx] || "").trim() || `Device-${pRowIdx + 1}`;
                 const presentInSheets = [];
                 const missingInSheets = [];
                 const mergedProperties = [];
 
-                primarySheet.headers.forEach((h, idx) => {
+                primaryHeaders.forEach((h, idx) => {
                     if (idx !== primaryKeyIdx) {
+                        const val = String(pRow[idx] || "").trim();
                         mergedProperties.push({
                             source: primarySheet.filename,
                             sheetRole: "Primary",
                             property: h,
-                            value: String(primaryData.row[idx] || "").trim() || "-"
+                            value: val ? val : "-"
                         });
                     }
                 });
 
-                secondaryMaps.forEach(sec => {
-                    if (sec.map.has(normName)) {
+                secSheetsProcessed.forEach(sec => {
+                    let matchedRow = null;
+                    for (let rIdx = 0; rIdx < sec.rows.length; rIdx++) {
+                        const sRow = sec.rows[rIdx];
+                        if (rowMatches(pRow, primMeta, sRow, sec.meta)) {
+                            matchedRow = sRow;
+                            sec.matchedIndices.add(rIdx);
+                            break;
+                        }
+                    }
+
+                    if (matchedRow) {
                         presentInSheets.push(sec.filename);
-                        const rowData = sec.map.get(normName);
-                        
                         sec.headers.forEach((h, idx) => {
-                            if (idx !== sec.keyIdx) {
+                            if (idx !== sec.meta.key_idx) {
+                                const val = String(matchedRow[idx] || "").trim();
                                 mergedProperties.push({
                                     source: sec.filename,
                                     sheetRole: "Secondary",
                                     property: h,
-                                    value: String(rowData[idx] || "").trim() || "-"
+                                    value: val ? val : "-"
                                 });
                             }
                         });
@@ -741,14 +867,14 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     }
                 });
 
-                const isMissingAnySecondary = missingInSheets.length > 0;
+                const randomSuffix = Math.random().toString(36).substring(2, 6);
 
-                if (isMissingAnySecondary) {
+                if (missingInSheets.length > 0) {
                     gaps.push({
-                        id: \`dev-gap-\${Math.random().toString(36).substring(2, 6)}\`,
-                        name: primaryData.rawName,
-                        normalized: normName,
-                        primaryRow: primaryData.row,
+                        id: `dev-gap-${randomSuffix}`,
+                        name: rawName,
+                        normalized: normalizeValue(rawName),
+                        primaryRow: pRow,
                         missingInSheets: missingInSheets,
                         presentInSheets: presentInSheets,
                         mergedProperties: mergedProperties,
@@ -756,49 +882,55 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     });
                 } else {
                     matches.push({
-                        id: \`dev-rec-\${Math.random().toString(36).substring(2, 6)}\`,
-                        name: primaryData.rawName,
-                        normalized: normName,
-                        primaryRow: primaryData.row,
+                        id: `dev-rec-${randomSuffix}`,
+                        name: rawName,
+                        normalized: normalizeValue(rawName),
+                        primaryRow: pRow,
                         mergedProperties: mergedProperties,
                         status: "MATCHED"
                     });
                 }
             });
 
-            const roguesMap = new Map();
-            secondaryMaps.forEach(sec => {
-                sec.map.forEach((row, normName) => {
-                    if (!primaryMap.has(normName)) {
-                        if (!roguesMap.has(normName)) {
-                            roguesMap.set(normName, {
-                                name: String(row[sec.keyIdx] || "").trim(),
+            // Rogues
+            const roguesMap = {};
+            secSheetsProcessed.forEach(sec => {
+                sec.rows.forEach((sRow, rIdx) => {
+                    if (!sec.matchedIndices.has(rIdx)) {
+                        const val = String(sRow[sec.meta.key_idx] || "").trim();
+                        if (!val) return;
+                        const normName = normalizeValue(val);
+                        if (!normName) return;
+                        if (!roguesMap[normName]) {
+                            roguesMap[normName] = {
+                                name: val,
                                 sheets: []
-                            });
+                            };
                         }
-                        const rogueObj = roguesMap.get(normName);
-                        rogueObj.sheets.push({
+                        roguesMap[normName].sheets.push({
                             filename: sec.filename,
-                            row: row,
+                            row: sRow,
                             headers: sec.headers,
-                            keyIdx: sec.keyIdx
+                            keyIdx: sec.meta.key_idx
                         });
                     }
                 });
             });
 
             const rogues = [];
-            roguesMap.forEach((rogueObj, normName) => {
+            for (let normName in roguesMap) {
+                const randomSuffix = Math.random().toString(36).substring(2, 6);
                 rogues.push({
-                    id: \`dev-rogue-\${Math.random().toString(36).substring(2, 6)}\`,
-                    name: rogueObj.name,
+                    id: `dev-rogue-${randomSuffix}`,
+                    name: roguesMap[normName].name,
                     normalized: normName,
-                    sheets: rogueObj.sheets,
+                    sheets: roguesMap[normName].sheets,
                     status: "ROGUE_UNMANAGED"
                 });
-            });
+            }
 
-            reconciliationResults = { matches, gaps, rogues };
+            reconciliationResults = { matches: matches, gaps: gaps, rogues: rogues };
+            logToTerminal(`[Reconciler] Local alignment complete. Matches: ${matches.length}, Gaps: ${gaps.length}, Rogues: ${rogues.length}`, "info");
             renderReconciliationUI();
         }
 

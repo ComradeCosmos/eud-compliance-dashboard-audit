@@ -249,46 +249,109 @@ def validate_sheet_data(headers, rows):
         "errors": errors
     }
 
+def normalize_value(val):
+    if val is None:
+        return ""
+    val_str = str(val).strip()
+    val_low = val_str.lower()
+    if val_low in ["disabled", "unknown", "none", "not available", "to be filled by o.e.m.", "-", "outdated", "unreported"]:
+        return ""
+    return re.sub(r'[^a-zA-Z0-9]', '', val_str).lower()
+
+def norm_mac_list(val):
+    if not val:
+        return []
+    macs = re.findall(r'[0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}', str(val))
+    return [m.lower().replace('.', ':').replace('-', ':') for m in macs]
+
+def get_col_indices(headers):
+    h_low = [str(h).lower().strip() for h in headers]
+    name_keywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"]
+    serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"]
+    mac_keywords = ["macaddress", "mac", "physical", "ethernet", "hardware"]
+    
+    def find_idx(keywords):
+        for kw in keywords:
+            for idx, h in enumerate(h_low):
+                if len(kw) <= 3:
+                    words = re.split(r'[^a-z0-9]+', h)
+                    if kw in words:
+                        return idx
+                else:
+                    if kw in h:
+                        return idx
+        return -1
+        
+    return find_idx(name_keywords), find_idx(serial_keywords), find_idx(mac_keywords)
+
+def row_matches(prim_row, prim_meta, sec_row, sec_meta):
+    prim_key_val = normalize_value(prim_row[prim_meta['key_idx']]) if prim_meta['key_idx'] < len(prim_row) else ""
+    sec_key_val = normalize_value(sec_row[sec_meta['key_idx']]) if sec_meta['key_idx'] < len(sec_row) else ""
+    if prim_key_val and prim_key_val == sec_key_val:
+        return True
+        
+    if prim_meta['name_idx'] != -1 and sec_meta['name_idx'] != -1:
+        p_name = normalize_value(prim_row[prim_meta['name_idx']]) if prim_meta['name_idx'] < len(prim_row) else ""
+        s_name = normalize_value(sec_row[sec_meta['name_idx']]) if sec_meta['name_idx'] < len(sec_row) else ""
+        if p_name and p_name == s_name:
+            return True
+            
+    if prim_meta['serial_idx'] != -1 and sec_meta['serial_idx'] != -1:
+        p_serial = normalize_value(prim_row[prim_meta['serial_idx']]) if prim_meta['serial_idx'] < len(prim_row) else ""
+        s_serial = normalize_value(sec_row[sec_meta['serial_idx']]) if sec_meta['serial_idx'] < len(sec_row) else ""
+        if p_serial and p_serial == s_serial:
+            return True
+            
+    if prim_meta['mac_idx'] != -1 and sec_meta['mac_idx'] != -1:
+        p_mac_val = prim_row[prim_meta['mac_idx']] if prim_meta['mac_idx'] < len(prim_row) else ""
+        s_mac_val = sec_row[sec_meta['mac_idx']] if sec_meta['mac_idx'] < len(sec_row) else ""
+        p_macs = norm_mac_list(p_mac_val)
+        s_macs = norm_mac_list(s_mac_val)
+        if p_macs and s_macs:
+            if set(p_macs) & set(s_macs):
+                return True
+                
+    return False
+
 def reconcile_sheets_data(primary_sheet, secondary_sheets):
     """Executes reconciliation logic across a primary sheet and multiple secondary sheets."""
     primary_key_idx = primary_sheet["keyIdx"]
     primary_headers = primary_sheet["headers"]
     primary_rows = primary_sheet["rows"]
     
-    primary_map = {}
-    for row in primary_rows:
-        if not row or all(str(c).strip() == "" for c in row):
-            continue
-        val = str(row[primary_key_idx]).strip() if primary_key_idx < len(row) else ""
-        if not val:
-            continue
-        norm_name = re.sub(r'[^a-zA-Z0-9]', '', val).lower()
-        primary_map[norm_name] = {
-            "rawName": val,
-            "row": row
-        }
-        
-    secondary_maps = []
+    prim_name_idx, prim_serial_idx, prim_mac_idx = get_col_indices(primary_headers)
+    prim_meta = {
+        'key_idx': primary_key_idx,
+        'name_idx': prim_name_idx,
+        'serial_idx': prim_serial_idx,
+        'mac_idx': prim_mac_idx
+    }
+    
+    sec_sheets_processed = []
     for sheet in secondary_sheets:
         key_idx = sheet["keyIdx"]
         headers = sheet["headers"]
         rows = sheet["rows"]
         
-        sheet_map = {}
-        for row in rows:
-            if not row or all(str(c).strip() == "" for c in row):
-                continue
-            val = str(row[key_idx]).strip() if key_idx < len(row) else ""
-            if not val:
-                continue
-            norm_name = re.sub(r'[^a-zA-Z0-9]', '', val).lower()
-            sheet_map[norm_name] = row
-            
-        secondary_maps.append({
+        valid_rows = []
+        for r in rows:
+            if r and not all(str(c).strip() == "" for c in r):
+                valid_rows.append(r)
+                
+        name_idx, serial_idx, mac_idx = get_col_indices(headers)
+        sec_meta = {
+            'key_idx': key_idx,
+            'name_idx': name_idx,
+            'serial_idx': serial_idx,
+            'mac_idx': mac_idx
+        }
+        
+        sec_sheets_processed.append({
             "filename": sheet["filename"],
             "headers": headers,
-            "keyIdx": key_idx,
-            "map": sheet_map
+            "rows": valid_rows,
+            "meta": sec_meta,
+            "matched_indices": set()
         })
         
     matches = []
@@ -296,7 +359,12 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
     
     import random
     
-    for norm_name, primary_data in primary_map.items():
+    for p_row_idx, p_row in enumerate(primary_rows):
+        if not p_row or all(str(c).strip() == "" for c in p_row):
+            continue
+            
+        raw_name = str(p_row[primary_key_idx]).strip() if primary_key_idx < len(p_row) else f"Device-{p_row_idx + 1}"
+        
         present_in_sheets = []
         missing_in_sheets = []
         merged_properties = []
@@ -304,7 +372,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         # Capture primary properties
         for idx, h in enumerate(primary_headers):
             if idx != primary_key_idx:
-                val = str(primary_data["row"][idx]).strip() if idx < len(primary_data["row"]) else ""
+                val = str(p_row[idx]).strip() if idx < len(p_row) else ""
                 merged_properties.append({
                     "source": primary_sheet["filename"],
                     "sheetRole": "Primary",
@@ -313,14 +381,19 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                 })
                 
         # Resolve secondary mappings
-        for sec in secondary_maps:
-            if norm_name in sec["map"]:
+        for sec in sec_sheets_processed:
+            matched_row = None
+            for r_idx, s_row in enumerate(sec["rows"]):
+                if row_matches(p_row, prim_meta, s_row, sec["meta"]):
+                    matched_row = s_row
+                    sec["matched_indices"].add(r_idx)
+                    break
+                    
+            if matched_row is not None:
                 present_in_sheets.append(sec["filename"])
-                row_data = sec["map"][norm_name]
-                
                 for idx, h in enumerate(sec["headers"]):
-                    if idx != sec["keyIdx"]:
-                        val = str(row_data[idx]).strip() if idx < len(row_data) else ""
+                    if idx != sec["meta"]["key_idx"]:
+                        val = str(matched_row[idx]).strip() if idx < len(matched_row) else ""
                         merged_properties.append({
                             "source": sec["filename"],
                             "sheetRole": "Secondary",
@@ -330,15 +403,14 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
             else:
                 missing_in_sheets.append(sec["filename"])
                 
-        # Generate random unique suffix matching JS format
         random_suffix = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=4))
         
         if len(missing_in_sheets) > 0:
             gaps.append({
                 "id": f"dev-gap-{random_suffix}",
-                "name": primary_data["rawName"],
-                "normalized": norm_name,
-                "primaryRow": primary_data["row"],
+                "name": raw_name,
+                "normalized": normalize_value(raw_name),
+                "primaryRow": p_row,
                 "missingInSheets": missing_in_sheets,
                 "presentInSheets": present_in_sheets,
                 "mergedProperties": merged_properties,
@@ -347,29 +419,34 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         else:
             matches.append({
                 "id": f"dev-rec-{random_suffix}",
-                "name": primary_data["rawName"],
-                "normalized": norm_name,
-                "primaryRow": primary_data["row"],
+                "name": raw_name,
+                "normalized": normalize_value(raw_name),
+                "primaryRow": p_row,
                 "mergedProperties": merged_properties,
                 "status": "MATCHED"
             })
             
     # Resolve rogue assets
     rogues_map = {}
-    for sec in secondary_maps:
-        for norm_name, row in sec["map"].items():
-            if norm_name not in primary_map:
+    for sec in sec_sheets_processed:
+        for r_idx, s_row in enumerate(sec["rows"]):
+            if r_idx not in sec["matched_indices"]:
+                val = str(s_row[sec["meta"]["key_idx"]]).strip() if sec["meta"]["key_idx"] < len(s_row) else ""
+                if not val:
+                    continue
+                norm_name = normalize_value(val)
+                if not norm_name:
+                    continue
                 if norm_name not in rogues_map:
-                    val = str(row[sec["keyIdx"]]).strip() if sec["keyIdx"] < len(row) else ""
                     rogues_map[norm_name] = {
                         "name": val,
                         "sheets": []
                     }
                 rogues_map[norm_name]["sheets"].append({
                     "filename": sec["filename"],
-                    "row": row,
+                    "row": s_row,
                     "headers": sec["headers"],
-                    "keyIdx": sec["keyIdx"]
+                    "keyIdx": sec["meta"]["key_idx"]
                 })
                 
     rogues = []
@@ -388,3 +465,4 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         "gaps": gaps,
         "rogues": rogues
     }
+
