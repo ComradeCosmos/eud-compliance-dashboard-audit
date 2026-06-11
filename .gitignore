@@ -31,3 +31,9 @@ dist/
 .svelte-kit/
 .next/
 .nuxt/
+
+# SSL Certs and Keys
+*.pem
+key.pem
+cert.pem
+

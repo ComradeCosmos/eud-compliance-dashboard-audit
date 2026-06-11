@@ -75,11 +75,11 @@ graph TD
 │   └── favicon.png            # Browser tab icon
 ├── host_secure.py             # Secure HTTPS/HTTP Python server (AWS compatible)
 ├── excel_validator.py         # Native XML/zip Excel parser & validation engine
+├── update-reconciler.js       # Core JS reconciler template
 ├── Dockerfile                 # Docker container config (for AWS App Runner / ECS)
 ├── Procfile                   # Elastic Beanstalk process deployment config
-├── *.js                       # Node.js test and regression scripts
-├── *.py                       # Python analysis and telemetry auditing scripts
-└── .gitignore                 # Exclude list for temporary credentials and cache files
+├── .gitignore                 # Exclude list for credentials and local cache files
+└── README.md                  # System overview and deployment guide
 ```
 
 ---
@@ -98,7 +98,7 @@ Ensure Python 3.10+ is installed. Run the secure Python server from the project 
     *Open browser at: `https://127.0.0.1:4430` (or `https://<YOUR_LOCAL_IP>:4430` for network devices).*
 
 *   **Option B: HTTP Mode (Unencrypted / Local Testing)**
-    Bypasses SSL wrapping to serve on port `8080`:
+    Bypasses SSL wrapping to serve on port `8080` bound to all interfaces for network hosting:
     ```bash
     python host_secure.py --no-ssl --port 8080 --bind 0.0.0.0
     ```
@@ -119,10 +119,10 @@ The server automatically prioritizes the `PORT` environment variable injected by
 
 ## Running Verification Tests
 
-Run standard automated test suites in the dashboard root directory to verify syntax and check for regressions:
+Run the standard automated test suites in the dashboard root directory to verify syntax, security policies, and reconciliation logic:
 
 ```bash
-# Verify JavaScript Syntax in script tags
+# Verify JavaScript Syntax in index.html script tags
 node test-syntax.js
 
 # Verify DOM Runtime Boot
@@ -134,9 +134,15 @@ node test-interaction.js
 # Verify Telemetry Leakage & Successive Merges
 node test-telemetry-leakage.js
 
+# Verify Multi-Attribute Identity Resolution with Distinct Keys
+node test-distinct-merge-keys.js
+
+# Verify Custom Telemetry Table rendering
+node verify-details-table.js
+
 # Verify Core Reporting Policies Isolation
 node verify-reporting-policies.js
 
-# Verify Windows-Only AD Enrollment
+# Verify Windows-Only AD Enrollment applicability
 node verify-ad-windows-only.js
 ```
