@@ -5898,9 +5898,10 @@
             mergedKeys.forEach(k => {
                 const customKey = `custom:${k}`;
                 if (!activeTableKeys.includes(customKey)) {
-                    // Extract clean name and source file for header label
-                    const cleanName = k.replace(/^[.*?]s*/, '');
-                    const sourceName = k.match(/^[(.*?)]/) ? k.match(/^[(.*?)]/)[1] : 'Excel';
+                    // Fixed regex: escape brackets correctly to strip [FileName] prefix
+                    const cleanName = k.replace(/^\[.*?\]\s*/, '');
+                    const sourceMatch = k.match(/^\[(.*?)\]/);
+                    const sourceName = sourceMatch ? sourceMatch[1] : 'Excel';
                     const headerLabel = `${cleanName} (${sourceName})`;
 
                     activeTableHeaders.push(headerLabel);
@@ -5908,12 +5909,22 @@
                 }
             });
 
-            recalculateAllScores();
-            renderReconciliationUI();
-            switchNavSection("compliance");
+            // Sync filteredDataset immediately so the table shows merged records right away
+            filteredDataset = [...fleetDataset];
+            currentPage = 1;
+
+            // Invalidate stats cache since compliance data has changed
+            invalidatePolicyStatsCache();
 
             const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
             logToTerminal(`[Reconciler] ${successMsg}`, "info");
+
+            // Switch to compliance view first so the user sees the table while scores recalculate
+            switchNavSection("compliance");
+
+            // Kick off async chunked recalculation; alert fires when done
+            recalculateAllScores();
+            renderReconciliationUI();
             alert(successMsg);
         }
 
