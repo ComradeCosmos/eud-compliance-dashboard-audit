@@ -274,7 +274,7 @@
 
                     <!-- Reconciliation Results Area (Initially Hidden) -->
                     <div id="reconciler-results-wrapper"
-                        style="display: none; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
+                        style="display: none; margin-top: 2.5rem; flex-direction: column; gap: 2rem;">
                         <div style="border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
                             <h3
                                 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
@@ -5005,32 +5005,44 @@
             const rogues = reconciliationResults.rogues;
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
-            if (!primarySheet) return;
 
-            const totalPrimary = primaryMapSizeFallback();
-            const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
+            // Only show summary metrics if we have a primary sheet to derive match rate from
+            if (primarySheet) {
+                const totalPrimary = primaryMapSizeFallback();
+                const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
-            document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
-            
-            const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
-            let subtext = matchesWidget.querySelector("p");
-            if (subtext) {
-                subtext.innerHTML = `<strong style="color:var(--status-low);">${matches.length} Matches Aligned</strong>`;
+                document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
+
+                const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
+                let subtext = matchesWidget.querySelector("p");
+                if (subtext) {
+                    subtext.innerHTML = `<strong style="color:var(--status-low);">${matches.length} Matches Aligned</strong>`;
+                }
+
+                document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
+                document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
+
+                const matchRateEl = document.getElementById("recon-stat-match-rate");
+                matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
+                matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
+            } else {
+                // No primary sheet — show raw counts from results
+                const el = id => document.getElementById(id);
+                el("recon-stat-matches").innerText = matches.length.toLocaleString();
+                el("recon-stat-gaps").innerText = gaps.length.toLocaleString();
+                el("recon-stat-rogues").innerText = rogues.length.toLocaleString();
+                const matchRateEl = el("recon-stat-match-rate");
+                matchRateEl.innerText = "-";
             }
-
-            document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
-            document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-            
-            const matchRateEl = document.getElementById("recon-stat-match-rate");
-            matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
-            matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
 
             document.getElementById("recon-tab-count-gaps").innerText = gaps.length.toLocaleString();
             document.getElementById("recon-tab-count-rogues").innerText = rogues.length.toLocaleString();
             document.getElementById("recon-tab-count-matches").innerText = matches.length.toLocaleString();
 
-            document.getElementById("reconciler-results-wrapper").style.display = "block";
-
+            // Show results wrapper using flex layout
+            const wrapper = document.getElementById("reconciler-results-wrapper");
+            wrapper.style.display = "flex";
+            
             // Verify and align metrics with the active reconciled fleet
             const matchesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "SUCCESS").length;
             const gapsInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "COVERAGE_GAP").length;
@@ -5077,9 +5089,6 @@
             body.innerHTML = "";
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
-            if (!primarySheet) return;
-
-            const primaryHeaders = primarySheet.headers;
             let rowsToRender = reconciliationResults[tabId];
 
             if (tabId === "gaps") {
@@ -5092,11 +5101,17 @@
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
                         const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing in: ${escapeHTML(s)}</span>`).join("");
-                        const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
+                        // Safely render primary detail: use mergedProperties as fallback if primaryRow is unavailable
+                        let primaryDetails = "";
+                        if (item.primaryRow && primarySheet && primarySheet.headers) {
+                            primaryDetails = primarySheet.headers.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(String(item.primaryRow[idx] || "-"))}`).join(" | ");
+                        } else if (item.mergedProperties && item.mergedProperties.length > 0) {
+                            primaryDetails = item.mergedProperties.slice(0, 4).map(p => `<strong>${escapeHTML(p.property)}:</strong> ${escapeHTML(p.value)}`).join(" | ");
+                        }
                         
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${escapeHTML(item.name).toUpperCase()}</strong></td>
                             <td style="vertical-align: middle;">${missingBadges}</td>
                             <td style="vertical-align: middle; font-size: 0.78rem; color: var(--text-secondary);">${primaryDetails}</td>
                         `;
