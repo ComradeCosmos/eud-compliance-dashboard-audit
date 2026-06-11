@@ -3987,6 +3987,62 @@
 
         let currentReconTab = "gaps";
 
+        function autoDetectKeyIdx(headers, rows) {
+            if (!headers || headers.length === 0) return 0;
+            const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            
+            const candidates = [];
+            lowerHeaders.forEach((h, idx) => {
+                let score = 0;
+                let type = "";
+                
+                if (nameKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 3;
+                    type = "name";
+                } else if (serialKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 2;
+                    type = "serial";
+                } else if (macKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                    score = 1;
+                    type = "mac";
+                }
+                
+                if (score > 0) {
+                    // Calculate uniqueness
+                    const vals = rows.slice(1).map(r => {
+                        const cell = r[idx];
+                        return cell !== undefined && cell !== null ? String(cell).trim().toLowerCase() : "";
+                    }).filter(v => v !== "" && v !== "-" && v !== "disabled" && v !== "unknown" && v !== "not available" && v !== "to be filled by o.e.m.");
+                    const uniqueVals = new Set(vals);
+                    const uniqueness = vals.length > 0 ? uniqueVals.size / vals.length : 0;
+                    
+                    candidates.push({
+                        idx,
+                        score,
+                        uniqueness
+                    });
+                }
+            });
+            
+            const validCandidates = candidates.filter(c => c.uniqueness > 0.1);
+            if (validCandidates.length > 0) {
+                validCandidates.sort((a, b) => {
+                    if (Math.abs(a.uniqueness - b.uniqueness) > 0.15) {
+                        return b.uniqueness - a.uniqueness;
+                    }
+                    return b.score - a.score;
+                });
+                return validCandidates[0].idx;
+            } else if (candidates.length > 0) {
+                candidates.sort((a, b) => b.score - a.score);
+                return candidates[0].idx;
+            }
+            return 0;
+        }
+
         function matchSoftwareKey(header, swKey) {
             if (!header || !swKey) return false;
             const h = header.toLowerCase().trim();
@@ -4115,7 +4171,8 @@
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
                 "pass", "passed", "on", "enabled", "running", "secured", "secure",
                 "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected",
-                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running"
+                "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running",
+                "registered"
             ];
 
             const nonCompliantKeywords = [
@@ -4150,7 +4207,7 @@
             const agentKeywords = {
                 ad: ["active directory", "ad", "active_directory", "domain", "canonicalname", "canonical name", "distinguishedname", "distinguished name"],
                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn"],
+                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -4159,10 +4216,17 @@
             const keywords = agentKeywords[swKey] || [];
 
             if (item.mergedProperties) {
+                // Sort properties to prioritize version/connector/client columns over status/state columns
                 const sortedProps = [...item.mergedProperties].sort((a, b) => {
                     const aIsSec = a.sheetRole === "Secondary" ? 1 : 0;
                     const bIsSec = b.sheetRole === "Secondary" ? 1 : 0;
-                    return bIsSec - aIsSec;
+                    if (aIsSec !== bIsSec) return bIsSec - aIsSec;
+                    
+                    const aProp = a.property.toLowerCase();
+                    const bProp = b.property.toLowerCase();
+                    const aIsVer = (aProp.includes("version") || aProp.includes("connector") || aProp.includes("client")) ? 1 : 0;
+                    const bIsVer = (bProp.includes("version") || bProp.includes("connector") || bProp.includes("client")) ? 1 : 0;
+                    return bIsVer - aIsVer;
                 });
 
                 for (let p of sortedProps) {
@@ -4299,13 +4363,8 @@
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         try {
-                            const arrayBuffer = e.target.result;
-                            const bytes = new Uint8Array(arrayBuffer);
-                            let binary = "";
-                            for (let i = 0; i < bytes.byteLength; i++) {
-                                binary += String.fromCharCode(bytes[i]);
-                            }
-                            const base64 = btoa(binary);
+                            const dataUrl = e.target.result;
+                            const base64 = dataUrl.substring(dataUrl.indexOf(",") + 1);
 
                             logToTerminal(`[Reconciler] Uploading "${file.name}" to Python backend for validation...`, "info");
 
@@ -4330,23 +4389,7 @@
                                     }
 
                                     const headers = data.headers;
-                                    const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
-                                    let keyIdx = -1;
-                                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                                    for (let kw of keyKeywords) {
-                                        const idx = lowerHeaders.findIndex(h => {
-                                            if (kw.length <= 3) {
-                                                const words = h.split(/[^a-z0-9]+/);
-                                                return words.includes(kw);
-                                            }
-                                            return h.includes(kw);
-                                        });
-                                        if (idx !== -1) {
-                                            keyIdx = idx;
-                                            break;
-                                        }
-                                    }
-                                    if (keyIdx === -1) keyIdx = 0;
+                                    let keyIdx = autoDetectKeyIdx(headers, data.rows);
 
                                     const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
                                     const sheetObj = {
@@ -4374,7 +4417,7 @@
                             runFallbackReconcilerParse(file, isExcel);
                         }
                     };
-                    reader.readAsArrayBuffer(file);
+                    reader.readAsDataURL(file);
                 } else {
                     runFallbackReconcilerParse(file, isExcel);
                 }
@@ -4426,26 +4469,7 @@
                     }
 
                     const headers = rows[0].map(h => String(h).trim());
-                    const lowerHeaders = headers.map(h => h.toLowerCase());
-
-                    let keyIdx = -1;
-                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-
-                    for (let kw of keyKeywords) {
-                        const idx = lowerHeaders.findIndex(h => {
-                            if (kw.length <= 3) {
-                                const words = h.split(/[^a-z0-9]+/);
-                                return words.includes(kw);
-                            }
-                            return h.includes(kw);
-                        });
-                        if (idx !== -1) {
-                            keyIdx = idx;
-                            break;
-                        }
-                    }
-
-                    if (keyIdx === -1) keyIdx = 0;
+                    let keyIdx = autoDetectKeyIdx(headers, rows);
 
                     const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
 
@@ -4650,7 +4674,7 @@
             if (!val) return [];
             const macs = String(val).match(/[0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}/g);
             if (!macs) return [];
-            return macs.map(m => m.toLowerCase().replace(/\./g, ':').replace(/-/g, ':'));
+            return macs.map(m => m.toLowerCase().replace(/./g, ':').replace(/-/g, ':'));
         }
 
         function normalizeValue(val) {

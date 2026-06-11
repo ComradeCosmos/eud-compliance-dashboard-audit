@@ -412,13 +412,8 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     const reader = new FileReader();
                     reader.onload = function (e) {
                         try {
-                            const arrayBuffer = e.target.result;
-                            const bytes = new Uint8Array(arrayBuffer);
-                            let binary = "";
-                            for (let i = 0; i < bytes.byteLength; i++) {
-                                binary += String.fromCharCode(bytes[i]);
-                            }
-                            const base64 = btoa(binary);
+                            const dataUrl = e.target.result;
+                            const base64 = dataUrl.substring(dataUrl.indexOf(",") + 1);
 
                             logToTerminal(\`[Reconciler] Uploading "\${file.name}" to Python backend for validation...\`, "info");
 
@@ -438,7 +433,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                                     }
                                     if (data.validation_report && data.validation_report.errors.length > 0) {
                                         data.validation_report.errors.forEach(err => {
-                                            logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
+                                            logToTerminal(\`[Reconciler Validation Error] \${err}\`, "error");
                                         });
                                     }
 
@@ -447,7 +442,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
                                     const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
                                     const sheetObj = {
-                                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                                        id: \`sheet-\${Math.random().toString(36).substring(2, 8)}\`,
                                         filename: data.filename,
                                         rows: data.rows.slice(1),
                                         headers: data.headers,
@@ -471,7 +466,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                             runFallbackReconcilerParse(file, isExcel);
                         }
                     };
-                    reader.readAsArrayBuffer(file);
+                    reader.readAsDataURL(file);
                 } else {
                     runFallbackReconcilerParse(file, isExcel);
                 }
@@ -695,8 +690,9 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             } else {
                 runLocalReconciliation();
             }
+        }
 
-            function getColIndices(headers) {
+        function getColIndices(headers) {
             const hLow = headers.map(h => String(h).toLowerCase().trim());
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
@@ -781,7 +777,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
         }
 
         function runLocalReconciliation() {
-            logToTerminal(`[Reconciler] Executing local asset alignment...`);
+            logToTerminal(\`[Reconciler] Executing local asset alignment...\`);
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
 
@@ -821,7 +817,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             primarySheet.rows.forEach((pRow, pRowIdx) => {
                 if (!pRow || pRow.every(cell => String(cell).trim() === "")) return;
 
-                const rawName = String(pRow[primaryKeyIdx] || "").trim() || `Device-${pRowIdx + 1}`;
+                const rawName = String(pRow[primaryKeyIdx] || "").trim() || \`Device-\${pRowIdx + 1}\`;
                 const presentInSheets = [];
                 const missingInSheets = [];
                 const mergedProperties = [];
@@ -871,7 +867,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
                 if (missingInSheets.length > 0) {
                     gaps.push({
-                        id: `dev-gap-${randomSuffix}`,
+                        id: \`dev-gap-\${randomSuffix}\`,
                         name: rawName,
                         normalized: normalizeValue(rawName),
                         primaryRow: pRow,
@@ -882,7 +878,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     });
                 } else {
                     matches.push({
-                        id: `dev-rec-${randomSuffix}`,
+                        id: \`dev-rec-\${randomSuffix}\`,
                         name: rawName,
                         normalized: normalizeValue(rawName),
                         primaryRow: pRow,
@@ -921,7 +917,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             for (let normName in roguesMap) {
                 const randomSuffix = Math.random().toString(36).substring(2, 6);
                 rogues.push({
-                    id: `dev-rogue-${randomSuffix}`,
+                    id: \`dev-rogue-\${randomSuffix}\`,
                     name: roguesMap[normName].name,
                     normalized: normName,
                     sheets: roguesMap[normName].sheets,
@@ -930,7 +926,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             }
 
             reconciliationResults = { matches: matches, gaps: gaps, rogues: rogues };
-            logToTerminal(`[Reconciler] Local alignment complete. Matches: ${matches.length}, Gaps: ${gaps.length}, Rogues: ${rogues.length}`, "info");
+            logToTerminal(\`[Reconciler] Local alignment complete. Matches: \${matches.length}, Gaps: \${gaps.length}, Rogues: \${rogues.length}\`, "info");
             renderReconciliationUI();
         }
 
