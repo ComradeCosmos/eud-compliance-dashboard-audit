@@ -173,9 +173,9 @@ def validate_sheet_data(headers, rows):
     ip_idx = find_index(headers, ["ip", "ipaddress", "ip_address", "subnet"])
     
     # Core compliance controls
-    ad_idx = find_index(headers, ["active directory", "ad", "active_directory", "domain", "enrollment"])
+    ad_idx = find_index(headers, ["active directory", "ad", "active_directory", "domain"])
     bitlocker_idx = find_index(headers, ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"])
-    zscaler_idx = find_index(headers, ["zscaler", "z-scaler", "zscaler client connector", "vpn"])
+    zscaler_idx = find_index(headers, ["zscaler", "zscalar", "z-scaler", "z-scalar", "zscaler client connector", "zscalar client connector", "vpn"])
     nessus_idx = find_index(headers, ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"])
     s1_idx = find_index(headers, ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"])
     sccm_idx = find_index(headers, ["sccm", "sccm agent", "mecm", "management agent", "patch agent"])

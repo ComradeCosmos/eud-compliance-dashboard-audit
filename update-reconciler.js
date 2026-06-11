@@ -58,11 +58,11 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             }
 
             if (k === "zscaler") {
-                if (h.includes("zscaler") || h.includes("z-scaler") || h.includes("vpn")) {
+                if (h.includes("zscaler") || h.includes("zscalar") || h.includes("z-scaler") || h.includes("vpn")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("zscaler");
+                return words.includes("zscaler") || words.includes("zscalar");
             }
 
             if (k === "nessus") {
@@ -108,7 +108,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
                 return "bitlocker";
             }
-            if (fn.includes("zscaler") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
+            if (fn.includes("zscaler") || fn.includes("zscalar") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
                 return "zscaler";
             }
             if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
@@ -154,6 +154,11 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 return { installed: "MISSING", status: "NON_COMPLIANT" };
             }
 
+            // If the value contains a version number, it is installed and compliant
+            if (/\b\d+\.\d+/.test(val) || /^v\d+/.test(val)) {
+                return { installed: "INSTALLED", status: "COMPLIANT" };
+            }
+
             const compliantKeywords = [
                 "compliant", "installed", "yes", "true", "1", "active",
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
@@ -191,9 +196,9 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
         function getMergedAgentStatus(item, swKey) {
             const agentKeywords = {
-                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                ad: ["active directory", "ad", "active_directory", "domain"],
                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -221,6 +226,16 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     if (matched) {
                         const valString = String(p.value).trim();
                         if (valString && valString !== "-") {
+                            // Specialized logic for AD domain / status values
+                            if (swKey === "ad") {
+                                const lowerVal = valString.toLowerCase();
+                                const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-"];
+                                if (lowerVal && !nonCompliantAD.includes(lowerVal)) {
+                                    return { installed: valString, status: "COMPLIANT" };
+                                } else {
+                                    return { installed: valString, status: "NON_COMPLIANT" };
+                                }
+                            }
                             return evaluateComplianceValue(valString);
                         }
                     }
