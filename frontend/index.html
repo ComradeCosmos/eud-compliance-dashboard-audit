@@ -766,6 +766,17 @@
 
     <!-- Interactive JS logic -->
     <script>
+        // Ensure requestAnimationFrame is defined (for test environments / headless environments)
+        if (typeof requestAnimationFrame === "undefined") {
+            if (typeof window !== "undefined") {
+                window.requestAnimationFrame = function (cb) { return setTimeout(cb, 16); };
+            } else if (typeof globalThis !== "undefined") {
+                globalThis.requestAnimationFrame = function (cb) { return setTimeout(cb, 16); };
+            } else {
+                this.requestAnimationFrame = function (cb) { return setTimeout(cb, 16); };
+            }
+        }
+
         // Simulated LDAP user and authorization directory
         const simulatedLDAPDirectory = {
             "admin.security": {
@@ -1549,8 +1560,6 @@
             filteredDataset = [...fleetDataset];
             selectedDevice = null;
 
-            recalculateAllScores();
-
             activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
             activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
 
@@ -1572,9 +1581,15 @@
             });
 
             currentPage = 1;
+            // Switch to the compliance view immediately so user sees the table
+            switchNavSection("compliance");
+            // Populate table with un-scored rows so the view is not blank during async recalc
             populateFleetTable();
             updateFleetWideMetrics();
-            switchNavSection("compliance");
+
+            // recalculateAllScores is async (chunked). It calls _doFleetFilter + updateFleetWideMetrics
+            // again when done, which will refresh the table with final scored values.
+            recalculateAllScores();
 
             logToTerminal(`[Import] Successfully ingested ${fleetDataset.length} devices from the uploaded spreadsheet. Dynamic headers registered.`, "info");
             alert(`Spreadsheet Ingestion Complete! Loaded ${fleetDataset.length} devices.`);
@@ -1601,6 +1616,9 @@
             };
             mergedSoftwareAgents = new Set();
 
+            // Invalidate caches so stale stats don't persist after purge
+            invalidatePolicyStatsCache();
+
             // Clear file input UI elements
             const csvImportFile = document.getElementById("csv-import-file");
             if (csvImportFile) csvImportFile.value = "";
@@ -1621,7 +1639,8 @@
 
             // Update all views, metrics, and render states
             renderReconcilerQueue();
-            switchReconTab(currentReconTab);
+            // Guard currentReconTab — may be undefined if reconciler was never opened
+            if (currentReconTab) switchReconTab(currentReconTab);
             updateFleetWideMetrics();
             handleFleetQueryChange();
 
@@ -2162,7 +2181,9 @@
             btnPrev.style.opacity = btnPrev.disabled ? 0.4 : 1;
             btnNext.style.opacity = btnNext.disabled ? 0.4 : 1;
             enforceRoleBasedControls();
-            renderCorePoliciesComparison();
+            // NOTE: renderCorePoliciesComparison is NOT called here intentionally.
+            // It is always called via requestAnimationFrame from _doFleetFilter / _finishRecalculate
+            // to guarantee the table paints first and avoid double DOM writes.
         }
 
         function renderCorePoliciesComparison() {
@@ -3386,8 +3407,8 @@
         }
 
         // Per-render cache for getPolicyStats — avoids re-scanning 14k rows multiple times per render
-        let _policyStatsCache = null;
-        let _policyStatsCacheFilter = null;
+        var _policyStatsCache = null;
+        var _policyStatsCacheFilter = null;
 
         function invalidatePolicyStatsCache() {
             _policyStatsCache = null;
@@ -3575,10 +3596,16 @@
             return failedControls;
         }
 
+        // Token to cancel any in-flight chunk loop before starting a new recalculation
+        var _recalcToken = 0;
+
         function recalculateAllScores() {
             // Invalidate caches before recalculating
             invalidatePolicyStatsCache();
             populatePolicyFilterDropdown();
+
+            // Cancel any previous in-flight chunk loop
+            const myToken = ++_recalcToken;
 
             const CHUNK_SIZE = 2000; // process 2000 devices per tick to keep UI responsive
             const policies = getAvailablePolicies();
@@ -3595,6 +3622,9 @@
 
             let offset = 0;
             function processChunk() {
+                // Bail out if a newer recalculation has started
+                if (myToken !== _recalcToken) return;
+
                 const end = Math.min(offset + CHUNK_SIZE, total);
                 for (let i = offset; i < end; i++) {
                     recalculateSingleDeviceScore(fleetDataset[i], policies);
