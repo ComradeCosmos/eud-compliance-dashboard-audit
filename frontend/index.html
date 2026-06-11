@@ -1226,6 +1226,10 @@
                 generateComplianceReport();
             } else if (target === "risk") {
                 renderPoliciesGrid();
+            } else if (target === "reconciler") {
+                if (typeof renderReconciliationUI === "function" && reconciliationResults && (reconciliationResults.matches.length > 0 || reconciliationResults.gaps.length > 0 || reconciliationResults.rogues.length > 0)) {
+                    renderReconciliationUI();
+                }
             }
 
             if (typeof window.scrollTo === "function") {
@@ -1298,7 +1302,7 @@
             if (!file) return;
 
             logToTerminal(`[Import] Upload request recognized for file: "${file.name}"`);
-            const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+            const isExcel = file.name.toLowerCase().endsWith(".xlsx") || file.name.toLowerCase().endsWith(".xls");
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
             if (usePython) {
@@ -1614,6 +1618,16 @@
             const policyFilter = (document.getElementById("fleet-filter-policy") || {}).value || "ALL";
 
             filteredDataset = fleetDataset.filter(item => {
+                let matchesCustom = false;
+                if (item.custom_properties) {
+                    for (let key in item.custom_properties) {
+                        if (String(item.custom_properties[key]).toLowerCase().includes(query)) {
+                            matchesCustom = true;
+                            break;
+                        }
+                    }
+                }
+
                 const matchesSearch =
                     String(item.id || "").toLowerCase().includes(query) ||
                     String(item.canonical_name || "").toLowerCase().includes(query) ||
@@ -1621,7 +1635,8 @@
                     String(item.os || "").toLowerCase().includes(query) ||
                     String(item.condition || "").toLowerCase().includes(query) ||
                     String(item.user_assigned || "").toLowerCase().includes(query) ||
-                    String(item.location || "").toLowerCase().includes(query);
+                    String(item.location || "").toLowerCase().includes(query) ||
+                    matchesCustom;
 
                 const matchesRisk = (riskFilter === "ALL") || (item.level === riskFilter);
                 const matchesCondition = (conditionFilter === "ALL") || (item.condition === conditionFilter);
@@ -3943,9 +3958,9 @@
         }
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
-
+        
         // reconcilerSheets and reconciliationResults are declared globally at the top of the script block to prevent TDZ ReferenceErrors on page reload
-        reconcilerSheets = [];
+        reconcilerSheets = []; 
         reconciliationResults = {
             matches: [],
             gaps: [],
@@ -4018,7 +4033,7 @@
             if (!sheet || !sheet.filename) return null;
             const fn = sheet.filename.toLowerCase();
             const words = fn.split(/[^a-z0-9]+/);
-
+            
             // Check filename matches first
             if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
                 return "sentinelone";
@@ -4035,14 +4050,14 @@
             if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
                 return "sccm";
             }
-
+            
             // "ad" is too short for simple includes, use word list
             if (words.includes("ad") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
                 if (sheet.role !== "primary") {
                     return "ad";
                 }
             }
-
+            
             // If filename doesn't match any key, fall back to matching headers
             const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
             for (const k of swKeys) {
@@ -4051,7 +4066,7 @@
                     return k;
                 }
             }
-
+            
             return null; // unknown classification
         }
 
@@ -4188,12 +4203,14 @@
         }
 
         function parseCSVNative(text) {
+            if (text.startsWith("\uFEFF")) {
+                text = text.substring(1);
+            }
+            const rawLines = text.split(/\r?\n/);
             const lines = [];
-            let row = [""];
-            let inQuotes = false;
-
+            
             let sep = ",";
-            const firstLine = text.split(/\r?\n/)[0] || "";
+            const firstLine = rawLines[0] || "";
             let commaCount = (firstLine.match(/,/g) || []).length;
             let semiCount = (firstLine.match(/;/g) || []).length;
             let tabCount = (firstLine.match(/\t/g) || []).length;
@@ -4201,30 +4218,33 @@
             if (semiCount > commaCount && semiCount > tabCount) sep = ";";
             else if (tabCount > commaCount && tabCount > semiCount) sep = "\t";
 
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                const next = text[i + 1];
-
-                if (c === '"') {
-                    if (inQuotes && next === '"') {
-                        row[row.length - 1] += '"';
-                        i++;
+            for (let lineText of rawLines) {
+                lineText = lineText.trim();
+                if (!lineText) continue;
+                
+                const row = [];
+                let currentField = "";
+                let inQuotes = false;
+                
+                for (let i = 0; i < lineText.length; i++) {
+                    const c = lineText[i];
+                    const next = lineText[i + 1];
+                    
+                    if (c === '"') {
+                        if (inQuotes && next === '"') {
+                            currentField += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (c === sep && !inQuotes) {
+                        row.push(currentField);
+                        currentField = "";
                     } else {
-                        inQuotes = !inQuotes;
+                        currentField += c;
                     }
-                } else if (c === sep && !inQuotes) {
-                    row.push("");
-                } else if ((c === '\r' || c === '\n') && !inQuotes) {
-                    if (c === '\r' && next === '\n') {
-                        i++;
-                    }
-                    lines.push(row);
-                    row = [""];
-                } else {
-                    row[row.length - 1] += c;
                 }
-            }
-            if (row.length > 1 || row[0] !== "") {
+                row.push(currentField);
                 lines.push(row);
             }
             return lines;
@@ -4238,8 +4258,8 @@
 
             Array.from(files).forEach(file => {
                 logToTerminal(`[Reconciler] Upload request received for source file: "${file.name}"`);
-
-                const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+                
+                const isExcel = file.name.toLowerCase().endsWith(".xlsx") || file.name.toLowerCase().endsWith(".xls");
 
                 if (usePython) {
                     const reader = new FileReader();
@@ -4260,61 +4280,61 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ filename: file.name, content: base64 })
                             })
-                                .then(res => res.json())
-                                .then(data => {
-                                    if (data.success) {
-                                        logToTerminal(`[Reconciler] Python validation completed for "${file.name}"`, "info");
-                                        if (data.validation_report && data.validation_report.warnings.length > 0) {
-                                            data.validation_report.warnings.forEach(warn => {
-                                                logToTerminal(`[Reconciler Validation Warning] ${warn}`, "warn");
-                                            });
-                                        }
-                                        if (data.validation_report && data.validation_report.errors.length > 0) {
-                                            data.validation_report.errors.forEach(err => {
-                                                logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
-                                            });
-                                        }
-
-                                        const headers = data.headers;
-                                        const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
-                                        let keyIdx = -1;
-                                        const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-                                        for (let kw of keyKeywords) {
-                                            const idx = lowerHeaders.findIndex(h => {
-                                                if (kw.length <= 3) {
-                                                    const words = h.split(/[^a-z0-9]+/);
-                                                    return words.includes(kw);
-                                                }
-                                                return h.includes(kw);
-                                            });
-                                            if (idx !== -1) {
-                                                keyIdx = idx;
-                                                break;
-                                            }
-                                        }
-                                        if (keyIdx === -1) keyIdx = 0;
-
-                                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
-                                        const sheetObj = {
-                                            id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
-                                            filename: data.filename,
-                                            rows: data.rows.slice(1),
-                                            headers: data.headers,
-                                            keyIdx: keyIdx,
-                                            role: role
-                                        };
-                                        reconcilerSheets.push(sheetObj);
-                                        logToTerminal(`[Reconciler] Loaded ${data.rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
-                                        renderReconcilerQueue();
-                                    } else {
-                                        logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
-                                        alert(`❌ Python Validation Failed: ${data.message}`);
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.success) {
+                                    logToTerminal(`[Reconciler] Python validation completed for "${file.name}"`, "info");
+                                    if (data.validation_report && data.validation_report.warnings.length > 0) {
+                                        data.validation_report.warnings.forEach(warn => {
+                                            logToTerminal(`[Reconciler Validation Warning] ${warn}`, "warn");
+                                        });
                                     }
-                                })
-                                .catch(err => {
-                                    logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
-                                    runFallbackReconcilerParse(file, isExcel);
-                                });
+                                    if (data.validation_report && data.validation_report.errors.length > 0) {
+                                        data.validation_report.errors.forEach(err => {
+                                            logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
+                                        });
+                                    }
+
+                                    const headers = data.headers;
+                                    const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+                                    let keyIdx = -1;
+                                    const keyKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+                                    for (let kw of keyKeywords) {
+                                        const idx = lowerHeaders.findIndex(h => {
+                                            if (kw.length <= 3) {
+                                                const words = h.split(/[^a-z0-9]+/);
+                                                return words.includes(kw);
+                                            }
+                                            return h.includes(kw);
+                                        });
+                                        if (idx !== -1) {
+                                            keyIdx = idx;
+                                            break;
+                                        }
+                                    }
+                                    if (keyIdx === -1) keyIdx = 0;
+
+                                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+                                    const sheetObj = {
+                                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                                        filename: data.filename,
+                                        rows: data.rows.slice(1),
+                                        headers: data.headers,
+                                        keyIdx: keyIdx,
+                                        role: role
+                                    };
+                                    reconcilerSheets.push(sheetObj);
+                                    logToTerminal(`[Reconciler] Loaded ${data.rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
+                                    renderReconcilerQueue();
+                                } else {
+                                    logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
+                                    alert(`❌ Python Validation Failed: ${data.message}`);
+                                }
+                            })
+                            .catch(err => {
+                                logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
+                                runFallbackReconcilerParse(file, isExcel);
+                            });
                         } catch (err) {
                             logToTerminal(`[Reconciler] Error preparing backend upload: ${err.message}. Falling back to client-side parsing.`, "warn");
                             runFallbackReconcilerParse(file, isExcel);
@@ -4492,7 +4512,7 @@
         function updateSheetRole(id, role) {
             const sheet = reconcilerSheets.find(s => s.id === id);
             if (!sheet) return;
-
+            
             if (role === "primary") {
                 reconcilerSheets.forEach(s => {
                     if (s.id !== id && s.role === "primary") {
@@ -4500,7 +4520,7 @@
                     }
                 });
             }
-
+            
             sheet.role = role;
             logToTerminal(`[Reconciler] Role for "${sheet.filename}" updated to ${role.toUpperCase()}`);
             renderReconcilerQueue();
@@ -4519,11 +4539,11 @@
             if (!sheet) return;
             reconcilerSheets = reconcilerSheets.filter(s => s.id !== id);
             logToTerminal(`[Reconciler] File "${sheet.filename}" removed from queue.`);
-
+            
             if (reconcilerSheets.length > 0 && !reconcilerSheets.some(s => s.role === "primary")) {
                 reconcilerSheets[0].role = "primary";
             }
-
+            
             renderReconcilerQueue();
         }
 
@@ -4545,21 +4565,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sheets: reconcilerSheets })
                 })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success) {
-                            reconciliationResults = data.results;
-                            logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
-                            renderReconciliationUI();
-                        } else {
-                            logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
-                            alert(`❌ Reconciliation Failed: ${data.message}`);
-                        }
-                    })
-                    .catch(err => {
-                        logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to local alignment.`, "warn");
-                        runLocalReconciliation();
-                    });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        reconciliationResults = data.results;
+                        logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
+                        renderReconciliationUI();
+                    } else {
+                        logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
+                        alert(`❌ Reconciliation Failed: ${data.message}`);
+                    }
+                })
+                .catch(err => {
+                    logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to local alignment.`, "warn");
+                    runLocalReconciliation();
+                });
             } else {
                 runLocalReconciliation();
             }
@@ -4622,7 +4642,7 @@
                     if (sec.map.has(normName)) {
                         presentInSheets.push(sec.filename);
                         const rowData = sec.map.get(normName);
-
+                        
                         sec.headers.forEach((h, idx) => {
                             if (idx !== sec.keyIdx) {
                                 mergedProperties.push({
@@ -4711,7 +4731,7 @@
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
             document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
-
+            
             const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
             let subtext = matchesWidget.querySelector("p");
             if (subtext) {
@@ -4720,7 +4740,7 @@
 
             document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
             document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-
+            
             const matchRateEl = document.getElementById("recon-stat-match-rate");
             matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
             matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
@@ -4731,8 +4751,24 @@
 
             document.getElementById("reconciler-results-wrapper").style.display = "block";
 
-            const defaultTab = gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues");
-            switchReconTab(defaultTab);
+            // Verify and align metrics with the active reconciled fleet
+            const matchesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "SUCCESS").length;
+            const gapsInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "COVERAGE_GAP").length;
+            const roguesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "ROGUE_UNMANAGED").length;
+
+            const hasMergedData = (matchesInFleet > 0 || gapsInFleet > 0 || roguesInFleet > 0);
+            
+            if (hasMergedData) {
+                logToTerminal(`[Audit Reconciler] Verification: Matches=${matches.length} (Fleet: ${matchesInFleet}), Gaps=${gaps.length} (Fleet: ${gapsInFleet}), Rogues=${rogues.length} (Fleet: ${roguesInFleet}).`, "info");
+                if (matches.length === matchesInFleet && gaps.length === gapsInFleet && rogues.length === roguesInFleet) {
+                    logToTerminal(`[Audit Reconciler] Verification SUCCESS: Active Reconciled Fleet dataset is in 100% perfect sync with reconciliation metrics.`, "info");
+                } else {
+                    logToTerminal(`[Audit Reconciler] Verification Warning: Active fleet counts have deviated from reconciliation results (possibly due to manual overrides).`, "warn");
+                }
+            }
+
+            const activeTab = currentReconTab || (gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues"));
+            switchReconTab(activeTab);
         }
 
         function primaryMapSizeFallback() {
@@ -4777,7 +4813,7 @@
                         const tr = document.createElement("tr");
                         const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing in: ${escapeHTML(s)}</span>`).join("");
                         const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
-
+                        
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
@@ -4797,12 +4833,12 @@
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
                         const detectedBadges = item.sheets.map(s => `<span class="badge risk-medium" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Source: ${escapeHTML(s.filename)}</span>`).join("");
-
+                        
                         const detailsHtml = item.sheets.map(s => {
                             const details = s.headers.slice(0, 4).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(s.row[idx] || "-")}`).join(" | ");
                             return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
                         }).join("");
-
+                        
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
@@ -4821,7 +4857,7 @@
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
-
+                        
                         const propertiesHtml = item.mergedProperties.map(p => {
                             const sourceLabel = p.source.length > 20 ? p.source.substring(0, 17) + "..." : p.source;
                             return `
@@ -5220,7 +5256,7 @@
             alert(`Rogue asset ${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.`);
 
             recalculateAllScores();
-            switchReconTab(currentReconTab);
+            renderReconciliationUI();
         }
 
         function registerRogueAsset(rogueId) {
@@ -5312,17 +5348,12 @@
                 status: "MATCHED"
             });
 
-            // Update tab counts
-            const roguesTabCount = document.getElementById("recon-tab-count-rogues");
-            const matchesTabCount = document.getElementById("recon-tab-count-matches");
-            if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
-            if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
+            recalculateAllScores();
+            currentReconTab = "matches";
+            renderReconciliationUI();
 
             logToTerminal(`[Reconciler] Manually authorized and enrolled rogue asset ${rogue.name.toUpperCase()} into Corporate Directory context.`, "info");
             alert(`Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
-
-            recalculateAllScores();
-            switchReconTab("matches");
         }
 
         function mergeReconciliationIntoFleet() {
@@ -5598,6 +5629,7 @@
             });
 
             recalculateAllScores();
+            renderReconciliationUI();
             switchNavSection("compliance");
 
             const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
@@ -5607,7 +5639,7 @@
 
         function exportReconciliationReport() {
             logToTerminal("[Reconciler] Generating detailed CSV export of cross-sheet anomalies report...");
-
+            
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += `"Recon Device ID","Hostname","Audit Status","Details / Properties"\n`;
 
@@ -5620,7 +5652,7 @@
             });
 
             reconciliationResults.rogues.forEach(item => {
-                const details = item.sheets.map(s => `${s.filename}: [${s.headers.slice(0, 4).map((h, idx) => `${h}:${s.row[idx] || "-"}`).join(', ')}]`).join(" | ").replace(/"/g, '""');
+                const details = item.sheets.map(s => `${s.filename}: [${s.headers.slice(0,4).map((h, idx) => `${h}:${s.row[idx] || "-"}`).join(', ')}]`).join(" | ").replace(/"/g, '""');
                 csvContent += `"${item.id}","${item.name}","ROGUE_UNMANAGED","${details}"\n`;
             });
 
@@ -5639,7 +5671,7 @@
 
             logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
         }
-    </script>
+</script>
 </body>
 
 </html>

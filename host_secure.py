@@ -75,7 +75,7 @@ class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
             if filename.lower().endswith('.xlsx'):
                 rows = excel_validator.parse_xlsx(file_bytes)
             else:
-                rows = excel_validator.parse_csv(file_bytes.decode('utf-8', errors='ignore'))
+                rows = excel_validator.parse_csv(file_bytes.decode('utf-8-sig', errors='ignore'))
                 
             if not rows or len(rows) < 2:
                 self.send_json_response({

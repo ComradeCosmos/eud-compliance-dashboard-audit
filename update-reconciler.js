@@ -270,43 +270,48 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
         }
 
         function parseCSVNative(text) {
+            if (text.startsWith("\\uFEFF")) {
+                text = text.substring(1);
+            }
+            const rawLines = text.split(/\\r?\\n/);
             const lines = [];
-            let row = [""];
-            let inQuotes = false;
             
             let sep = ",";
-            const firstLine = text.split(/\\r?\\n/)[0] || "";
+            const firstLine = rawLines[0] || "";
             let commaCount = (firstLine.match(/,/g) || []).length;
             let semiCount = (firstLine.match(/;/g) || []).length;
             let tabCount = (firstLine.match(/\\t/g) || []).length;
-            
+
             if (semiCount > commaCount && semiCount > tabCount) sep = ";";
             else if (tabCount > commaCount && tabCount > semiCount) sep = "\\t";
-            
-            for (let i = 0; i < text.length; i++) {
-                const c = text[i];
-                const next = text[i+1];
+
+            for (let lineText of rawLines) {
+                lineText = lineText.trim();
+                if (!lineText) continue;
                 
-                if (c === '"') {
-                    if (inQuotes && next === '"') {
-                        row[row.length - 1] += '"';
-                        i++;
+                const row = [];
+                let currentField = "";
+                let inQuotes = false;
+                
+                for (let i = 0; i < lineText.length; i++) {
+                    const c = lineText[i];
+                    const next = lineText[i + 1];
+                    
+                    if (c === '"') {
+                        if (inQuotes && next === '"') {
+                            currentField += '"';
+                            i++;
+                        } else {
+                            inQuotes = !inQuotes;
+                        }
+                    } else if (c === sep && !inQuotes) {
+                        row.push(currentField);
+                        currentField = "";
                     } else {
-                        inQuotes = !inQuotes;
+                        currentField += c;
                     }
-                } else if (c === sep && !inQuotes) {
-                    row.push("");
-                } else if ((c === '\\r' || c === '\\n') && !inQuotes) {
-                    if (c === '\\r' && next === '\\n') {
-                        i++;
-                    }
-                    lines.push(row);
-                    row = [""];
-                } else {
-                    row[row.length - 1] += c;
                 }
-            }
-            if (row.length > 1 || row[0] !== "") {
+                row.push(currentField);
                 lines.push(row);
             }
             return lines;
@@ -321,7 +326,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             Array.from(files).forEach(file => {
                 logToTerminal(\`[Reconciler] Upload request received for source file: "\${file.name}"\`);
                 
-                const isExcel = file.name.endsWith(".xlsx") || file.name.endsWith(".xls");
+                const isExcel = file.name.toLowerCase().endsWith(".xlsx") || file.name.toLowerCase().endsWith(".xls");
 
                 if (usePython) {
                     const reader = new FileReader();
@@ -813,8 +818,24 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
             document.getElementById("reconciler-results-wrapper").style.display = "block";
 
-            const defaultTab = gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues");
-            switchReconTab(defaultTab);
+            // Verify and align metrics with the active reconciled fleet
+            const matchesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "SUCCESS").length;
+            const gapsInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "COVERAGE_GAP").length;
+            const roguesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "ROGUE_UNMANAGED").length;
+
+            const hasMergedData = (matchesInFleet > 0 || gapsInFleet > 0 || roguesInFleet > 0);
+            
+            if (hasMergedData) {
+                logToTerminal(\`[Audit Reconciler] Verification: Matches=\${matches.length} (Fleet: \${matchesInFleet}), Gaps=\${gaps.length} (Fleet: \${gapsInFleet}), Rogues=\${rogues.length} (Fleet: \${roguesInFleet}).\`, "info");
+                if (matches.length === matchesInFleet && gaps.length === gapsInFleet && rogues.length === roguesInFleet) {
+                    logToTerminal(\`[Audit Reconciler] Verification SUCCESS: Active Reconciled Fleet dataset is in 100% perfect sync with reconciliation metrics.\`, "info");
+                } else {
+                    logToTerminal(\`[Audit Reconciler] Verification Warning: Active fleet counts have deviated from reconciliation results (possibly due to manual overrides).\`, "warn");
+                }
+            }
+
+            const activeTab = currentReconTab || (gaps.length > 0 ? "gaps" : (matches.length > 0 ? "matches" : "rogues"));
+            switchReconTab(activeTab);
         }
 
         function primaryMapSizeFallback() {
@@ -1302,7 +1323,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             alert(\`Rogue asset \${rogue.name.toUpperCase()} isolated successfully! Firewall rules and network ports contained.\`);
 
             recalculateAllScores();
-            switchReconTab(currentReconTab);
+            renderReconciliationUI();
         }
 
         function registerRogueAsset(rogueId) {
@@ -1394,17 +1415,12 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                 status: "MATCHED"
             });
 
-            // Update tab counts
-            const roguesTabCount = document.getElementById("recon-tab-count-rogues");
-            const matchesTabCount = document.getElementById("recon-tab-count-matches");
-            if (roguesTabCount) roguesTabCount.innerText = reconciliationResults.rogues.length.toLocaleString();
-            if (matchesTabCount) matchesTabCount.innerText = reconciliationResults.matches.length.toLocaleString();
+            recalculateAllScores();
+            currentReconTab = "matches";
+            renderReconciliationUI();
 
             logToTerminal(\`[Reconciler] Manually authorized and enrolled rogue asset \${rogue.name.toUpperCase()} into Corporate Directory context.\`, "info");
             alert(\`Rogue asset \${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!\`);
-
-            recalculateAllScores();
-            switchReconTab("matches");
         }
 
         function mergeReconciliationIntoFleet() {
@@ -1450,7 +1466,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
-                    customProps[`[${p.source}] ${p.property}`] = p.value;
+                    customProps[\`[\${p.source}] \${p.property}\`] = p.value;
                 });
 
                 if (existing) {
@@ -1488,7 +1504,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
-                        id: `dev-${Math.random().toString(36).substring(2, 8)}`,
+                        id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal,
                         mac: ids.macVal,
@@ -1527,7 +1543,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     "Missing Telemetries": item.missingInSheets.join(", ")
                 };
                 item.mergedProperties.forEach(p => {
-                    customProps[`[${p.source}] ${p.property}`] = p.value;
+                    customProps[\`[\${p.source}] \${p.property}\`] = p.value;
                 });
 
                 if (existing) {
@@ -1569,9 +1585,9 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
-                        id: `dev-${Math.random().toString(36).substring(2, 8)}`,
+                        id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
                         canonical_name: ids.nameVal,
-                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : `SN-GAP-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
+                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : \`SN-GAP-\${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}\`,
                         mac: ids.macVal,
                         manufacturer: "Generic Reconciled Gap",
                         os: "Unknown Platform",
@@ -1680,6 +1696,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             });
 
             recalculateAllScores();
+            renderReconciliationUI();
             switchNavSection("compliance");
 
             const successMsg = \`Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added \${newlyCreated} new records and updated \${mergedUpdated} existing records.\`;
