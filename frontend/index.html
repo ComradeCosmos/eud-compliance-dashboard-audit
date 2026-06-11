@@ -143,6 +143,12 @@
 
             </header>
 
+            <!-- Non-blocking import progress indicator -->
+            <div id="import-progress-indicator" style="display: none; position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--bg-card); border: 1px solid var(--border-clean); border-radius: 6px; padding: 0.75rem 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); align-items: center; gap: 0.75rem;">
+                <div style="width: 18px; height: 18px; border: 2px solid var(--color-accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;"></div>
+                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">Recalculating scores...</span>
+            </div>
+
             <!-- Section: Scoring & Controls -->
             <div id="section-risk" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
@@ -1306,16 +1312,12 @@
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
             if (usePython) {
+                // Use readAsDataURL — browser handles binary-to-base64 natively (avoids freezing btoa loop)
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     try {
-                        const arrayBuffer = e.target.result;
-                        const bytes = new Uint8Array(arrayBuffer);
-                        let binary = "";
-                        for (let i = 0; i < bytes.byteLength; i++) {
-                            binary += String.fromCharCode(bytes[i]);
-                        }
-                        const base64 = btoa(binary);
+                        const dataUrl = e.target.result;
+                        const base64 = dataUrl.substring(dataUrl.indexOf(",") + 1);
 
                         logToTerminal(`[Import] Uploading "${file.name}" to Python backend for validation...`, "info");
 
@@ -1353,7 +1355,7 @@
                         runFallbackCsvParse(file, isExcel);
                     }
                 };
-                reader.readAsArrayBuffer(file);
+                reader.readAsDataURL(file);
             } else {
                 runFallbackCsvParse(file, isExcel);
             }
@@ -1627,7 +1629,17 @@
             alert("Database Purged: All assets have been cleared successfully.");
         }
 
+        // Debounce timer for search/filter changes
+        let _fleetQueryDebounceTimer = null;
+
         function handleFleetQueryChange() {
+            // Debounce: wait 250ms after the last keystroke before filtering 14k rows
+            if (_fleetQueryDebounceTimer) clearTimeout(_fleetQueryDebounceTimer);
+            _fleetQueryDebounceTimer = setTimeout(_doFleetFilter, 250);
+        }
+
+        function _doFleetFilter() {
+            invalidateUploadedSoftwareCache();
             const query = ((document.getElementById("fleet-search-input") || {}).value || "").toLowerCase();
             const riskFilter = "ALL";
             const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
@@ -1635,26 +1647,42 @@
             const osPlatformFilter = "ALL";
             const policyFilter = (document.getElementById("fleet-filter-policy") || {}).value || "ALL";
 
+            const hasQuery = query.length > 0;
+            const hasFilters = conditionFilter !== "ALL" || locGroupFilter !== "ALL" || policyFilter !== "ALL";
+
+            // Fast path: no search query and no filters — show full dataset instantly
+            if (!hasQuery && !hasFilters) {
+                filteredDataset = fleetDataset;
+                currentPage = 1;
+                populateFleetTable();
+                // Defer policy comparison to next frame so table renders first
+                requestAnimationFrame(() => renderCorePoliciesComparison());
+                return;
+            }
+
             filteredDataset = fleetDataset.filter(item => {
-                let matchesCustom = false;
-                if (item.custom_properties) {
-                    for (let key in item.custom_properties) {
-                        if (String(item.custom_properties[key]).toLowerCase().includes(query)) {
-                            matchesCustom = true;
-                            break;
+                let matchesSearch = true;
+                if (hasQuery) {
+                    let matchesCustom = false;
+                    if (item.custom_properties) {
+                        for (let key in item.custom_properties) {
+                            if (String(item.custom_properties[key]).toLowerCase().includes(query)) {
+                                matchesCustom = true;
+                                break;
+                            }
                         }
                     }
-                }
 
-                const matchesSearch =
-                    String(item.id || "").toLowerCase().includes(query) ||
-                    String(item.canonical_name || "").toLowerCase().includes(query) ||
-                    String(item.serial || "").toLowerCase().includes(query) ||
-                    String(item.os || "").toLowerCase().includes(query) ||
-                    String(item.condition || "").toLowerCase().includes(query) ||
-                    String(item.user_assigned || "").toLowerCase().includes(query) ||
-                    String(item.location || "").toLowerCase().includes(query) ||
-                    matchesCustom;
+                    matchesSearch =
+                        String(item.id || "").toLowerCase().includes(query) ||
+                        String(item.canonical_name || "").toLowerCase().includes(query) ||
+                        String(item.serial || "").toLowerCase().includes(query) ||
+                        String(item.os || "").toLowerCase().includes(query) ||
+                        String(item.condition || "").toLowerCase().includes(query) ||
+                        String(item.user_assigned || "").toLowerCase().includes(query) ||
+                        String(item.location || "").toLowerCase().includes(query) ||
+                        matchesCustom;
+                }
 
                 const matchesRisk = (riskFilter === "ALL") || (item.level === riskFilter);
                 const matchesCondition = (conditionFilter === "ALL") || (item.condition === conditionFilter);
@@ -1699,7 +1727,8 @@
 
             currentPage = 1;
             populateFleetTable();
-            renderCorePoliciesComparison(); // re-score based on active condition filter
+            // Defer policy comparison to next frame so table renders first
+            requestAnimationFrame(() => renderCorePoliciesComparison());
         }
 
         function changePage(direction) {
@@ -2464,9 +2493,11 @@
                 else { riskLabel.innerText = "FULLY COMPLIANT FLEET"; riskLabel.style.color = "#15803d"; }
             }
 
-            // Recalculate and update charts in real-time
-            renderActiveTrendChart();
-            renderActiveRiskChart();
+            // Defer chart renders to next animation frame — avoids blocking the main thread during data load
+            requestAnimationFrame(() => {
+                renderActiveTrendChart();
+                renderActiveRiskChart();
+            });
         }
 
         // SVG Charts and Telemetry Visualizations
@@ -3354,112 +3385,157 @@
             document.getElementById("reporting-pag-total").innerText = total.toLocaleString();
         }
 
+        // Per-render cache for getPolicyStats — avoids re-scanning 14k rows multiple times per render
+        let _policyStatsCache = null;
+        let _policyStatsCacheFilter = null;
+
+        function invalidatePolicyStatsCache() {
+            _policyStatsCache = null;
+            _policyStatsCacheFilter = null;
+        }
+
         function getPolicyStats(name, conditionFilter) {
             if (!conditionFilter) {
                 const filterEl = document.getElementById("fleet-filter-condition");
                 conditionFilter = filterEl ? filterEl.value : "ALL";
             }
-            const isCore = !name.startsWith('[');
-            let isUnreported = false;
-            let alwaysReported = false; // hoisted so the counting loop can reference it
 
-            if (isCore) {
-                const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === name);
-                const swKey = swCatalogItem ? swCatalogItem.key : "";
-                const isUploaded = isSheetUploadedForSoftware(swKey);
-                const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
-                alwaysReported = swKey === "ad";
-                if (!alwaysReported && !isUploaded && !isEverMerged) isUnreported = true;
-            } else {
-                const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
-                if (!hasProperty) isUnreported = true;
+            // Build or retrieve the cache for this condition filter
+            if (_policyStatsCache === null || _policyStatsCacheFilter !== conditionFilter) {
+                _policyStatsCache = {};
+                _policyStatsCacheFilter = conditionFilter;
+
+                // Single pass over fleetDataset — compute stats for ALL core policies at once
+                const corePolicyNames = [
+                    "Active Directory (AD) Enrollment",
+                    "BitLocker Drive Encryption",
+                    "Zscaler Client Connector",
+                    "Nessus Vulnerability Agent",
+                    "SentinelOne Endpoint Protection",
+                    "SCCM Management Agent"
+                ];
+                const windowsOnlyPolicies = new Set(["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"]);
+
+                // Initialize accumulators for core policies
+                corePolicyNames.forEach(n => {
+                    _policyStatsCache[n] = { filteredCompliant: 0, filteredTotal: 0, inUseCompliant: 0, inUseTotal: 0, allCompliant: 0, allTotal: 0, isUnreported: false, _checked: false };
+                });
+
+                // Determine unreported status for each core policy upfront
+                corePolicyNames.forEach(n => {
+                    const swCatalogItem = sampleSoftwareCatalog.find(sw => sw.name === n);
+                    const swKey = swCatalogItem ? swCatalogItem.key : "";
+                    const isUploaded = isSheetUploadedForSoftware(swKey);
+                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(swKey);
+                    const alwaysReported = swKey === "ad";
+                    if (!alwaysReported && !isUploaded && !isEverMerged) {
+                        _policyStatsCache[n].isUnreported = true;
+                    }
+                    _policyStatsCache[n]._alwaysReported = alwaysReported;
+                });
+
+                // Single O(N) pass over the entire fleet dataset
+                for (let i = 0; i < fleetDataset.length; i++) {
+                    const dev = fleetDataset[i];
+                    if (dev.is_rogue) continue;
+                    const isActive = dev.condition === "IN_USE";
+                    const matchesFilter = (conditionFilter === "ALL" || dev.condition === conditionFilter);
+                    const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
+
+                    for (let k = 0; k < corePolicyNames.length; k++) {
+                        const n = corePolicyNames[k];
+                        const acc = _policyStatsCache[n];
+                        if (acc.isUnreported) continue;
+
+                        // Windows-only policies skip non-Windows devices
+                        if (windowsOnlyPolicies.has(n) && !isWindows) continue;
+
+                        const isRequired = enforcedPolicies[n] !== false;
+                        const sw = dev.software && dev.software.find(s => s.name === n);
+
+                        if (isRequired) {
+                            acc.allTotal++;
+                            if (isActive) acc.inUseTotal++;
+                            if (matchesFilter) acc.filteredTotal++;
+                            const compliant = sw && sw.status === "COMPLIANT";
+                            if (compliant) acc.allCompliant++;
+                            if (compliant && isActive) acc.inUseCompliant++;
+                            if (compliant && matchesFilter) acc.filteredCompliant++;
+                        } else {
+                            if (sw && sw.installed && !sw.installed.toLowerCase().includes("missing")) {
+                                acc.allTotal++;
+                                if (isActive) acc.inUseTotal++;
+                                if (matchesFilter) acc.filteredTotal++;
+                                const compliant = sw.status === "COMPLIANT";
+                                if (compliant) acc.allCompliant++;
+                                if (compliant && isActive) acc.inUseCompliant++;
+                                if (compliant && matchesFilter) acc.filteredCompliant++;
+                            }
+                        }
+                    }
+                }
             }
 
-            if (isUnreported) {
+            const isCore = !name.startsWith('[');
+
+            // Return cached core policy result
+            if (isCore && _policyStatsCache[name]) {
+                const acc = _policyStatsCache[name];
                 return {
-                    filteredCompliant: 0,
-                    filteredTotal: 0,
-                    inUseCompliant: 0,
-                    inUseTotal: 0,
-                    allCompliant: 0,
-                    allTotal: 0,
-                    isUnreported: true,
-                    get compliantCount() { return 0; },
-                    get totalCount() { return 0; }
+                    filteredCompliant: acc.filteredCompliant,
+                    filteredTotal: acc.filteredTotal,
+                    inUseCompliant: acc.inUseCompliant,
+                    inUseTotal: acc.inUseTotal,
+                    allCompliant: acc.allCompliant,
+                    allTotal: acc.allTotal,
+                    isUnreported: acc.isUnreported,
+                    get compliantCount() { return this.filteredCompliant; },
+                    get totalCount() { return this.filteredTotal; }
+                };
+            }
+
+            // Custom/Excel policy — compute inline (not cached, typically fewer rows)
+            const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
+            if (!hasProperty) {
+                return {
+                    filteredCompliant: 0, filteredTotal: 0, inUseCompliant: 0, inUseTotal: 0,
+                    allCompliant: 0, allTotal: 0, isUnreported: true,
+                    get compliantCount() { return 0; }, get totalCount() { return 0; }
                 };
             }
 
             const isRequired = enforcedPolicies[name] !== false;
-
-            // filteredCompliant/filteredTotal — scoped to the active condition filter (drives % and counts)
-            // inUse* and all* retained for any future reference
             let filteredCompliant = 0, filteredTotal = 0;
             let inUseCompliant = 0, inUseTotal = 0;
             let allCompliant = 0, allTotal = 0;
 
             fleetDataset.forEach(dev => {
                 const isActive = dev.condition === "IN_USE";
-                // UNKNOWN assets (unverified reconciliation merges) never count toward compliance
-                const matchesFilter = (conditionFilter === "ALL" || dev.condition === conditionFilter)
-                    && !dev.is_rogue;
-
-                // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
-                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
-                if (!isApplicable) return;
-
-                if (isCore) {
-                    const sw = dev.software && dev.software.find(s => s.name === name);
-                    if (isRequired) {
-                        allTotal++;
-                        if (isActive) inUseTotal++;
-                        if (matchesFilter) filteredTotal++;
-                        const compliant = sw && sw.status === "COMPLIANT";
-                        if (compliant) allCompliant++;
-                        if (compliant && isActive) inUseCompliant++;
-                        if (compliant && matchesFilter) filteredCompliant++;
-                    } else {
-                        if (sw && sw.installed && !sw.installed.toLowerCase().includes("missing")) {
-                            allTotal++;
-                            if (isActive) inUseTotal++;
-                            if (matchesFilter) filteredTotal++;
-                            const compliant = sw.status === "COMPLIANT";
-                            if (compliant) allCompliant++;
-                            if (compliant && isActive) inUseCompliant++;
-                            if (compliant && matchesFilter) filteredCompliant++;
-                        }
-                    }
+                const matchesFilter = (conditionFilter === "ALL" || dev.condition === conditionFilter) && !dev.is_rogue;
+                const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
+                const compliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
+                if (isRequired) {
+                    allTotal++;
+                    if (isActive) inUseTotal++;
+                    if (matchesFilter) filteredTotal++;
+                    if (compliant) allCompliant++;
+                    if (compliant && isActive) inUseCompliant++;
+                    if (compliant && matchesFilter) filteredCompliant++;
                 } else {
-                    const val = (dev.custom_properties && dev.custom_properties[name] !== undefined) ? dev.custom_properties[name] : "MISSING";
-                    const compliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
-                    if (isRequired) {
+                    if (val !== "MISSING") {
                         allTotal++;
                         if (isActive) inUseTotal++;
                         if (matchesFilter) filteredTotal++;
                         if (compliant) allCompliant++;
                         if (compliant && isActive) inUseCompliant++;
                         if (compliant && matchesFilter) filteredCompliant++;
-                    } else {
-                        if (val !== "MISSING") {
-                            allTotal++;
-                            if (isActive) inUseTotal++;
-                            if (matchesFilter) filteredTotal++;
-                            if (compliant) allCompliant++;
-                            if (compliant && isActive) inUseCompliant++;
-                            if (compliant && matchesFilter) filteredCompliant++;
-                        }
                     }
                 }
             });
 
             return {
-                filteredCompliant,
-                filteredTotal,
-                inUseCompliant,
-                inUseTotal,
-                allCompliant,
-                allTotal,
-                isUnreported: false,
+                filteredCompliant, filteredTotal, inUseCompliant, inUseTotal,
+                allCompliant, allTotal, isUnreported: false,
                 get compliantCount() { return this.filteredCompliant; },
                 get totalCount() { return this.filteredTotal; }
             };
@@ -3500,13 +3576,48 @@
         }
 
         function recalculateAllScores() {
+            // Invalidate caches before recalculating
+            invalidatePolicyStatsCache();
             populatePolicyFilterDropdown();
+
+            const CHUNK_SIZE = 2000; // process 2000 devices per tick to keep UI responsive
             const policies = getAvailablePolicies();
-            fleetDataset.forEach(dev => {
-                recalculateSingleDeviceScore(dev, policies);
-            });
+            const total = fleetDataset.length;
+
+            if (total === 0) {
+                _finishRecalculate(policies);
+                return;
+            }
+
+            // Show a non-blocking progress indicator
+            const progressEl = document.getElementById("import-progress-indicator");
+            if (progressEl) { progressEl.style.display = "flex"; progressEl.querySelector("span").textContent = `Recalculating scores (0/${total})...`; }
+
+            let offset = 0;
+            function processChunk() {
+                const end = Math.min(offset + CHUNK_SIZE, total);
+                for (let i = offset; i < end; i++) {
+                    recalculateSingleDeviceScore(fleetDataset[i], policies);
+                }
+                offset = end;
+
+                if (progressEl) progressEl.querySelector("span").textContent = `Recalculating scores (${offset.toLocaleString()}/${total.toLocaleString()})...`;
+
+                if (offset < total) {
+                    setTimeout(processChunk, 0); // yield to browser between chunks
+                } else {
+                    if (progressEl) progressEl.style.display = "none";
+                    _finishRecalculate(policies);
+                }
+            }
+            processChunk();
+        }
+
+        function _finishRecalculate(policies) {
+            invalidatePolicyStatsCache();
             updateFleetWideMetrics();
-            handleFleetQueryChange();
+            // Use _doFleetFilter directly to avoid double-debounce delay
+            _doFleetFilter();
 
             // Re-render active views if open
             const reportingSection = document.getElementById("section-reporting");
@@ -4150,6 +4261,13 @@
             return reconcilerSheets.some(sheet => {
                 return getSheetSoftwareKey(sheet) === k;
             });
+        }
+
+        // Placeholder — the uploaded software list is stable per session;
+        // this is called to pair with cache invalidation patterns in the filter pipeline.
+        function invalidateUploadedSoftwareCache() {
+            // Invalidate policyStats cache too since uploaded state may affect results
+            invalidatePolicyStatsCache();
         }
 
         function evaluateComplianceValue(rawVal) {
