@@ -22,7 +22,7 @@ class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
         # self.send_header('X-Frame-Options', 'DENY')
         self.send_header('X-Content-Type-Options', 'nosniff')
         self.send_header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
-        self.send_header('Content-Security-Policy', "default-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; frame-ancestors *;")
+        self.send_header('Content-Security-Policy', "default-src 'self' https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; frame-ancestors *;")
         self.send_header('Referrer-Policy', 'no-referrer')
         self.send_header('X-XSS-Protection', '1; mode=block')
         self.send_header('Permissions-Policy', 'geolocation=(), camera=(), microphone=()')

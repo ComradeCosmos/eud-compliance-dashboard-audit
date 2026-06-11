@@ -145,6 +145,121 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
             });
         }
 
+        function evaluateComplianceValue(rawVal) {
+            if (rawVal === undefined || rawVal === null) {
+                return { installed: "MISSING", status: "NON_COMPLIANT" };
+            }
+            const val = String(rawVal).trim().toLowerCase();
+            if (!val) {
+                return { installed: "MISSING", status: "NON_COMPLIANT" };
+            }
+
+            const compliantKeywords = [
+                "compliant", "installed", "yes", "true", "1", "active",
+                "enrolled", "active_enrollment", "active enrollment", "success", "ok",
+                "pass", "passed", "on", "enabled", "running", "secured", "secure",
+                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected"
+            ];
+
+            const nonCompliantKeywords = [
+                "non-compliant", "non_compliant", "non compliant", "failed", "fail",
+                "missing", "no", "false", "0", "inactive", "disabled",
+                "critical", "error", "offline", "not enrolled", "not_enrolled",
+                "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable"
+            ];
+
+            if (compliantKeywords.includes(val)) {
+                return { installed: "INSTALLED", status: "COMPLIANT" };
+            }
+            if (nonCompliantKeywords.includes(val)) {
+                return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+            }
+
+            for (let kw of compliantKeywords) {
+                if (val.includes(kw)) {
+                    return { installed: "INSTALLED", status: "COMPLIANT" };
+                }
+            }
+            for (let kw of nonCompliantKeywords) {
+                if (val.includes(kw)) {
+                    return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+                }
+            }
+
+            return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+        }
+
+        function getMergedAgentStatus(item, swKey) {
+            const agentKeywords = {
+                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+            };
+
+            const keywords = agentKeywords[swKey] || [];
+
+            if (item.mergedProperties) {
+                const sortedProps = [...item.mergedProperties].sort((a, b) => {
+                    const aIsSec = a.sheetRole === "Secondary" ? 1 : 0;
+                    const bIsSec = b.sheetRole === "Secondary" ? 1 : 0;
+                    return bIsSec - aIsSec;
+                });
+
+                for (let p of sortedProps) {
+                    const propName = p.property.toLowerCase().trim();
+                    const matched = keywords.some(kw => {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return propName.includes(kw);
+                    });
+
+                    if (matched) {
+                        const valString = String(p.value).trim();
+                        if (valString && valString !== "-") {
+                            return evaluateComplianceValue(valString);
+                        }
+                    }
+                }
+            }
+
+            const isUploaded = isSheetUploadedForSoftware(swKey);
+            if (isUploaded) {
+                const isMissing = item.missingInSheets && item.missingInSheets.some(filename => {
+                    const sheet = reconcilerSheets.find(s => s.filename === filename);
+                    return sheet && (getSheetSoftwareKey(sheet) === swKey);
+                });
+
+                if (isMissing) {
+                    return {
+                        installed: swKey === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)",
+                        status: "NON_COMPLIANT"
+                    };
+                } else {
+                    return {
+                        installed: "INSTALLED",
+                        status: "COMPLIANT"
+                    };
+                }
+            }
+
+            if (swKey === "ad") {
+                return {
+                    installed: "INSTALLED",
+                    status: "COMPLIANT"
+                };
+            }
+
+            return {
+                installed: "MISSING (AGENT UNREPORTED)",
+                status: "NON_COMPLIANT"
+            };
+        }
+
         function registerMergedSoftwareAgents() {
             reconcilerSheets.forEach(sheet => {
                 const key = getSheetSoftwareKey(sheet);
@@ -1335,14 +1450,34 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
-                    customProps[\`[\${p.source}] \${p.property}\`] = p.value;
+                    customProps[`[${p.source}] ${p.property}`] = p.value;
                 });
 
                 if (existing) {
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
-                            sw.installed = "INSTALLED";
-                            sw.status = "COMPLIANT";
+                        const statusObj = getMergedAgentStatus(item, sw.key);
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const agentKeywords = {
+                                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                            };
+                            const keywords = agentKeywords[sw.key] || [];
+                            const propName = p.property.toLowerCase().trim();
+                            return keywords.some(kw => {
+                                if (kw.length <= 3) {
+                                    return propName.split(/[^a-z0-9]+/).includes(kw);
+                                }
+                                return propName.includes(kw);
+                            });
+                        });
+                        if (isUploaded || hasProp) {
+                            sw.installed = statusObj.installed;
+                            sw.status = statusObj.status;
                         }
                     });
                     if (!existing.custom_properties) existing.custom_properties = {};
@@ -1353,7 +1488,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
-                        id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
+                        id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal,
                         mac: ids.macVal,
@@ -1369,13 +1504,13 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                         location_group: "Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            const statusObj = getMergedAgentStatus(item, sw.key);
                             return {
                                 name: sw.name,
                                 key: sw.key,
-                                installed: isUploaded ? "INSTALLED" : (sw.key === "ad" ? "INSTALLED" : "MISSING (AGENT UNREPORTED)"),
+                                installed: statusObj.installed,
                                 required: "REQUIRED",
-                                status: isUploaded ? "COMPLIANT" : (sw.key === "ad" ? "COMPLIANT" : "NON_COMPLIANT")
+                                status: statusObj.status
                             };
                         }),
                         custom_properties: newCustomProps
@@ -1392,7 +1527,7 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     "Missing Telemetries": item.missingInSheets.join(", ")
                 };
                 item.mergedProperties.forEach(p => {
-                    customProps[\`[\${p.source}] \${p.property}\`] = p.value;
+                    customProps[`[${p.source}] ${p.property}`] = p.value;
                 });
 
                 if (existing) {
@@ -1400,19 +1535,29 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     existing.level = "NON_COMPLIANT";
 
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
-                            const isMissing = item.missingInSheets.some(filename => {
-                                const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
-                                return isSheetForSw;
+                        const statusObj = getMergedAgentStatus(item, sw.key);
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const agentKeywords = {
+                                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                            };
+                            const keywords = agentKeywords[sw.key] || [];
+                            const propName = p.property.toLowerCase().trim();
+                            return keywords.some(kw => {
+                                if (kw.length <= 3) {
+                                    return propName.split(/[^a-z0-9]+/).includes(kw);
+                                }
+                                return propName.includes(kw);
                             });
-                            if (isMissing) {
-                                sw.installed = sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)";
-                                sw.status = "NON_COMPLIANT";
-                            } else {
-                                sw.installed = "INSTALLED";
-                                sw.status = "COMPLIANT";
-                            }
+                        });
+                        if (isUploaded || hasProp) {
+                            sw.installed = statusObj.installed;
+                            sw.status = statusObj.status;
                         }
                     });
 
@@ -1424,9 +1569,9 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
                     fleetDataset.push({
-                        id: \`dev-\${Math.random().toString(36).substring(2, 8)}\`,
+                        id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: ids.nameVal,
-                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : \`SN-GAP-\${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}\`,
+                        serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : `SN-GAP-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
                         mac: ids.macVal,
                         manufacturer: "Generic Reconciled Gap",
                         os: "Unknown Platform",
@@ -1440,30 +1585,14 @@ const newReconcilerCode = `// --- Cross-Sheet Asset Reconciliation Workspace Eng
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isUploaded = isSheetUploadedForSoftware(sw.key);
-                            if (isUploaded) {
-                                const isMissing = item.missingInSheets.some(filename => {
-                                    const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                    const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
-                                    return isSheetForSw;
-                                });
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: isMissing ? (sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)") : "INSTALLED",
-                                    required: "REQUIRED",
-                                    status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
-                                };
-                            } else {
-                                const isAd = sw.key === "ad";
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: isAd ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
-                                    required: "REQUIRED",
-                                    status: isAd ? "COMPLIANT" : "NON_COMPLIANT"
-                                };
-                            }
+                            const statusObj = getMergedAgentStatus(item, sw.key);
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: statusObj.installed,
+                                required: "REQUIRED",
+                                status: statusObj.status
+                            };
                         }),
                         custom_properties: newCustomProps
                     });

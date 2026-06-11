@@ -63,6 +63,38 @@ vm.runInContext(jsCode, context);
 console.log('Testing AD Enrollment stats with Windows-only applicability filter...');
 
 vm.runInContext(`
+    fleetDataset = [
+        {
+            id: "dev-win-1",
+            canonical_name: "win-1",
+            os_family: "Windows",
+            condition: "IN_USE",
+            software: [{ name: "Active Directory (AD) Enrollment", status: "COMPLIANT", installed: "INSTALLED" }]
+        },
+        {
+            id: "dev-win-2",
+            canonical_name: "win-2",
+            os_family: "Windows",
+            condition: "IN_USE",
+            software: [{ name: "Active Directory (AD) Enrollment", status: "NON_COMPLIANT", installed: "MISSING" }]
+        },
+        {
+            id: "dev-win-3",
+            canonical_name: "win-3",
+            os_family: "Windows",
+            condition: "EXPIRED",
+            software: [{ name: "Active Directory (AD) Enrollment", status: "COMPLIANT", installed: "INSTALLED" }]
+        },
+        {
+            id: "dev-mac-1",
+            canonical_name: "mac-1",
+            os_family: "macOS",
+            condition: "IN_USE",
+            software: [{ name: "Active Directory (AD) Enrollment", status: "NON_COMPLIANT", installed: "MISSING" }]
+        }
+    ];
+    filteredDataset = [...fleetDataset];
+
     const allStats = getPolicyStats("Active Directory (AD) Enrollment", "ALL");
     console.log("conditionFilter=ALL:");
     console.log("  Compliant Count:  ", allStats.compliantCount);

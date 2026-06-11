@@ -23,7 +23,7 @@
                 <div>
                     <div
                         style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
-                        <span style="color: var(--color-accent);">EUD.</span>
+                        <span style="color: var(--color-accent);">EUD</span>
                     </div>
                     <p
                         style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
@@ -96,7 +96,7 @@
                 <img src="logo.png" alt="Thrawn EUD Logo"
                     style="height: 36px; border-radius: 4px; border: 1px solid var(--border-clean);">
                 <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;"> <span>EUD.</span></div>
+                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;"> <span>EUD</span></div>
                     <p
                         style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
                         Security & Compliance</p>
@@ -1118,9 +1118,9 @@
         // Global registry of enforced compliance policies (true = Required, false = Optional)
         let enforcedPolicies = {};
 
-        // Initialize with exactly 10,029 corporate assets
-        let fleetDataset = generateStructuredAssets(10029);
-        let filteredDataset = [...fleetDataset];
+        // Initialize with empty fleet dataset
+        let fleetDataset = [];
+        let filteredDataset = [];
         let selectedDevice = null;
 
         // Swiss Pagination variables
@@ -1384,6 +1384,176 @@
             } else {
                 reader.readAsText(file);
             }
+        }
+
+        function ingestParsedRows(rows) {
+            if (!rows || rows.length < 2) {
+                logToTerminal(`[Import] Failed: File contains insufficient rows.`, "error");
+                alert(`❌ Ingestion Failed: File has no data or has too few rows.`);
+                return;
+            }
+
+            const headers = rows[0].map(h => String(h).trim());
+            const lowerHeaders = headers.map(h => h.toLowerCase());
+
+            function findColIdx(keywords) {
+                for (let kw of keywords) {
+                    for (let idx = 0; idx < headers.length; idx++) {
+                        const h = lowerHeaders[idx];
+                        if (kw.length <= 3) {
+                            const words = h.split(/[^a-z0-9]+/);
+                            if (words.includes(kw)) return idx;
+                        } else {
+                            if (h.includes(kw)) return idx;
+                        }
+                    }
+                }
+                return -1;
+            }
+
+            const nameIdx = findColIdx(["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]);
+            const idIdx = findColIdx(["deviceid", "device id", "id", "assetid", "asset id", "uuid"]);
+            const serialIdx = findColIdx(["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"]);
+            const macIdx = findColIdx(["macaddress", "mac", "physical", "ethernet", "hardware"]);
+            const mfgIdx = findColIdx(["manufacturer", "mfg", "make", "brand"]);
+            const osIdx = findColIdx(["os", "operating system", "osversion", "os version", "platform"]);
+            const osFamilyIdx = findColIdx(["osfamily", "os family"]);
+            const userIdx = findColIdx(["assigneduser", "user", "username", "owner", "assigned"]);
+            const loginIdx = findColIdx(["lastlogin", "login", "active", "date", "time"]);
+            const locIdx = findColIdx(["location", "site", "office", "building"]);
+            const locGrpIdx = findColIdx(["locationgroup", "locgroup", "group"]);
+            const condIdx = findColIdx(["condition", "status", "state"]);
+
+            // Compliance policy indices
+            const adIdx = findColIdx(["active directory", "ad", "active_directory", "domain", "enrollment"]);
+            const bitlockerIdx = findColIdx(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
+            const zscalerIdx = findColIdx(["zscaler", "z-scaler", "zscaler client connector", "vpn"]);
+            const nessusIdx = findColIdx(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
+            const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
+            const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
+
+            const standardIndices = new Set([
+                nameIdx, idIdx, serialIdx, macIdx, mfgIdx, osIdx, osFamilyIdx,
+                userIdx, loginIdx, locIdx, locGrpIdx, condIdx,
+                adIdx, bitlockerIdx, zscalerIdx, nessusIdx, s1Idx, sccmIdx
+            ]);
+
+            const newDataset = [];
+            const dataRows = rows.slice(1);
+
+            dataRows.forEach((row, rIdx) => {
+                if (!row || row.every(cell => String(cell).trim() === "")) return;
+
+                while (row.length < headers.length) {
+                    row.push("");
+                }
+
+                const devName = nameIdx !== -1 ? String(row[nameIdx]).trim() : `import-device-${rIdx + 1}`;
+                const devId = idIdx !== -1 ? String(row[idIdx]).trim() : `dev-${Math.random().toString(36).substring(2, 8)}`;
+                const serial = serialIdx !== -1 ? String(row[serialIdx]).trim() : `SN-IMP-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+                const mac = macIdx !== -1 ? String(row[macIdx]).trim() : `00:1A:2B:3C:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
+                const manufacturer = mfgIdx !== -1 ? String(row[mfgIdx]).trim() : "Imported Asset";
+                const os = osIdx !== -1 ? String(row[osIdx]).trim() : "Windows 11 Enterprise";
+                const os_family = osFamilyIdx !== -1 ? String(row[osFamilyIdx]).trim() : (os.toLowerCase().includes("mac") ? "macOS" : (os.toLowerCase().includes("linux") || os.toLowerCase().includes("ubuntu") ? "Linux" : "Windows"));
+                const user_assigned = userIdx !== -1 ? String(row[userIdx]).trim() : "unassigned";
+                const last_login = loginIdx !== -1 ? String(row[loginIdx]).trim() : "-";
+                const location = locIdx !== -1 ? String(row[locIdx]).trim() : "Remote";
+                const location_group = locGrpIdx !== -1 ? String(row[locGrpIdx]).trim() : "Non-Sift";
+
+                let condition = "UNKNOWN";
+                if (condIdx !== -1) {
+                    const rawCond = String(row[condIdx]).trim().toUpperCase().replace(/[\s-]+/g, "_").replace(/[^A-Z0-9_]/g, "");
+                    const validConditions = ["IN_USE", "IN_REPAIR", "IN_STORE", "EXPIRED", "DISPOSED", "DECOMMISSIONED", "LOANABLE_RESERVED", "NOT_TRACEABLE", "RESERVED", "UNKNOWN"];
+                    if (validConditions.includes(rawCond)) {
+                        condition = rawCond;
+                    } else if (rawCond === "ACTIVE" || rawCond === "USE") {
+                        condition = "IN_USE";
+                    } else if (rawCond === "RETIRED") {
+                        condition = "DISPOSED";
+                    }
+                }
+
+                function getAgentStatus(idx, agentName) {
+                    if (idx === -1) return { installed: "MISSING (AGENT UNREPORTED)", status: "NON_COMPLIANT" };
+                    const val = String(row[idx]).trim();
+                    const statusObj = evaluateComplianceValue(val);
+                    return {
+                        installed: statusObj.status === "COMPLIANT" ? "INSTALLED" : (val || "MISSING"),
+                        status: statusObj.status
+                    };
+                }
+
+                const software = [
+                    { name: "Active Directory (AD) Enrollment", key: "ad", ...getAgentStatus(adIdx, "AD Enrollment") },
+                    { name: "BitLocker Drive Encryption", key: "bitlocker", ...getAgentStatus(bitlockerIdx, "BitLocker") },
+                    { name: "Zscaler Client Connector", key: "zscaler", ...getAgentStatus(zscalerIdx, "Zscaler Client Connector") },
+                    { name: "Nessus Vulnerability Agent", key: "nessus", ...getAgentStatus(nessusIdx, "Nessus Vulnerability Agent") },
+                    { name: "SentinelOne Endpoint Protection", key: "sentinelone", ...getAgentStatus(s1Idx, "SentinelOne Endpoint Protection") },
+                    { name: "SCCM Management Agent", key: "sccm", ...getAgentStatus(sccmIdx, "SCCM Management Agent") }
+                ];
+
+                const custom_properties = {};
+                headers.forEach((h, idx) => {
+                    if (!standardIndices.has(idx)) {
+                        custom_properties[h] = String(row[idx]).trim();
+                    }
+                });
+
+                newDataset.push({
+                    id: devId,
+                    canonical_name: devName.toLowerCase(),
+                    serial: serial,
+                    mac: mac,
+                    manufacturer: manufacturer,
+                    os: os,
+                    os_family: os_family,
+                    score: 100.00,
+                    level: "COMPLIANT",
+                    condition: condition,
+                    software: software,
+                    user_assigned: user_assigned,
+                    last_login: last_login,
+                    location: location,
+                    location_group: (location_group.toLowerCase() === "sift" ? "Sift" : "Non-Sift"),
+                    is_isolated: false,
+                    is_rogue: false,
+                    custom_properties: custom_properties
+                });
+            });
+
+            fleetDataset = newDataset;
+            filteredDataset = [...fleetDataset];
+            selectedDevice = null;
+
+            recalculateAllScores();
+
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
+            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
+
+            const importedKeys = new Set();
+            fleetDataset.forEach(dev => {
+                if (dev.custom_properties) {
+                    for (let key in dev.custom_properties) {
+                        importedKeys.add(key);
+                    }
+                }
+            });
+
+            importedKeys.forEach(k => {
+                const customKey = `custom:${k}`;
+                if (!activeTableKeys.includes(customKey)) {
+                    activeTableHeaders.push(k);
+                    activeTableKeys.push(customKey);
+                }
+            });
+
+            currentPage = 1;
+            populateFleetTable();
+            updateFleetWideMetrics();
+            switchNavSection("compliance");
+
+            logToTerminal(`[Import] Successfully ingested ${fleetDataset.length} devices from the uploaded spreadsheet. Dynamic headers registered.`, "info");
+            alert(`Spreadsheet Ingestion Complete! Loaded ${fleetDataset.length} devices.`);
         }
 
         function triggerClearFleetData() {
@@ -3893,6 +4063,121 @@
             });
         }
 
+        function evaluateComplianceValue(rawVal) {
+            if (rawVal === undefined || rawVal === null) {
+                return { installed: "MISSING", status: "NON_COMPLIANT" };
+            }
+            const val = String(rawVal).trim().toLowerCase();
+            if (!val) {
+                return { installed: "MISSING", status: "NON_COMPLIANT" };
+            }
+
+            const compliantKeywords = [
+                "compliant", "installed", "yes", "true", "1", "active",
+                "enrolled", "active_enrollment", "active enrollment", "success", "ok",
+                "pass", "passed", "on", "enabled", "running", "secured", "secure",
+                "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected"
+            ];
+
+            const nonCompliantKeywords = [
+                "non-compliant", "non_compliant", "non compliant", "failed", "fail",
+                "missing", "no", "false", "0", "inactive", "disabled",
+                "critical", "error", "offline", "not enrolled", "not_enrolled",
+                "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable"
+            ];
+
+            if (compliantKeywords.includes(val)) {
+                return { installed: "INSTALLED", status: "COMPLIANT" };
+            }
+            if (nonCompliantKeywords.includes(val)) {
+                return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+            }
+
+            for (let kw of compliantKeywords) {
+                if (val.includes(kw)) {
+                    return { installed: "INSTALLED", status: "COMPLIANT" };
+                }
+            }
+            for (let kw of nonCompliantKeywords) {
+                if (val.includes(kw)) {
+                    return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+                }
+            }
+
+            return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+        }
+
+        function getMergedAgentStatus(item, swKey) {
+            const agentKeywords = {
+                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+            };
+
+            const keywords = agentKeywords[swKey] || [];
+
+            if (item.mergedProperties) {
+                const sortedProps = [...item.mergedProperties].sort((a, b) => {
+                    const aIsSec = a.sheetRole === "Secondary" ? 1 : 0;
+                    const bIsSec = b.sheetRole === "Secondary" ? 1 : 0;
+                    return bIsSec - aIsSec;
+                });
+
+                for (let p of sortedProps) {
+                    const propName = p.property.toLowerCase().trim();
+                    const matched = keywords.some(kw => {
+                        if (kw.length <= 3) {
+                            const words = propName.split(/[^a-z0-9]+/);
+                            return words.includes(kw);
+                        }
+                        return propName.includes(kw);
+                    });
+
+                    if (matched) {
+                        const valString = String(p.value).trim();
+                        if (valString && valString !== "-") {
+                            return evaluateComplianceValue(valString);
+                        }
+                    }
+                }
+            }
+
+            const isUploaded = isSheetUploadedForSoftware(swKey);
+            if (isUploaded) {
+                const isMissing = item.missingInSheets && item.missingInSheets.some(filename => {
+                    const sheet = reconcilerSheets.find(s => s.filename === filename);
+                    return sheet && (getSheetSoftwareKey(sheet) === swKey);
+                });
+
+                if (isMissing) {
+                    return {
+                        installed: swKey === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)",
+                        status: "NON_COMPLIANT"
+                    };
+                } else {
+                    return {
+                        installed: "INSTALLED",
+                        status: "COMPLIANT"
+                    };
+                }
+            }
+
+            if (swKey === "ad") {
+                return {
+                    installed: "INSTALLED",
+                    status: "COMPLIANT"
+                };
+            }
+
+            return {
+                installed: "MISSING (AGENT UNREPORTED)",
+                status: "NON_COMPLIANT"
+            };
+        }
+
         function registerMergedSoftwareAgents() {
             reconcilerSheets.forEach(sheet => {
                 const key = getSheetSoftwareKey(sheet);
@@ -5088,9 +5373,29 @@
 
                 if (existing) {
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
-                            sw.installed = "INSTALLED";
-                            sw.status = "COMPLIANT";
+                        const statusObj = getMergedAgentStatus(item, sw.key);
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const agentKeywords = {
+                                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                            };
+                            const keywords = agentKeywords[sw.key] || [];
+                            const propName = p.property.toLowerCase().trim();
+                            return keywords.some(kw => {
+                                if (kw.length <= 3) {
+                                    return propName.split(/[^a-z0-9]+/).includes(kw);
+                                }
+                                return propName.includes(kw);
+                            });
+                        });
+                        if (isUploaded || hasProp) {
+                            sw.installed = statusObj.installed;
+                            sw.status = statusObj.status;
                         }
                     });
                     if (!existing.custom_properties) existing.custom_properties = {};
@@ -5117,13 +5422,13 @@
                         location_group: "Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isUploaded = isSheetUploadedForSoftware(sw.key);
+                            const statusObj = getMergedAgentStatus(item, sw.key);
                             return {
                                 name: sw.name,
                                 key: sw.key,
-                                installed: isUploaded ? "INSTALLED" : (sw.key === "ad" ? "INSTALLED" : "MISSING (AGENT UNREPORTED)"),
+                                installed: statusObj.installed,
                                 required: "REQUIRED",
-                                status: isUploaded ? "COMPLIANT" : (sw.key === "ad" ? "COMPLIANT" : "NON_COMPLIANT")
+                                status: statusObj.status
                             };
                         }),
                         custom_properties: newCustomProps
@@ -5148,19 +5453,29 @@
                     existing.level = "NON_COMPLIANT";
 
                     existing.software.forEach(sw => {
-                        if (isSheetUploadedForSoftware(sw.key)) {
-                            const isMissing = item.missingInSheets.some(filename => {
-                                const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
-                                return isSheetForSw;
+                        const statusObj = getMergedAgentStatus(item, sw.key);
+                        const isUploaded = isSheetUploadedForSoftware(sw.key);
+                        const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const agentKeywords = {
+                                ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                            };
+                            const keywords = agentKeywords[sw.key] || [];
+                            const propName = p.property.toLowerCase().trim();
+                            return keywords.some(kw => {
+                                if (kw.length <= 3) {
+                                    return propName.split(/[^a-z0-9]+/).includes(kw);
+                                }
+                                return propName.includes(kw);
                             });
-                            if (isMissing) {
-                                sw.installed = sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)";
-                                sw.status = "NON_COMPLIANT";
-                            } else {
-                                sw.installed = "INSTALLED";
-                                sw.status = "COMPLIANT";
-                            }
+                        });
+                        if (isUploaded || hasProp) {
+                            sw.installed = statusObj.installed;
+                            sw.status = statusObj.status;
                         }
                     });
 
@@ -5188,30 +5503,14 @@
                         location_group: "Non-Sift",
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
-                            const isUploaded = isSheetUploadedForSoftware(sw.key);
-                            if (isUploaded) {
-                                const isMissing = item.missingInSheets.some(filename => {
-                                    const sheet = reconcilerSheets.find(s => s.filename === filename);
-                                    const isSheetForSw = sheet && (getSheetSoftwareKey(sheet) === sw.key);
-                                    return isSheetForSw;
-                                });
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: isMissing ? (sw.key === "ad" ? "NOT ENROLLED" : "MISSING (AGENT UNREPORTED)") : "INSTALLED",
-                                    required: "REQUIRED",
-                                    status: isMissing ? "NON_COMPLIANT" : "COMPLIANT"
-                                };
-                            } else {
-                                const isAd = sw.key === "ad";
-                                return {
-                                    name: sw.name,
-                                    key: sw.key,
-                                    installed: isAd ? "INSTALLED" : "MISSING (AGENT UNREPORTED)",
-                                    required: "REQUIRED",
-                                    status: isAd ? "COMPLIANT" : "NON_COMPLIANT"
-                                };
-                            }
+                            const statusObj = getMergedAgentStatus(item, sw.key);
+                            return {
+                                name: sw.name,
+                                key: sw.key,
+                                installed: statusObj.installed,
+                                required: "REQUIRED",
+                                status: statusObj.status
+                            };
                         }),
                         custom_properties: newCustomProps
                     });
