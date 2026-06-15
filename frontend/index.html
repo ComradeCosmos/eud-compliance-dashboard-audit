@@ -4185,6 +4185,13 @@
             const h = header.toLowerCase().trim();
             const k = swKey.toLowerCase().trim();
 
+            if (k !== "ad") {
+                const words = h.split(/[^a-z0-9]+/);
+                if (words.includes("ad") || words.includes("adcomputers") || h.includes("active directory") || h.includes("active_directory") || h.includes("enrollment")) {
+                    return false;
+                }
+            }
+
             if (k === "ad") {
                 if (h.includes("active directory") || h.includes("active_directory") || h.includes("domain") || h.includes("enrollment") || h.includes("canonicalname") || h.includes("canonical name") || h.includes("distinguishedname") || h.includes("distinguished name")) {
                     return true;
@@ -4242,6 +4249,7 @@
 
         function getSheetSoftwareKey(sheet) {
             if (!sheet || !sheet.filename) return null;
+            if (sheet.role === "primary") return null; // Primary is the directory baseline, not an agent telemetry sheet
             const fn = sheet.filename.toLowerCase();
             const words = fn.split(/[^a-z0-9]+/);
             
@@ -4406,11 +4414,20 @@
                 });
 
                 for (let p of sortedProps) {
+                    if (p.sheetRole === "Primary") continue;
                     const propSwKey = getSheetSoftwareKey({ filename: p.source });
                     if (propSwKey && propSwKey !== swKey) {
                         continue;
                     }
                     const propName = p.property.toLowerCase().trim();
+                    
+                    // Decouple SentinelOne/others from AD enrollment
+                    if (swKey !== "ad") {
+                        const words = propName.split(/[^a-z0-9]+/);
+                        if (words.includes("ad") || words.includes("adcomputers") || propName.includes("active directory") || propName.includes("active_directory") || propName.includes("enrollment")) {
+                            continue;
+                        }
+                    }
                     const matched = keywords.some(kw => {
                         if (kw.length <= 3) {
                             const words = propName.split(/[^a-z0-9]+/);
@@ -5935,10 +5952,21 @@
                         const statusObj = getMergedAgentStatus(item, sw.key);
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            if (p.sheetRole === "Primary") return false;
                             const propSwKey = getSheetSoftwareKey({ filename: p.source });
                             if (propSwKey && propSwKey !== sw.key) {
                                 return false;
                             }
+                            const propName = p.property.toLowerCase().trim();
+                            
+                            // Decouple SentinelOne/others from AD enrollment
+                            if (sw.key !== "ad") {
+                                const words = propName.split(/[^a-z0-9]+/);
+                                if (words.includes("ad") || words.includes("adcomputers") || propName.includes("active directory") || propName.includes("active_directory") || propName.includes("enrollment")) {
+                                    return false;
+                                }
+                            }
+                            
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
@@ -5948,7 +5976,6 @@
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
-                            const propName = p.property.toLowerCase().trim();
                             return keywords.some(kw => {
                                 if (kw.length <= 3) {
                                     return propName.split(/[^a-z0-9]+/).includes(kw);

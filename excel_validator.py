@@ -40,9 +40,17 @@ def is_valid_date(date_str):
 
 def find_index(headers, keywords):
     """Fuzzy maps headers to find column index using keyword matching rules."""
+    is_ad = any(k in keywords for k in ["ad", "active directory", "active_directory"])
     for kw in keywords:
         for idx, h in enumerate(headers):
             h_lower = str(h).lower().strip()
+            
+            # Exclude AD columns for non-AD agents
+            if not is_ad:
+                words = re.split(r'[^a-z0-9]+', h_lower)
+                if "ad" in words or "active directory" in h_lower or "active_directory" in h_lower:
+                    continue
+                    
             if len(kw) <= 3:
                 # Whole word match for short keywords (e.g., ad, mac, sn)
                 words = re.split(r'[^a-z0-9]+', h_lower)
