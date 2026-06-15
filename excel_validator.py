@@ -264,9 +264,17 @@ def validate_sheet_data(headers, rows, filename=None):
         for agent_name, idx in [("AD Enrollment", ad_idx), ("BitLocker", bitlocker_idx), ("Zscaler vpn", zscaler_idx), ("Nessus agent", nessus_idx), ("SentinelOne edr", s1_idx), ("SCCM patch", sccm_idx)]:
             if idx != -1:
                 val = str(row[idx]).strip().lower()
-                if val and val not in {"compliant", "non_compliant", "non compliant", "installed", "missing", "yes", "no", "true", "false", "1", "0", "active", "inactive", "disabled", "fail", "failed", "non-compliant", "offline", "critical", "enrolled", "active_enrollment", "active enrollment", "success", "ok", "pass", "passed", "on", "enabled", "running", "secured", "secure", "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected", "error", "not enrolled", "not_enrolled", "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable"}:
-                    if not (re.search(r'\d+\.\d+', val) or re.match(r'^v\d+', val)):
-                        warnings.append(f"Row {r_idx}: Compliance field '{agent_name}' value '{row[idx]}' contains non-standard text.")
+                if val:
+                    # check version/phrases and fallback exact keywords
+                    is_valid = (re.search(r'\d+\.\d+', val) or re.match(r'^v\d+', val) or
+                                val in {"compliant", "non_compliant", "non compliant", "installed", "missing", "yes", "no", "true", "false", "1", "0", "active", "inactive", "disabled", "fail", "failed", "non-compliant", "offline", "critical", "enrolled", "active_enrollment", "active enrollment", "success", "ok", "pass", "passed", "on", "enabled", "running", "secured", "secure", "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected", "error", "not enrolled", "not_enrolled", "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable",
+                                        "trusted", "trusted network", "trusted_network", "trusted-network", "established", "tunnel established", "machine tunnel", "machine_tunnel", "machine_tunnel_active", "machine tunnel active", "joined", "domain joined", "domain_joined", "domain-joined", "machine joined", "machine_joined", "aes", "aes-128", "aes-256", "aes128", "aes256", "xts-aes", "xts_aes", "scanned", "clean", "safe", "completed", "scan completed", "healthy", "no vulnerabilities", "no_vulnerabilities", "patched", "fully patched", "updated", "fully updated", "current", "latest"})
+                    if not is_valid:
+                        # Split by word and check if it contains any known standard word
+                        words = re.split(r'[^a-z0-9]+', val)
+                        has_standard_words = any(w in {"compliant", "installed", "yes", "true", "active", "enrolled", "success", "ok", "pass", "passed", "on", "enabled", "running", "secured", "secure", "monitored", "encrypted", "encryption", "protected", "connected", "online", "registered", "joined", "trusted", "established", "scanned", "clean", "safe", "completed", "healthy", "patched", "updated", "current", "latest", "aes", "xts", "non", "not", "un", "off", "fail", "failed", "inactive", "disconnected", "disabled", "outdated", "vulnerable", "error", "critical", "missing", "unreported", "offline", "no", "none"} for w in words)
+                        if not has_standard_words:
+                            warnings.append(f"Row {r_idx}: Compliance field '{agent_name}' value '{row[idx]}' contains non-standard text.")
                     
     return {
         "warnings": warnings,

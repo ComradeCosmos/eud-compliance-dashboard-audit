@@ -397,7 +397,7 @@ try {
     `, context);
     console.log('✔ Phase 6: Successive multi-agent merge verification succeeded flawlessly!');
 
-    console.log('\nRunning Phase 7: evaluateComplianceValue version patterns verification...');
+    console.log('\nRunning Phase 7: evaluateComplianceValue version patterns & negation verification...');
     vm.runInContext(`
         const v1 = evaluateComplianceValue('6.2.1');
         const v2 = evaluateComplianceValue('v5.0');
@@ -405,19 +405,49 @@ try {
         const v4 = evaluateComplianceValue('v4.15');
         const v5 = evaluateComplianceValue('non-compliant');
         
+        // Negation / Substring checks
+        const v6 = evaluateComplianceValue('agent non-compliant');
+        const v7 = evaluateComplianceValue('not active');
+        const v8 = evaluateComplianceValue('disconnected');
+        const v9 = evaluateComplianceValue('agent inactive');
+        
+        // Complex compliant phrases
+        const v10 = evaluateComplianceValue('trusted network');
+        const v11 = evaluateComplianceValue('domain joined');
+        const v12 = evaluateComplianceValue('aes-256');
+        const v13 = evaluateComplianceValue('no vulnerabilities');
+        
         console.log('6.2.1 compliance result:', JSON.stringify(v1));
         console.log('v5.0 compliance result:', JSON.stringify(v2));
         console.log('10.241.13 compliance result:', JSON.stringify(v3));
         console.log('v4.15 compliance result:', JSON.stringify(v4));
         console.log('non-compliant compliance result:', JSON.stringify(v5));
+        console.log('agent non-compliant compliance result:', JSON.stringify(v6));
+        console.log('not active compliance result:', JSON.stringify(v7));
+        console.log('disconnected compliance result:', JSON.stringify(v8));
+        console.log('agent inactive compliance result:', JSON.stringify(v9));
+        console.log('trusted network compliance result:', JSON.stringify(v10));
+        console.log('domain joined compliance result:', JSON.stringify(v11));
+        console.log('aes-256 compliance result:', JSON.stringify(v12));
+        console.log('no vulnerabilities compliance result:', JSON.stringify(v13));
         
         if (v1.status !== 'COMPLIANT' || v1.installed !== 'INSTALLED') throw new Error('FAIL: 6.2.1 version string did not resolve to COMPLIANT/INSTALLED');
         if (v2.status !== 'COMPLIANT' || v2.installed !== 'INSTALLED') throw new Error('FAIL: v5.0 version string did not resolve to COMPLIANT/INSTALLED');
         if (v3.status !== 'COMPLIANT' || v3.installed !== 'INSTALLED') throw new Error('FAIL: 10.241.13 version string did not resolve to COMPLIANT/INSTALLED');
         if (v4.status !== 'COMPLIANT' || v4.installed !== 'INSTALLED') throw new Error('FAIL: v4.15 version string did not resolve to COMPLIANT/INSTALLED');
         if (v5.status !== 'NON_COMPLIANT') throw new Error('FAIL: non-compliant string did not resolve to NON_COMPLIANT');
+        
+        if (v6.status !== 'NON_COMPLIANT') throw new Error('FAIL: agent non-compliant should be NON_COMPLIANT');
+        if (v7.status !== 'NON_COMPLIANT') throw new Error('FAIL: not active should be NON_COMPLIANT');
+        if (v8.status !== 'NON_COMPLIANT') throw new Error('FAIL: disconnected should be NON_COMPLIANT');
+        if (v9.status !== 'NON_COMPLIANT') throw new Error('FAIL: agent inactive should be NON_COMPLIANT');
+        
+        if (v10.status !== 'COMPLIANT' || v10.installed !== 'INSTALLED') throw new Error('FAIL: trusted network should be COMPLIANT/INSTALLED');
+        if (v11.status !== 'COMPLIANT' || v11.installed !== 'INSTALLED') throw new Error('FAIL: domain joined should be COMPLIANT/INSTALLED');
+        if (v12.status !== 'COMPLIANT' || v12.installed !== 'INSTALLED') throw new Error('FAIL: aes-256 should be COMPLIANT/INSTALLED');
+        if (v13.status !== 'COMPLIANT' || v13.installed !== 'INSTALLED') throw new Error('FAIL: no vulnerabilities should be COMPLIANT/INSTALLED');
     `, context);
-    console.log('✔ Phase 7: evaluateComplianceValue version patterns verification succeeded flawlessly!');
+    console.log('✔ Phase 7: evaluateComplianceValue version patterns & negation verification succeeded flawlessly!');
 
     console.log('\nAll single-agent uploader mapping leakage & successive merge tracking verification tests passed successfully! 🎉');
 } catch (err) {

@@ -4310,7 +4310,51 @@
                 return { installed: "INSTALLED", status: "COMPLIANT" };
             }
 
-            const compliantKeywords = [
+            // 1. Explicit compliant phrases check (overriding general negations)
+            const compliantPhrases = [
+                "no vulnerabilities", "no vulnerability", "no virus", "no threats", "no threat",
+                "not isolated", "tunnel active", "tunnel_active", "service running", "service_running",
+                "active enrollment", "active_enrollment", "up to date", "up-to-date",
+                "domain joined", "domain_joined", "domain-joined", "machine joined", "machine_joined",
+                "trusted network", "trusted_network", "trusted-network"
+            ];
+            for (let phrase of compliantPhrases) {
+                if (val.includes(phrase)) {
+                    return { installed: "INSTALLED", status: "COMPLIANT" };
+                }
+            }
+
+            // 2. Tokenize by splitting on non-alphanumeric characters to match whole words
+            const words = val.split(/[^a-z0-9]+/);
+
+            // 3. Check for non-compliant/negation words first
+            const nonCompliantWords = [
+                "non", "not", "un", "off", "fail", "failed", "inactive", "disconnected",
+                "disabled", "outdated", "vulnerable", "error", "critical", "missing",
+                "unreported", "offline", "no", "none"
+            ];
+            for (let w of words) {
+                if (nonCompliantWords.includes(w)) {
+                    return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
+                }
+            }
+
+            // 4. Check for compliant words
+            const compliantWords = [
+                "compliant", "installed", "yes", "true", "active", "enrolled", "success",
+                "ok", "pass", "passed", "on", "enabled", "running", "secured", "secure",
+                "monitored", "encrypted", "encryption", "protected", "connected", "online",
+                "registered", "joined", "trusted", "established", "scanned", "clean", "safe",
+                "completed", "healthy", "patched", "updated", "current", "latest", "aes", "xts"
+            ];
+            for (let w of words) {
+                if (compliantWords.includes(w)) {
+                    return { installed: "INSTALLED", status: "COMPLIANT" };
+                }
+            }
+
+            // 5. Fallback exact matches
+            const compliantKeywordsFallback = [
                 "compliant", "installed", "yes", "true", "1", "active",
                 "enrolled", "active_enrollment", "active enrollment", "success", "ok",
                 "pass", "passed", "on", "enabled", "running", "secured", "secure",
@@ -4318,30 +4362,18 @@
                 "connected", "online", "tunnel active", "tunnel_active", "service running", "service_running",
                 "registered"
             ];
+            if (compliantKeywordsFallback.includes(val)) {
+                return { installed: "INSTALLED", status: "COMPLIANT" };
+            }
 
-            const nonCompliantKeywords = [
+            const nonCompliantKeywordsFallback = [
                 "non-compliant", "non_compliant", "non compliant", "failed", "fail",
                 "missing", "no", "false", "0", "inactive", "disabled",
                 "critical", "error", "offline", "not enrolled", "not_enrolled",
                 "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable"
             ];
-
-            if (compliantKeywords.includes(val)) {
-                return { installed: "INSTALLED", status: "COMPLIANT" };
-            }
-            if (nonCompliantKeywords.includes(val)) {
+            if (nonCompliantKeywordsFallback.includes(val)) {
                 return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
-            }
-
-            for (let kw of compliantKeywords) {
-                if (val.includes(kw)) {
-                    return { installed: "INSTALLED", status: "COMPLIANT" };
-                }
-            }
-            for (let kw of nonCompliantKeywords) {
-                if (val.includes(kw)) {
-                    return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
-                }
             }
 
             return { installed: rawVal.trim() || "MISSING", status: "NON_COMPLIANT" };
