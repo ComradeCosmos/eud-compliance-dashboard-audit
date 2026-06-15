@@ -376,6 +376,42 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                 valid_rows.append(r)
                 
         name_indices, serial_indices, mac_indices = get_col_indices(headers, filename)
+        
+        # Pre-build index maps for fast O(1) lookups
+        key_map = {}
+        name_map = {}
+        serial_map = {}
+        mac_map = {}
+        
+        for r_idx, s_row in enumerate(valid_rows):
+            # 1. Key Value
+            sec_key_val = normalize_value(s_row[key_idx]) if key_idx < len(s_row) else ""
+            if sec_key_val:
+                key_map.setdefault(sec_key_val, []).append(r_idx)
+                
+            # 2. Name values
+            for s_idx in name_indices:
+                if s_idx < len(s_row):
+                    s_name = normalize_value(s_row[s_idx])
+                    if s_name:
+                        name_map.setdefault(s_name, []).append(r_idx)
+                        
+            # 3. Serial values
+            for s_idx in serial_indices:
+                if s_idx < len(s_row):
+                    s_serial = normalize_value(s_row[s_idx])
+                    if s_serial:
+                        serial_map.setdefault(s_serial, []).append(r_idx)
+                        
+            # 4. MAC values
+            for s_idx in mac_indices:
+                if s_idx < len(s_row):
+                    s_mac_val = s_row[s_idx]
+                    s_macs = norm_mac_list(s_mac_val)
+                    for sm in s_macs:
+                        if sm:
+                            mac_map.setdefault(sm, []).append(r_idx)
+                            
         sec_meta = {
             'key_idx': key_idx,
             'name_indices': name_indices,
@@ -388,6 +424,10 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
             "headers": headers,
             "rows": valid_rows,
             "meta": sec_meta,
+            "key_map": key_map,
+            "name_map": name_map,
+            "serial_map": serial_map,
+            "mac_map": mac_map,
             "matched_indices": set()
         })
         
@@ -417,15 +457,59 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                     "value": val if val else "-"
                 })
                 
-        # Resolve secondary mappings
+        # Resolve secondary mappings using pre-built lookup maps
         for sec in sec_sheets_processed:
             matched_row = None
-            for r_idx, s_row in enumerate(sec["rows"]):
-                if row_matches(p_row, prim_meta, s_row, sec["meta"]):
-                    matched_row = s_row
-                    sec["matched_indices"].add(r_idx)
-                    break
+            matched_r_idx = -1
+            
+            # 1. Key match
+            prim_key_val = normalize_value(p_row[primary_key_idx]) if primary_key_idx < len(p_row) else ""
+            if prim_key_val and prim_key_val in sec["key_map"]:
+                candidates = sec["key_map"][prim_key_val]
+                if candidates:
+                    matched_r_idx = candidates[0]
                     
+            # 2. Name match
+            if matched_r_idx == -1 and prim_name_indices:
+                for p_idx in prim_name_indices:
+                    if p_idx < len(p_row):
+                        p_name = normalize_value(p_row[p_idx])
+                        if p_name and p_name in sec["name_map"]:
+                            candidates = sec["name_map"][p_name]
+                            if candidates:
+                                matched_r_idx = candidates[0]
+                                break
+                                
+            # 3. Serial match
+            if matched_r_idx == -1 and prim_serial_indices:
+                for p_idx in prim_serial_indices:
+                    if p_idx < len(p_row):
+                        p_serial = normalize_value(p_row[p_idx])
+                        if p_serial and p_serial in sec["serial_map"]:
+                            candidates = sec["serial_map"][p_serial]
+                            if candidates:
+                                matched_r_idx = candidates[0]
+                                break
+                                
+            # 4. MAC match
+            if matched_r_idx == -1 and prim_mac_indices:
+                for p_idx in prim_mac_indices:
+                    if p_idx < len(p_row):
+                        p_mac_val = p_row[p_idx]
+                        p_macs = norm_mac_list(p_mac_val)
+                        for pm in p_macs:
+                            if pm and pm in sec["mac_map"]:
+                                candidates = sec["mac_map"][pm]
+                                if candidates:
+                                    matched_r_idx = candidates[0]
+                                    break
+                    if matched_r_idx != -1:
+                        break
+                        
+            if matched_r_idx != -1:
+                matched_row = sec["rows"][matched_r_idx]
+                sec["matched_indices"].add(matched_r_idx)
+                
             if matched_row is not None:
                 present_in_sheets.append(sec["filename"])
                 for idx, h in enumerate(sec["headers"]):

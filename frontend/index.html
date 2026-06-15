@@ -4919,6 +4919,64 @@
             const secSheetsProcessed = secondarySheets.map(sheet => {
                 const secIndices = getColIndices(sheet.headers, sheet.filename);
                 const validRows = sheet.rows.filter(r => r && !r.every(cell => String(cell).trim() === ""));
+                
+                // Pre-build index maps for fast O(1) lookups
+                const keyMap = new Map();
+                const nameMap = new Map();
+                const serialMap = new Map();
+                const macMap = new Map();
+                
+                validRows.forEach((sRow, rIdx) => {
+                    // 1. Key Value
+                    const secKeyVal = normalizeValue(sRow[sheet.keyIdx]);
+                    if (secKeyVal) {
+                        if (!keyMap.has(secKeyVal)) keyMap.set(secKeyVal, []);
+                        keyMap.get(secKeyVal).push(rIdx);
+                    }
+                    
+                    // 2. Name values
+                    if (secIndices.nameIndices) {
+                        secIndices.nameIndices.forEach(sIdx => {
+                            if (sIdx < sRow.length) {
+                                const sName = normalizeValue(sRow[sIdx]);
+                                if (sName) {
+                                    if (!nameMap.has(sName)) nameMap.set(sName, []);
+                                    nameMap.get(sName).push(rIdx);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 3. Serial values
+                    if (secIndices.serialIndices) {
+                        secIndices.serialIndices.forEach(sIdx => {
+                            if (sIdx < sRow.length) {
+                                const sSerial = normalizeValue(sRow[sIdx]);
+                                if (sSerial) {
+                                    if (!serialMap.has(sSerial)) serialMap.set(sSerial, []);
+                                    serialMap.get(sSerial).push(rIdx);
+                                }
+                            }
+                        });
+                    }
+                    
+                    // 4. MAC values
+                    if (secIndices.macIndices) {
+                        secIndices.macIndices.forEach(sIdx => {
+                            if (sIdx < sRow.length) {
+                                const sMacVal = sRow[sIdx];
+                                const sMacs = normMacList(sMacVal);
+                                sMacs.forEach(sm => {
+                                    if (sm) {
+                                        if (!macMap.has(sm)) macMap.set(sm, []);
+                                        macMap.get(sm).push(rIdx);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                });
+
                 return {
                     filename: sheet.filename,
                     headers: sheet.headers,
@@ -4929,6 +4987,10 @@
                         serial_indices: secIndices.serialIndices,
                         mac_indices: secIndices.macIndices
                     },
+                    keyMap,
+                    nameMap,
+                    serialMap,
+                    macMap,
                     matchedIndices: new Set()
                 };
             });
@@ -4958,13 +5020,74 @@
 
                 secSheetsProcessed.forEach(sec => {
                     let matchedRow = null;
-                    for (let rIdx = 0; rIdx < sec.rows.length; rIdx++) {
-                        const sRow = sec.rows[rIdx];
-                        if (rowMatches(pRow, primMeta, sRow, sec.meta)) {
-                            matchedRow = sRow;
-                            sec.matchedIndices.add(rIdx);
-                            break;
+                    let matchedRIdx = -1;
+                    
+                    // Try to find match via O(1) lookups
+                    
+                    // 1. Check key match
+                    const primKeyVal = normalizeValue(pRow[primaryKeyIdx]);
+                    if (primKeyVal && sec.keyMap.has(primKeyVal)) {
+                        const candidates = sec.keyMap.get(primKeyVal);
+                        if (candidates.length > 0) {
+                            matchedRIdx = candidates[0];
                         }
+                    }
+                    
+                    // 2. Check name match
+                    if (matchedRIdx === -1 && primMeta.name_indices) {
+                        for (let pIdx of primMeta.name_indices) {
+                            if (pIdx < pRow.length) {
+                                const pName = normalizeValue(pRow[pIdx]);
+                                if (pName && sec.nameMap.has(pName)) {
+                                    const candidates = sec.nameMap.get(pName);
+                                    if (candidates.length > 0) {
+                                        matchedRIdx = candidates[0];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 3. Check serial match
+                    if (matchedRIdx === -1 && primMeta.serial_indices) {
+                        for (let pIdx of primMeta.serial_indices) {
+                            if (pIdx < pRow.length) {
+                                const pSerial = normalizeValue(pRow[pIdx]);
+                                if (pSerial && sec.serialMap.has(pSerial)) {
+                                    const candidates = sec.serialMap.get(pSerial);
+                                    if (candidates.length > 0) {
+                                        matchedRIdx = candidates[0];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // 4. Check MAC match
+                    if (matchedRIdx === -1 && primMeta.mac_indices) {
+                        for (let pIdx of primMeta.mac_indices) {
+                            if (pIdx < pRow.length) {
+                                const pMacVal = pRow[pIdx];
+                                const pMacs = normMacList(pMacVal);
+                                for (let pm of pMacs) {
+                                    if (pm && sec.macMap.has(pm)) {
+                                        const candidates = sec.macMap.get(pm);
+                                        if (candidates.length > 0) {
+                                            matchedRIdx = candidates[0];
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (matchedRIdx !== -1) break;
+                        }
+                    }
+                    
+                    if (matchedRIdx !== -1) {
+                        matchedRow = sec.rows[matchedRIdx];
+                        sec.matchedIndices.add(matchedRIdx);
                     }
 
                     if (matchedRow) {
