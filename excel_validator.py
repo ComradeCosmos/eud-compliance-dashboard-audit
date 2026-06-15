@@ -265,7 +265,8 @@ def validate_sheet_data(headers, rows, filename=None):
             if idx != -1:
                 val = str(row[idx]).strip().lower()
                 if val and val not in {"compliant", "non_compliant", "non compliant", "installed", "missing", "yes", "no", "true", "false", "1", "0", "active", "inactive", "disabled", "fail", "failed", "non-compliant", "offline", "critical", "enrolled", "active_enrollment", "active enrollment", "success", "ok", "pass", "passed", "on", "enabled", "running", "secured", "secure", "monitored", "up-to-date", "up to date", "encrypted", "encryption", "protected", "error", "not enrolled", "not_enrolled", "unenrolled", "out of date", "out_of_date", "outdated", "vulnerable"}:
-                    warnings.append(f"Row {r_idx}: Compliance field '{agent_name}' value '{row[idx]}' contains non-standard text.")
+                    if not (re.search(r'\d+\.\d+', val) or re.match(r'^v\d+', val)):
+                        warnings.append(f"Row {r_idx}: Compliance field '{agent_name}' value '{row[idx]}' contains non-standard text.")
                     
     return {
         "warnings": warnings,

@@ -397,6 +397,28 @@ try {
     `, context);
     console.log('✔ Phase 6: Successive multi-agent merge verification succeeded flawlessly!');
 
+    console.log('\nRunning Phase 7: evaluateComplianceValue version patterns verification...');
+    vm.runInContext(`
+        const v1 = evaluateComplianceValue('6.2.1');
+        const v2 = evaluateComplianceValue('v5.0');
+        const v3 = evaluateComplianceValue('10.241.13');
+        const v4 = evaluateComplianceValue('v4.15');
+        const v5 = evaluateComplianceValue('non-compliant');
+        
+        console.log('6.2.1 compliance result:', JSON.stringify(v1));
+        console.log('v5.0 compliance result:', JSON.stringify(v2));
+        console.log('10.241.13 compliance result:', JSON.stringify(v3));
+        console.log('v4.15 compliance result:', JSON.stringify(v4));
+        console.log('non-compliant compliance result:', JSON.stringify(v5));
+        
+        if (v1.status !== 'COMPLIANT' || v1.installed !== 'INSTALLED') throw new Error('FAIL: 6.2.1 version string did not resolve to COMPLIANT/INSTALLED');
+        if (v2.status !== 'COMPLIANT' || v2.installed !== 'INSTALLED') throw new Error('FAIL: v5.0 version string did not resolve to COMPLIANT/INSTALLED');
+        if (v3.status !== 'COMPLIANT' || v3.installed !== 'INSTALLED') throw new Error('FAIL: 10.241.13 version string did not resolve to COMPLIANT/INSTALLED');
+        if (v4.status !== 'COMPLIANT' || v4.installed !== 'INSTALLED') throw new Error('FAIL: v4.15 version string did not resolve to COMPLIANT/INSTALLED');
+        if (v5.status !== 'NON_COMPLIANT') throw new Error('FAIL: non-compliant string did not resolve to NON_COMPLIANT');
+    `, context);
+    console.log('✔ Phase 7: evaluateComplianceValue version patterns verification succeeded flawlessly!');
+
     console.log('\nAll single-agent uploader mapping leakage & successive merge tracking verification tests passed successfully! 🎉');
 } catch (err) {
     console.error('❌ Integration Test failed:', err.message);

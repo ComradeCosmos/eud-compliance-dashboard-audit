@@ -4306,7 +4306,7 @@
             }
 
             // If the value contains a version number, it is installed and compliant
-            if (/d+.d+/.test(val) || /^vd+/.test(val)) {
+            if (/\b\d+\.\d+/.test(val) || /^v\d+/.test(val)) {
                 return { installed: "INSTALLED", status: "COMPLIANT" };
             }
 
