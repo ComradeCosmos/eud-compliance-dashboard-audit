@@ -162,11 +162,23 @@ def parse_csv(file_content_str):
     reader = csv.reader(io.StringIO(file_content_str), delimiter=delimiter)
     return list(reader)
 
-def validate_sheet_data(headers, rows):
+def validate_sheet_data(headers, rows, filename=None):
     """Validates structural constraints and field formats inside the sheet rows."""
     # Fuzzy match column headers
     device_name_idx = find_index(headers, ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"])
-    serial_idx = find_index(headers, ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"])
+    
+    is_zscaler = False
+    if filename:
+        fn_low = str(filename).lower()
+        if "zscaler" in fn_low or "zscalar" in fn_low or "zscalr" in fn_low or "vpn" in fn_low:
+            is_zscaler = True
+            
+    if is_zscaler:
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+    else:
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        
+    serial_idx = find_index(headers, serial_keywords)
     mac_idx = find_index(headers, ["macaddress", "mac", "physical", "ethernet", "hardware"])
     last_login_idx = find_index(headers, ["lastlogin", "login", "active", "date", "time"])
     condition_idx = find_index(headers, ["condition", "status", "state"])
@@ -175,7 +187,7 @@ def validate_sheet_data(headers, rows):
     # Core compliance controls
     ad_idx = find_index(headers, ["active directory", "ad", "active_directory", "domain"])
     bitlocker_idx = find_index(headers, ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"])
-    zscaler_idx = find_index(headers, ["zscaler", "zscalar", "z-scaler", "z-scalar", "zscaler client connector", "zscalar client connector", "vpn"])
+    zscaler_idx = find_index(headers, ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"])
     nessus_idx = find_index(headers, ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"])
     s1_idx = find_index(headers, ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"])
     sccm_idx = find_index(headers, ["sccm", "sccm agent", "mecm", "management agent", "patch agent"])
@@ -264,25 +276,42 @@ def norm_mac_list(val):
     macs = re.findall(r'[0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}', str(val))
     return [m.lower().replace('.', ':').replace('-', ':') for m in macs]
 
-def get_col_indices(headers):
+def get_col_indices(headers, filename=None):
     h_low = [str(h).lower().strip() for h in headers]
     name_keywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"]
-    serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"]
+    
+    is_zscaler = False
+    if filename:
+        fn_low = str(filename).lower()
+        if "zscaler" in fn_low or "zscalar" in fn_low or "zscalr" in fn_low or "vpn" in fn_low:
+            is_zscaler = True
+            
+    if is_zscaler:
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+    else:
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        
     mac_keywords = ["macaddress", "mac", "physical", "ethernet", "hardware"]
     
-    def find_idx(keywords):
-        for kw in keywords:
-            for idx, h in enumerate(h_low):
+    def find_indices(keywords):
+        indices = []
+        for idx, h in enumerate(h_low):
+            matched = False
+            for kw in keywords:
                 if len(kw) <= 3:
                     words = re.split(r'[^a-z0-9]+', h)
                     if kw in words:
-                        return idx
+                        matched = True
+                        break
                 else:
                     if kw in h:
-                        return idx
-        return -1
+                        matched = True
+                        break
+            if matched:
+                indices.append(idx)
+        return indices
         
-    return find_idx(name_keywords), find_idx(serial_keywords), find_idx(mac_keywords)
+    return find_indices(name_keywords), find_indices(serial_keywords), find_indices(mac_keywords)
 
 def row_matches(prim_row, prim_meta, sec_row, sec_meta):
     prim_key_val = normalize_value(prim_row[prim_meta['key_idx']]) if prim_meta['key_idx'] < len(prim_row) else ""
@@ -290,27 +319,33 @@ def row_matches(prim_row, prim_meta, sec_row, sec_meta):
     if prim_key_val and prim_key_val == sec_key_val:
         return True
         
-    if prim_meta['name_idx'] != -1 and sec_meta['name_idx'] != -1:
-        p_name = normalize_value(prim_row[prim_meta['name_idx']]) if prim_meta['name_idx'] < len(prim_row) else ""
-        s_name = normalize_value(sec_row[sec_meta['name_idx']]) if sec_meta['name_idx'] < len(sec_row) else ""
-        if p_name and p_name == s_name:
-            return True
-            
-    if prim_meta['serial_idx'] != -1 and sec_meta['serial_idx'] != -1:
-        p_serial = normalize_value(prim_row[prim_meta['serial_idx']]) if prim_meta['serial_idx'] < len(prim_row) else ""
-        s_serial = normalize_value(sec_row[sec_meta['serial_idx']]) if sec_meta['serial_idx'] < len(sec_row) else ""
-        if p_serial and p_serial == s_serial:
-            return True
-            
-    if prim_meta['mac_idx'] != -1 and sec_meta['mac_idx'] != -1:
-        p_mac_val = prim_row[prim_meta['mac_idx']] if prim_meta['mac_idx'] < len(prim_row) else ""
-        s_mac_val = sec_row[sec_meta['mac_idx']] if sec_meta['mac_idx'] < len(sec_row) else ""
-        p_macs = norm_mac_list(p_mac_val)
-        s_macs = norm_mac_list(s_mac_val)
-        if p_macs and s_macs:
-            if set(p_macs) & set(s_macs):
-                return True
-                
+    for p_idx in prim_meta.get('name_indices', []):
+        for s_idx in sec_meta.get('name_indices', []):
+            if p_idx < len(prim_row) and s_idx < len(sec_row):
+                p_name = normalize_value(prim_row[p_idx])
+                s_name = normalize_value(sec_row[s_idx])
+                if p_name and p_name == s_name:
+                    return True
+                    
+    for p_idx in prim_meta.get('serial_indices', []):
+        for s_idx in sec_meta.get('serial_indices', []):
+            if p_idx < len(prim_row) and s_idx < len(sec_row):
+                p_serial = normalize_value(prim_row[p_idx])
+                s_serial = normalize_value(sec_row[s_idx])
+                if p_serial and p_serial == s_serial:
+                    return True
+                    
+    for p_idx in prim_meta.get('mac_indices', []):
+        for s_idx in sec_meta.get('mac_indices', []):
+            if p_idx < len(prim_row) and s_idx < len(sec_row):
+                p_mac_val = prim_row[p_idx]
+                s_mac_val = sec_row[s_idx]
+                p_macs = norm_mac_list(p_mac_val)
+                s_macs = norm_mac_list(s_mac_val)
+                if p_macs and s_macs:
+                    if set(p_macs) & set(s_macs):
+                        return True
+                        
     return False
 
 def reconcile_sheets_data(primary_sheet, secondary_sheets):
@@ -318,13 +353,14 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
     primary_key_idx = primary_sheet["keyIdx"]
     primary_headers = primary_sheet["headers"]
     primary_rows = primary_sheet["rows"]
+    primary_filename = primary_sheet.get("filename", "")
     
-    prim_name_idx, prim_serial_idx, prim_mac_idx = get_col_indices(primary_headers)
+    prim_name_indices, prim_serial_indices, prim_mac_indices = get_col_indices(primary_headers, primary_filename)
     prim_meta = {
         'key_idx': primary_key_idx,
-        'name_idx': prim_name_idx,
-        'serial_idx': prim_serial_idx,
-        'mac_idx': prim_mac_idx
+        'name_indices': prim_name_indices,
+        'serial_indices': prim_serial_indices,
+        'mac_indices': prim_mac_indices
     }
     
     sec_sheets_processed = []
@@ -332,18 +368,19 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         key_idx = sheet["keyIdx"]
         headers = sheet["headers"]
         rows = sheet["rows"]
+        filename = sheet.get("filename", "")
         
         valid_rows = []
         for r in rows:
             if r and not all(str(c).strip() == "" for c in r):
                 valid_rows.append(r)
                 
-        name_idx, serial_idx, mac_idx = get_col_indices(headers)
+        name_indices, serial_indices, mac_indices = get_col_indices(headers, filename)
         sec_meta = {
             'key_idx': key_idx,
-            'name_idx': name_idx,
-            'serial_idx': serial_idx,
-            'mac_idx': mac_idx
+            'name_indices': name_indices,
+            'serial_indices': serial_indices,
+            'mac_indices': mac_indices
         }
         
         sec_sheets_processed.append({

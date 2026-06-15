@@ -1444,7 +1444,7 @@
             // Compliance policy indices
             const adIdx = findColIdx(["active directory", "ad", "active_directory", "domain"]);
             const bitlockerIdx = findColIdx(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
-            const zscalerIdx = findColIdx(["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn"]);
+            const zscalerIdx = findColIdx(["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"]);
             const nessusIdx = findColIdx(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
             const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
             const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
@@ -2251,15 +2251,11 @@
                         </div>
 
                         <!-- Bottom detail statistics -->
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.25rem; font-size: 0.78rem; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.75rem;">
-                            <div>
-                                <span style="color: var(--text-muted); display: block;">Compliant Assets</span>
-                                <strong style="color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem;">${isUnreported ? 0 : compliantCount.toLocaleString()}</strong>
-                            </div>
-                            <div style="text-align: right;">
-                                <span style="color: var(--text-muted); display: block;">Non-Compliant</span>
-                                <strong style="color: ${failCount > 0 && isRequired ? 'var(--status-critical)' : 'var(--text-secondary)'}; font-family: var(--font-mono); font-size: 0.85rem;">${isUnreported ? 0 : failCount.toLocaleString()}</strong>
-                            </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 0.2rem 1rem; margin-top: 0.25rem; font-size: 0.78rem; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 0.75rem;">
+                            <span style="color: var(--text-muted); display: block; grid-column: 1; grid-row: 1;">Compliant Assets</span>
+                            <span style="color: var(--text-muted); display: block; text-align: right; grid-column: 2; grid-row: 1;">Non-Compliant Assets</span>
+                            <strong style="color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem; grid-column: 1; grid-row: 2;">${isUnreported ? 0 : compliantCount.toLocaleString()}</strong>
+                            <strong style="color: ${failCount > 0 && isRequired ? 'var(--status-critical)' : 'var(--text-secondary)'}; font-family: var(--font-mono); font-size: 0.85rem; text-align: right; grid-column: 2; grid-row: 2;">${isUnreported ? 0 : failCount.toLocaleString()}</strong>
                         </div>
                     </div>
                 `;
@@ -4206,11 +4202,11 @@
             }
 
             if (k === "zscaler") {
-                if (h.includes("zscaler") || h.includes("zscalar") || h.includes("z-scaler") || h.includes("vpn")) {
+                if (h.includes("zscaler") || h.includes("zscalar") || h.includes("zscalr") || h.includes("z-scaler") || h.includes("z-scalar") || h.includes("z-scalr") || h.includes("vpn")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("zscaler") || words.includes("zscalar");
+                return words.includes("zscaler") || words.includes("zscalar") || words.includes("zscalr");
             }
 
             if (k === "nessus") {
@@ -4256,7 +4252,7 @@
             if (fn.includes("bitlocker") || fn.includes("bit locker") || fn.includes("bit_locker") || fn.includes("bit-locker") || fn.includes("encryption") || fn.includes("disk")) {
                 return "bitlocker";
             }
-            if (fn.includes("zscaler") || fn.includes("zscalar") || fn.includes("z-scaler") || fn.includes("z_scaler") || fn.includes("z scaler") || fn.includes("vpn")) {
+            if (fn.includes("zscaler") || fn.includes("zscalar") || fn.includes("zscalr") || fn.includes("z-scaler") || fn.includes("z-scalar") || fn.includes("z-scalr") || fn.includes("z_scaler") || fn.includes("z_scalr") || fn.includes("z scaler") || fn.includes("z scalr") || fn.includes("vpn")) {
                 return "zscaler";
             }
             if (fn.includes("nessus") || fn.includes("tenable") || fn.includes("vulnerability") || fn.includes("scanner")) {
@@ -4355,7 +4351,7 @@
             const agentKeywords = {
                 ad: ["active directory", "ad", "active_directory", "domain", "canonicalname", "canonical name", "distinguishedname", "distinguished name"],
                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                zscaler: ["zscaler", "zscalar", "z-scaler", "z-scaler", "zscaler client connector", "zscalar client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
+                zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -4791,30 +4787,45 @@
             }
         }
 
-        function getColIndices(headers) {
+        function getColIndices(headers, filename) {
             const hLow = headers.map(h => String(h).toLowerCase().trim());
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            
+            let isZscaler = false;
+            if (filename) {
+                const fnLow = String(filename).toLowerCase();
+                if (fnLow.includes("zscaler") || fnLow.includes("zscalar") || fnLow.includes("zscalr") || fnLow.includes("vpn")) {
+                    isZscaler = true;
+                }
+            }
+            
+            const serialKeywords = isZscaler
+                ? ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+                : ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
 
-            function findIdx(keywords) {
-                for (let kw of keywords) {
-                    for (let idx = 0; idx < hLow.length; idx++) {
-                        const h = hLow[idx];
+            function findIndices(keywords) {
+                const idxs = [];
+                for (let idx = 0; idx < hLow.length; idx++) {
+                    const h = hLow[idx];
+                    const matched = keywords.some(kw => {
                         if (kw.length <= 3) {
                             const words = h.split(/[^a-z0-9]+/);
-                            if (words.includes(kw)) return idx;
+                            return words.includes(kw);
                         } else {
-                            if (h.includes(kw)) return idx;
+                            return h.includes(kw);
                         }
+                    });
+                    if (matched) {
+                        idxs.push(idx);
                     }
                 }
-                return -1;
+                return idxs;
             }
             return {
-                nameIdx: findIdx(nameKeywords),
-                serialIdx: findIdx(serialKeywords),
-                macIdx: findIdx(macKeywords)
+                nameIndices: findIndices(nameKeywords),
+                serialIndices: findIndices(serialKeywords),
+                macIndices: findIndices(macKeywords)
             };
         }
 
@@ -4842,31 +4853,43 @@
                 return true;
             }
 
-            if (primMeta.name_idx !== -1 && secMeta.name_idx !== -1) {
-                const pName = normalizeValue(primRow[primMeta.name_idx]);
-                const sName = normalizeValue(secRow[secMeta.name_idx]);
-                if (pName && pName === sName) {
-                    return true;
+            if (primMeta.name_indices && secMeta.name_indices) {
+                for (let pIdx of primMeta.name_indices) {
+                    for (let sIdx of secMeta.name_indices) {
+                        if (pIdx < primRow.length && sIdx < secRow.length) {
+                            const pName = normalizeValue(primRow[pIdx]);
+                            const sName = normalizeValue(secRow[sIdx]);
+                            if (pName && pName === sName) return true;
+                        }
+                    }
                 }
             }
 
-            if (primMeta.serial_idx !== -1 && secMeta.serial_idx !== -1) {
-                const pSerial = normalizeValue(primRow[primMeta.serial_idx]);
-                const sSerial = normalizeValue(secRow[secMeta.serial_idx]);
-                if (pSerial && pSerial === sSerial) {
-                    return true;
+            if (primMeta.serial_indices && secMeta.serial_indices) {
+                for (let pIdx of primMeta.serial_indices) {
+                    for (let sIdx of secMeta.serial_indices) {
+                        if (pIdx < primRow.length && sIdx < secRow.length) {
+                            const pSerial = normalizeValue(primRow[pIdx]);
+                            const sSerial = normalizeValue(secRow[sIdx]);
+                            if (pSerial && pSerial === sSerial) return true;
+                        }
+                    }
                 }
             }
 
-            if (primMeta.mac_idx !== -1 && secMeta.mac_idx !== -1) {
-                const pMacVal = primRow[primMeta.mac_idx];
-                const sMacVal = secRow[secMeta.mac_idx];
-                const pMacs = normMacList(pMacVal);
-                const sMacs = normMacList(sMacVal);
-                if (pMacs.length > 0 && sMacs.length > 0) {
-                    for (let pm of pMacs) {
-                        if (sMacs.includes(pm)) {
-                            return true;
+            if (primMeta.mac_indices && secMeta.mac_indices) {
+                for (let pIdx of primMeta.mac_indices) {
+                    for (let sIdx of secMeta.mac_indices) {
+                        if (pIdx < primRow.length && sIdx < secRow.length) {
+                            const pMacVal = primRow[pIdx];
+                            const sMacVal = secRow[sIdx];
+                            const pMacs = normMacList(pMacVal);
+                            const sMacs = normMacList(sMacVal);
+                            if (pMacs.length > 0 && sMacs.length > 0) {
+                                for (let pm of pMacs) {
+                                    if (sMacs.includes(pm)) return true;
+                                }
+                            }
                         }
                     }
                 }
@@ -4876,7 +4899,7 @@
         }
 
         function runLocalReconciliation() {
-            logToTerminal(`[Reconciler] Executing local asset alignment...`);
+            logToTerminal(`[Reconciler] Executing local asset alignment...\n`);
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
 
@@ -4885,16 +4908,16 @@
             const primaryHeaders = primarySheet.headers;
             const primaryKeyIdx = primarySheet.keyIdx;
             
-            const primIndices = getColIndices(primaryHeaders);
+            const primIndices = getColIndices(primaryHeaders, primarySheet.filename);
             const primMeta = {
                 key_idx: primaryKeyIdx,
-                name_idx: primIndices.nameIdx,
-                serial_idx: primIndices.serialIdx,
-                mac_idx: primIndices.macIdx
+                name_indices: primIndices.nameIndices,
+                serial_indices: primIndices.serialIndices,
+                mac_indices: primIndices.macIndices
             };
 
             const secSheetsProcessed = secondarySheets.map(sheet => {
-                const secIndices = getColIndices(sheet.headers);
+                const secIndices = getColIndices(sheet.headers, sheet.filename);
                 const validRows = sheet.rows.filter(r => r && !r.every(cell => String(cell).trim() === ""));
                 return {
                     filename: sheet.filename,
@@ -4902,9 +4925,9 @@
                     rows: validRows,
                     meta: {
                         key_idx: sheet.keyIdx,
-                        name_idx: secIndices.nameIdx,
-                        serial_idx: secIndices.serialIdx,
-                        mac_idx: secIndices.macIdx
+                        name_indices: secIndices.nameIndices,
+                        serial_indices: secIndices.serialIndices,
+                        mac_indices: secIndices.macIndices
                     },
                     matchedIndices: new Set()
                 };
@@ -5035,44 +5058,32 @@
             const rogues = reconciliationResults.rogues;
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
 
-            // Only show summary metrics if we have a primary sheet to derive match rate from
-            if (primarySheet) {
-                const totalPrimary = primaryMapSizeFallback();
-                const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
+            const totalPrimary = primaryMapSizeFallback();
+            const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
-                document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
-
-                const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
-                let subtext = matchesWidget.querySelector("p");
-                if (subtext) {
-                    subtext.innerHTML = `<strong style="color:var(--status-low);">${matches.length} Matches Aligned</strong>`;
-                }
-
-                document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
-                document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-
-                const matchRateEl = document.getElementById("recon-stat-match-rate");
-                matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
-                matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
-            } else {
-                // No primary sheet — show raw counts from results
-                const el = id => document.getElementById(id);
-                el("recon-stat-matches").innerText = matches.length.toLocaleString();
-                el("recon-stat-gaps").innerText = gaps.length.toLocaleString();
-                el("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-                const matchRateEl = el("recon-stat-match-rate");
-                matchRateEl.innerText = "-";
+            document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
+            
+            const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
+            let subtext = matchesWidget.querySelector("p");
+            if (subtext) {
+                subtext.innerHTML = `<strong style="color:var(--status-low);">${matches.length} Matches Aligned</strong>`;
             }
+
+            document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
+            document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
+            
+            const matchRateEl = document.getElementById("recon-stat-match-rate");
+            matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
+            matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
 
             document.getElementById("recon-tab-count-gaps").innerText = gaps.length.toLocaleString();
             document.getElementById("recon-tab-count-rogues").innerText = rogues.length.toLocaleString();
             document.getElementById("recon-tab-count-matches").innerText = matches.length.toLocaleString();
 
-            // Show results wrapper using flex layout
-            const wrapper = document.getElementById("reconciler-results-wrapper");
-            wrapper.style.display = "flex";
-            
+            document.getElementById("reconciler-results-wrapper").style.display = "block";
+
             // Verify and align metrics with the active reconciled fleet
             const matchesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "SUCCESS").length;
             const gapsInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "COVERAGE_GAP").length;
@@ -5119,6 +5130,9 @@
             body.innerHTML = "";
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            if (!primarySheet) return;
+
+            const primaryHeaders = primarySheet.headers;
             let rowsToRender = reconciliationResults[tabId];
 
             if (tabId === "gaps") {
@@ -5131,17 +5145,11 @@
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
                         const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing in: ${escapeHTML(s)}</span>`).join("");
-                        // Safely render primary detail: use mergedProperties as fallback if primaryRow is unavailable
-                        let primaryDetails = "";
-                        if (item.primaryRow && primarySheet && primarySheet.headers) {
-                            primaryDetails = primarySheet.headers.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(String(item.primaryRow[idx] || "-"))}`).join(" | ");
-                        } else if (item.mergedProperties && item.mergedProperties.length > 0) {
-                            primaryDetails = item.mergedProperties.slice(0, 4).map(p => `<strong>${escapeHTML(p.property)}:</strong> ${escapeHTML(p.value)}`).join(" | ");
-                        }
+                        const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
                         
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
-                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${escapeHTML(item.name).toUpperCase()}</strong></td>
+                            <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
                             <td style="vertical-align: middle;">${missingBadges}</td>
                             <td style="vertical-align: middle; font-size: 0.78rem; color: var(--text-secondary);">${primaryDetails}</td>
                         `;
@@ -5735,7 +5743,7 @@
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -5815,7 +5823,7 @@
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                                zscaler: ["zscaler", "z-scaler", "zscaler client connector", "vpn"],
+                                zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
@@ -5943,10 +5951,9 @@
             mergedKeys.forEach(k => {
                 const customKey = `custom:${k}`;
                 if (!activeTableKeys.includes(customKey)) {
-                    // Fixed regex: escape brackets correctly to strip [FileName] prefix
-                    const cleanName = k.replace(/^\[.*?\]\s*/, '');
-                    const sourceMatch = k.match(/^\[(.*?)\]/);
-                    const sourceName = sourceMatch ? sourceMatch[1] : 'Excel';
+                    // Extract clean name and source file for header label
+                    const cleanName = k.replace(/^[.*?]s*/, '');
+                    const sourceName = k.match(/^[(.*?)]/) ? k.match(/^[(.*?)]/)[1] : 'Excel';
                     const headerLabel = `${cleanName} (${sourceName})`;
 
                     activeTableHeaders.push(headerLabel);
@@ -5954,22 +5961,12 @@
                 }
             });
 
-            // Sync filteredDataset immediately so the table shows merged records right away
-            filteredDataset = [...fleetDataset];
-            currentPage = 1;
-
-            // Invalidate stats cache since compliance data has changed
-            invalidatePolicyStatsCache();
+            recalculateAllScores();
+            renderReconciliationUI();
+            switchNavSection("compliance");
 
             const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
             logToTerminal(`[Reconciler] ${successMsg}`, "info");
-
-            // Switch to compliance view first so the user sees the table while scores recalculate
-            switchNavSection("compliance");
-
-            // Kick off async chunked recalculation; alert fires when done
-            recalculateAllScores();
-            renderReconciliationUI();
             alert(successMsg);
         }
 

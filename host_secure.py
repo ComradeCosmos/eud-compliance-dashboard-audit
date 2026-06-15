@@ -87,7 +87,7 @@ class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
             headers = rows[0]
             data_rows = rows[1:]
             
-            report = excel_validator.validate_sheet_data(headers, data_rows)
+            report = excel_validator.validate_sheet_data(headers, data_rows, filename)
             
             self.send_json_response({
                 "success": True,
