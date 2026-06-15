@@ -6073,7 +6073,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else if (!differentKeyUsed) {
+                } else if (false) { // Skip creating new records for Rogues since they do not come from Corporate Directory (Primary)
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
