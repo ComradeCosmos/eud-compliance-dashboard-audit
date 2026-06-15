@@ -4127,7 +4127,7 @@
         function autoDetectKeyIdx(headers, rows) {
             if (!headers || headers.length === 0) return 0;
             const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
-            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
             
@@ -4793,7 +4793,7 @@
 
         function getColIndices(headers, filename) {
             const hLow = headers.map(h => String(h).toLowerCase().trim());
-            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             
             let isZscaler = false;
             if (filename) {
@@ -5819,7 +5819,7 @@
         function getHeaderClassification(header) {
             if (!header) return "unknown";
             const h = header.toLowerCase().trim();
-            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
             

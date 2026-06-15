@@ -181,7 +181,18 @@ def validate_sheet_data(headers, rows, filename=None):
     serial_idx = find_index(headers, serial_keywords)
     mac_idx = find_index(headers, ["macaddress", "mac", "physical", "ethernet", "hardware"])
     last_login_idx = find_index(headers, ["lastlogin", "login", "active", "date", "time"])
-    condition_idx = find_index(headers, ["condition", "status", "state"])
+    
+    is_telemetry = False
+    if filename:
+        fn_low = str(filename).lower()
+        if any(k in fn_low for k in ["sentinel", "s1", "edr", "antivirus", "zscaler", "zscalar", "zscalr", "vpn", "nessus", "tenable", "bitlocker", "sccm", "mecm"]):
+            is_telemetry = True
+            
+    if is_telemetry:
+        condition_idx = find_index(headers, ["condition"])
+    else:
+        condition_idx = find_index(headers, ["condition", "status", "state"])
+        
     ip_idx = find_index(headers, ["ip", "ipaddress", "ip_address", "subnet"])
     
     # Core compliance controls
@@ -278,7 +289,7 @@ def norm_mac_list(val):
 
 def get_col_indices(headers, filename=None):
     h_low = [str(h).lower().strip() for h in headers]
-    name_keywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"]
+    name_keywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]
     
     is_zscaler = False
     if filename:
