@@ -255,8 +255,13 @@ vm.runInContext(`
     console.log('Post-Merge Fleet Size:', fleetDataset.length);
 
     // 5. Verification checks
-    if (fleetDataset.length !== initialFleetSize) {
-        throw new Error("FAIL: Database size changed! New records were created despite different alignment keys being used.");
+    if (fleetDataset.length !== initialFleetSize + 1) {
+        throw new Error("FAIL: Database size should have increased by exactly 1 (adding the Gap device from the primary Corporate Directory) but was: " + fleetDataset.length);
+    }
+
+    const rogueDevice = fleetDataset.find(dev => dev.canonical_name === "sn222rogue" || dev.serial.includes("222"));
+    if (rogueDevice) {
+        throw new Error("FAIL: Rogue device was incorrectly added to the database!");
     }
 
     const device = fleetDataset[0];

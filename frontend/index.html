@@ -5932,7 +5932,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else if (!differentKeyUsed) {
+                } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
@@ -6017,7 +6017,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else if (!differentKeyUsed) {
+                } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
