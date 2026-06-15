@@ -1430,7 +1430,7 @@
 
             const nameIdx = findColIdx(["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]);
             const idIdx = findColIdx(["deviceid", "device id", "id", "assetid", "asset id", "uuid"]);
-            const serialIdx = findColIdx(["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"]);
+            const serialIdx = findColIdx(["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"]);
             const macIdx = findColIdx(["macaddress", "mac", "physical", "ethernet", "hardware"]);
             const mfgIdx = findColIdx(["manufacturer", "mfg", "make", "brand"]);
             const osIdx = findColIdx(["os", "operating system", "osversion", "os version", "platform"]);
@@ -4128,7 +4128,7 @@
             if (!headers || headers.length === 0) return 0;
             const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
-            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
             
             const candidates = [];
@@ -4353,7 +4353,7 @@
                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
             };
 
@@ -4374,6 +4374,10 @@
                 });
 
                 for (let p of sortedProps) {
+                    const propSwKey = getSheetSoftwareKey({ filename: p.source });
+                    if (propSwKey && propSwKey !== swKey) {
+                        continue;
+                    }
                     const propName = p.property.toLowerCase().trim();
                     const matched = keywords.some(kw => {
                         if (kw.length <= 3) {
@@ -4800,8 +4804,8 @@
             }
             
             const serialKeywords = isZscaler
-                ? ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
-                : ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"];
+                ? ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
+                : ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
 
             function findIndices(keywords) {
@@ -5382,7 +5386,7 @@
             if (!item) return null;
 
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
-            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
@@ -5495,7 +5499,7 @@
 
         function extractDeviceIdentifiers(item) {
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
-            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
@@ -5812,6 +5816,25 @@
             alert(`Rogue asset ${rogue.name.toUpperCase()} authorized and registered in Corporate Directory successfully!`);
         }
 
+        function getHeaderClassification(header) {
+            if (!header) return "unknown";
+            const h = header.toLowerCase().trim();
+            const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system", "asset"];
+            const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"];
+            const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            
+            if (nameKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                return "name";
+            }
+            if (serialKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                return "serial";
+            }
+            if (macKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
+                return "mac";
+            }
+            return "unknown";
+        }
+
         function mergeReconciliationIntoFleet() {
             const gaps = reconciliationResults.gaps;
             const rogues = reconciliationResults.rogues;
@@ -5820,6 +5843,23 @@
             if (gaps.length === 0 && rogues.length === 0 && matches.length === 0) {
                 alert("No reconciled assets available to merge. Please execute reconciliation first.");
                 return;
+            }
+
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            let differentKeyUsed = false;
+            if (primarySheet) {
+                const primaryKeyHeader = primarySheet.headers[primarySheet.keyIdx];
+                const primaryKeyClass = getHeaderClassification(primaryKeyHeader);
+                
+                const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
+                for (const sec of secondarySheets) {
+                    const secKeyHeader = sec.headers[sec.keyIdx];
+                    const secKeyClass = getHeaderClassification(secKeyHeader);
+                    if (secKeyClass !== "unknown" && primaryKeyClass !== "unknown" && secKeyClass !== primaryKeyClass) {
+                        differentKeyUsed = true;
+                        break;
+                    }
+                }
             }
 
             const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
@@ -5863,12 +5903,16 @@
                         const statusObj = getMergedAgentStatus(item, sw.key);
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const propSwKey = getSheetSoftwareKey({ filename: p.source });
+                            if (propSwKey && propSwKey !== sw.key) {
+                                return false;
+                            }
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
                                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
@@ -5888,7 +5932,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else {
+                } else if (!differentKeyUsed) {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
@@ -5943,12 +5987,16 @@
                         const statusObj = getMergedAgentStatus(item, sw.key);
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            const propSwKey = getSheetSoftwareKey({ filename: p.source });
+                            if (propSwKey && propSwKey !== sw.key) {
+                                return false;
+                            }
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
                                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
@@ -5969,7 +6017,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else {
+                } else if (!differentKeyUsed) {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
@@ -6025,7 +6073,7 @@
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
-                } else {
+                } else if (!differentKeyUsed) {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);

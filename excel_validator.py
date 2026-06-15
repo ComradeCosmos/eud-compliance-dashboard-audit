@@ -174,9 +174,9 @@ def validate_sheet_data(headers, rows, filename=None):
             is_zscaler = True
             
     if is_zscaler:
-        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
     else:
-        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
         
     serial_idx = find_index(headers, serial_keywords)
     mac_idx = find_index(headers, ["macaddress", "mac", "physical", "ethernet", "hardware"])
@@ -189,7 +189,7 @@ def validate_sheet_data(headers, rows, filename=None):
     bitlocker_idx = find_index(headers, ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"])
     zscaler_idx = find_index(headers, ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"])
     nessus_idx = find_index(headers, ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"])
-    s1_idx = find_index(headers, ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"])
+    s1_idx = find_index(headers, ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"])
     sccm_idx = find_index(headers, ["sccm", "sccm agent", "mecm", "management agent", "patch agent"])
     
     warnings = []
@@ -287,9 +287,9 @@ def get_col_indices(headers, filename=None):
             is_zscaler = True
             
     if is_zscaler:
-        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
     else:
-        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag"]
+        serial_keywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
         
     mac_keywords = ["macaddress", "mac", "physical", "ethernet", "hardware"]
     
