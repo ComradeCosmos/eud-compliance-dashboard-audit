@@ -1129,8 +1129,8 @@
         }
 
         // Global variables for dynamic table headers and keys
-        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
-        let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
+        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+        let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
         // Global registry of enforced compliance policies (true = Required, false = Optional)
         let enforcedPolicies = {};
@@ -1560,8 +1560,8 @@
             filteredDataset = [...fleetDataset];
             selectedDevice = null;
 
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
-            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
             const importedKeys = new Set();
             fleetDataset.forEach(dev => {
@@ -1604,8 +1604,8 @@
             selectedDevice = null;
 
             // Reset headers
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition", "Compliance Status"];
-            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition", "level"];
+            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
             // Clear spreadsheet reconciler cache and workspace data
             reconcilerSheets = [];
