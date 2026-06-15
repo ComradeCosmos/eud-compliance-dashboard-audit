@@ -61,6 +61,7 @@ graph TD
     *   **Coverage Gaps**: Device registered in the Corporate Directory but missing checking records in agent logs (triggers immediate non-compliance rating).
     *   **Rogue Assets**: Untracked devices discovered checking into agent logs but missing from the Corporate Directory.
 *   **Virtual Table Rendering**: Handles huge datasets (10,000+ rows) without browser lockups using a fast, memory-batched paginated viewer.
+*   **Clean Fleet Grid**: The main assets table displays key identity attributes, location information, and active condition states, with the redundant compliance status badge column removed to keep focus on dynamic telemetry values.
 
 ---
 
@@ -75,7 +76,6 @@ graph TD
 │   └── favicon.png            # Browser tab icon
 ├── host_secure.py             # Secure HTTPS/HTTP Python server (AWS compatible)
 ├── excel_validator.py         # Native XML/zip Excel parser & validation engine
-├── update-reconciler.js       # Core JS reconciler template
 ├── Dockerfile                 # Docker container config (for AWS App Runner / ECS)
 ├── Procfile                   # Elastic Beanstalk process deployment config
 ├── .gitignore                 # Exclude list for credentials and local cache files
@@ -145,4 +145,10 @@ node verify-reporting-policies.js
 
 # Verify Windows-Only AD Enrollment applicability
 node verify-ad-windows-only.js
+
+# Verify Mismatched Alignment Keys Prevention
+node test-mismatched-keys-prevention.js
+
+# Verify Rogue Assets Management workflows
+node test-rogue-actions.js
 ```
