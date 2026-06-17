@@ -665,8 +665,6 @@
                                 style="font-weight: 700;">-</span></div>
                         <div><strong>Corporate Role:</strong> <span id="session-display-role"
                                 class="badge group-sift">-</span></div>
-                        <div><strong>Tenant Context:</strong> <span id="session-display-tenant"
-                                style="font-family: var(--font-mono); color: var(--text-secondary);">-</span></div>
                         <div><strong>Session Lease:</strong> <span
                                 style="color: var(--status-low); font-weight: 700;">ACTIVE (Leased via Vault)</span>
                         </div>
@@ -1148,7 +1146,6 @@
                 const roleBadge = document.getElementById("session-display-role");
                 roleBadge.innerText = currentSession.role.toUpperCase();
                 roleBadge.className = `badge ${currentSession.role === 'admin' ? 'group-sift' : 'group-non-sift'}`;
-                document.getElementById("session-display-tenant").innerText = currentSession.tenant.replace(/\s+/g, ' ');
             }
 
             document.querySelectorAll(".sidebar-menu .menu-item").forEach(item => item.classList.remove("active"));
@@ -1193,7 +1190,7 @@
                         titleEl.innerText = "Security Analyst Identity";
                         break;
                     case "login":
-                        titleEl.innerText = "Tenant Session Gateway";
+                        titleEl.innerText = "Active Session Gateway";
                         break;
                     case "settings":
                         titleEl.innerText = "Console Settings & Pipeline Parameters";
