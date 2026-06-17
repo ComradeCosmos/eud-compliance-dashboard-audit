@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corporate SSO Gateway - OAuth 2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0b0f19;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --border-clean: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(0, 168, 204, 0.3);
+            --color-accent: #00a8cc;
+            --color-accent-hover: #33c0dd;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --status-admin: #10b981;
+            --status-analyst: #3b82f6;
+            --status-operator: #f59e0b;
+            --status-auditor: #8b5cf6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(0, 168, 204, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+            overflow-x: hidden;
+            padding: 1.5rem;
+        }
+
+        .oauth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-clean);
+            border-radius: 12px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            width: 100%;
+            max-width: 500px;
+            padding: 2.25rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .brand-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-accent);
+            box-shadow: 0 0 8px var(--color-accent);
+        }
+
+        .subtitle {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+        }
+
+        .instructions {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .profile-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .profile-option {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-clean);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-option:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--color-accent);
+            transform: translateX(4px);
+        }
+
+        .profile-option.selected {
+            background: rgba(0, 168, 204, 0.05);
+            border-color: var(--color-accent);
+            box-shadow: 0 0 12px rgba(0, 168, 204, 0.15);
+        }
+
+        .profile-radio {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .profile-option.selected .profile-radio {
+            border-color: var(--color-accent);
+        }
+
+        .profile-radio-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: var(--color-accent);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+        }
+
+        .profile-option.selected .profile-radio-dot {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .profile-details {
+            flex-grow: 1;
+        }
+
+        .profile-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-username {
+            font-size: 0.9rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .profile-badge {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-admin { background: rgba(16, 185, 129, 0.1); color: var(--status-admin); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .badge-analyst { background: rgba(59, 130, 246, 0.1); color: var(--status-analyst); border: 1px solid rgba(59, 130, 246, 0.2); }
+        .badge-operator { background: rgba(245, 158, 11, 0.1); color: var(--status-operator); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .badge-auditor { background: rgba(139, 92, 246, 0.1); color: var(--status-auditor); border: 1px solid rgba(139, 92, 246, 0.2); }
+
+        .profile-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--color-accent);
+            color: var(--bg-main);
+            border: none;
+            border-radius: 6px;
+            padding: 0.85rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            box-shadow: 0 4px 6px -1px rgba(0, 168, 204, 0.2);
+        }
+
+        .btn-submit:hover {
+            background-color: var(--color-accent-hover);
+            box-shadow: 0 4px 12px -1px rgba(0, 168, 204, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit:disabled {
+            background-color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .footer {
+            margin-top: 1.5rem;
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-clean);
+            padding-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="oauth-card">
+    <div class="header">
+        <div class="brand-title">
+            <span class="brand-dot"></span>
+            Aethelred Corp SSO
+        </div>
+        <div class="subtitle">OAuth 2.0 Federated Identity Service</div>
+    </div>
+
+    <div class="instructions">
+        Select a corporate identity to authorize the EUD Compliance Platform.
+    </div>
+
+    <div class="profile-list" id="profiles">
+        <!-- Admin -->
+        <div class="profile-option" onclick="selectProfile('admin')">
+            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
+            <div class="profile-details">
+                <div class="profile-name-row">
+                    <span class="profile-username">admin</span>
+                    <span class="profile-badge badge-admin">Admin</span>
+                </div>
+                <div class="profile-desc">Full fleet control & Settings Dispatch</div>
+            </div>
+        </div>
+
+        <!-- Analyst -->
+        <div class="profile-option" onclick="selectProfile('analyst')">
+            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
+            <div class="profile-details">
+                <div class="profile-name-row">
+                    <span class="profile-username">analyst</span>
+                    <span class="profile-badge badge-analyst">Analyst</span>
+                </div>
+                <div class="profile-desc">Fleet Ledger overrides & CSV ingestion</div>
+            </div>
+        </div>
+
+        <!-- Operator -->
+        <div class="profile-option" onclick="selectProfile('operator')">
+            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
+            <div class="profile-details">
+                <div class="profile-name-row">
+                    <span class="profile-username">operator</span>
+                    <span class="profile-badge badge-operator">Operator</span>
+                </div>
+                <div class="profile-desc">Port containments & Device registration</div>
+            </div>
+        </div>
+
+        <!-- Auditor -->
+        <div class="profile-option" onclick="selectProfile('auditor')">
+            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
+            <div class="profile-details">
+                <div class="profile-name-row">
+                    <span class="profile-username">auditor</span>
+                    <span class="profile-badge badge-auditor">Auditor</span>
+                </div>
+                <div class="profile-desc">Strict Read-Only reporting metrics</div>
+            </div>
+        </div>
+    </div>
+
+    <button id="auth-btn" class="btn-submit" disabled onclick="authenticate()">
+        Approve & Authenticate
+    </button>
+
+    <div class="footer">
+        Secured via OAuth 2.0 Authorization Code Flow (OIDC Claims Layer).
+    </div>
+</div>
+
+<script>
+    let selectedUser = null;
+
+    const directory = {
+        "admin": {
+            role: "admin",
+            roleLabel: "Global Security & Compliance Administrator",
+            authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Secret Key Leasing", "Sift Fleet Access", "Outbound Alerts Dispatch"]
+        },
+        "analyst": {
+            role: "analyst",
+            roleLabel: "Global Security Analyst",
+            authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Sift Fleet Access"]
+        },
+        "operator": {
+            role: "operator",
+            roleLabel: "Security Operations Operator",
+            authorizations: ["Reconciliation Approval", "Sift Fleet Access"]
+        },
+        "auditor": {
+            role: "auditor",
+            roleLabel: "External Compliance Auditor",
+            authorizations: ["Read-Only Ledger Access"]
+        }
+    };
+
+    function selectProfile(user) {
+        selectedUser = user;
+        
+        // Update UI selection states
+        const options = document.querySelectorAll('.profile-option');
+        options.forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        
+        // Add selected class to chosen element index
+        const indexMap = { 'admin': 0, 'analyst': 1, 'operator': 2, 'auditor': 3 };
+        options[indexMap[user]].classList.add('selected');
+        
+        // Enable submit button
+        document.getElementById('auth-btn').disabled = false;
+    }
+
+    function authenticate() {
+        if (!selectedUser) return;
+        
+        const profile = directory[selectedUser];
+        
+        // Construct simulated JWT
+        const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+        const payload = btoa(JSON.stringify({
+            iss: "aethelred-identity-provider",
+            sub: selectedUser,
+            name: profile.roleLabel,
+            role: profile.role,
+            authorizations: profile.authorizations,
+            exp: Math.floor(Date.now() / 1000) + 3600
+        }));
+        const signature = "signature-verified";
+        const jwt = `${header}.${payload}.${signature}`;
+
+        // Return token to parent window
+        if (window.opener) {
+            window.opener.postMessage({
+                type: "oauth-callback",
+                token: jwt
+            }, window.location.origin);
+            window.close();
+        } else {
+            alert("No main app window found! Direct login bypassed.");
+        }
+    }
+</script>
+
+</body>
+</html>

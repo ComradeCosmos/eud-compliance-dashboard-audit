@@ -37,7 +37,7 @@
 
             <div class="input-group" style="margin-bottom: 0.25rem;">
                 <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
-                <input type="text" id="portal-login-user" placeholder="e.g. analyst.fleet"
+                <input type="text" id="portal-login-user" placeholder="e.g. analyst"
                     style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
             </div>
             <div class="input-group" style="margin-bottom: 0.5rem;">
@@ -50,41 +50,14 @@
                 style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;"
                 onclick="simulateLogin()">Authenticate Session Lease</button>
 
-            <div
-                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.1rem; font-size: 0.72rem; color: var(--text-secondary); border-radius: 4px; line-height: 1.45;">
-                <strong
-                    style="text-transform: uppercase; font-size: 0.7rem; color: var(--text-primary); display: block; margin-bottom: 0.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">Admin-Assigned
-                    Active Directory Challenges:</strong>
-                <ul
-                    style="margin-left: 1rem; display: flex; flex-direction: column; gap: 0.4rem; list-style-type: square; color: var(--text-muted);">
-                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Global
-                            Admin</strong>: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">admin.security</code>
-                        (PIN: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-admin-2026</code>)<br><span
-                            style="color: var(--text-muted);"> Clearance: Full system controls & Settings
-                            dispatch.</span></li>
-                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Security
-                            Analyst</strong>: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">analyst.fleet</code>
-                        (PIN: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-analyst-2026</code>)<br><span
-                            style="color: var(--text-muted);"> Clearance: Fleet ledger writes, CSV bulk uploader.</span>
-                    </li>
-                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Operations
-                            Operator</strong>: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">operator.contain</code>
-                        (PIN: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-operator-2026</code>)<br><span
-                            style="color: var(--text-muted);"> Clearance: Port containments & WSUS patching.</span></li>
-                    <li style="color: var(--text-secondary);"><strong style="color: var(--text-primary);">Compliance
-                            Auditor</strong>: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">auditor.compliance</code>
-                        (PIN: <code
-                            style="background: var(--bg-card); color: var(--color-accent); border: 1px solid var(--border-clean); padding: 0.05rem 0.25rem; border-radius: 3px; font-family: var(--font-mono); font-weight: 700;">vault-auditor-2026</code>)<br><span
-                            style="color: var(--text-muted);"> Clearance: Strict Read-Only ledger metrics views.</span>
-                    </li>
-                </ul>
+            <div style="margin-top: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; text-align: center;">
+                <div style="font-size: 0.68rem; color: var(--text-muted); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;">Or Federated SSO Access</div>
+                <button class="btn" style="width: 100%; border-radius: 4px; padding: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 700; cursor: pointer; border: 1px solid var(--border-clean); background: var(--bg-card); color: var(--text-primary); transition: all 0.2s;" onclick="triggerOAuthFlow()">
+                    <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46.21 14.25 0 14 0h-4c-.25 0-.46.21-.49.46L9.13 3.1c-.6.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.25.24.46.49.46h4c.25 0 .46-.21.49-.46l.38-2.65c.6-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+                    </svg>
+                    Sign In with Corporate SSO (OAuth 2.0)
+                </button>
             </div>
         </div>
     </div>
@@ -168,7 +141,7 @@
                     <!-- Admin-Only Config Alert -->
                     <div id="policy-admin-alert"
                         style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
-                        ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin.security)
+                        ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin)
                         privileges are required to override compliance requirements.
                     </div>
 
@@ -779,26 +752,26 @@
 
         // Simulated LDAP user and authorization directory
         const simulatedLDAPDirectory = {
-            "admin.security": {
-                pin: "vault-admin-2026",
+            "admin": {
+                pin: "admin",
                 role: "admin",
                 roleLabel: "Global Security & Compliance Administrator",
                 authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Secret Key Leasing", "Sift Fleet Access", "Outbound Alerts Dispatch"]
             },
-            "analyst.fleet": {
-                pin: "vault-analyst-2026",
+            "analyst": {
+                pin: "analyst",
                 role: "analyst",
                 roleLabel: "Global Security Analyst",
                 authorizations: ["Reconciliation Approval", "CSV Ingestion Authority", "Sift Fleet Access"]
             },
-            "operator.contain": {
-                pin: "vault-operator-2026",
+            "operator": {
+                pin: "operator",
                 role: "operator",
                 roleLabel: "Security Operations Operator",
                 authorizations: ["Reconciliation Approval", "Sift Fleet Access"]
             },
-            "auditor.compliance": {
-                pin: "vault-auditor-2026",
+            "auditor": {
+                pin: "auditor",
                 role: "auditor",
                 roleLabel: "External Compliance Auditor",
                 authorizations: ["Read-Only Ledger Access"]
@@ -3154,6 +3127,92 @@
             logToTerminal(`[Session Active] Successfully logged in. Session established for tenant: "${tenant}"`, "info");
         }
 
+        function triggerOAuthFlow() {
+            const width = 550;
+            const height = 650;
+            const left = (window.screen.width - width) / 2;
+            const top = (window.screen.height - height) / 2;
+            const oauthWindow = window.open("oauth.html", "SSOAuthentication", `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`);
+            if (window.focus && oauthWindow) {
+                oauthWindow.focus();
+            }
+        }
+
+        function handleOAuthToken(token) {
+            try {
+                // Parse JWT (decoding header and payload)
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    throw new Error("Invalid JWT token format");
+                }
+                const payloadBase64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+                const decodedPayload = JSON.parse(atob(payloadBase64));
+                
+                if (decodedPayload.iss !== "aethelred-identity-provider") {
+                    throw new Error("Invalid issuer");
+                }
+
+                // Successful login via OAuth JWT claims
+                loginFailCount = 0;
+                const tenant = "Empire Corp".replace(/\s+/g, ' ');
+                currentSession = {
+                    isLoggedIn: true,
+                    username: decodedPayload.sub,
+                    role: decodedPayload.role,
+                    roleLabel: decodedPayload.name,
+                    tenant: tenant,
+                    authorizations: decodedPayload.authorizations
+                };
+
+                logToTerminal(`[SSO Auth] OAuth 2.0 flow completed. Valid JWT token parsed.`, "info");
+                logToTerminal(`[Vault] Authenticated session lease for tenant context: "${tenant}"`, "info");
+                logToTerminal(`[RBAC Guard] Loaded user profile from JWT claims. Assigned Role: ${decodedPayload.role.toUpperCase()}. Unlocking bounds...`, "info");
+
+                // Update UI elements
+                document.getElementById("profile-analyst-name").innerText = decodedPayload.sub;
+                document.getElementById("profile-tenant-badge").innerText = tenant;
+
+                const roleLabelEl = document.querySelector("#section-profile p strong");
+                if (roleLabelEl) {
+                    roleLabelEl.innerText = decodedPayload.name;
+                }
+
+                const authListContainer = document.getElementById("profile-authorizations-list");
+                if (authListContainer) {
+                    authListContainer.innerHTML = "";
+                    decodedPayload.authorizations.forEach(auth => {
+                        authListContainer.innerHTML += `<span class="badge group-non-sift">${auth}</span> `;
+                    });
+                }
+
+                enforceRoleBasedControls();
+
+                // Reveal App, hide portal login
+                document.getElementById("login-screen-canvas").style.display = "none";
+                document.getElementById("main-app-container").style.display = "flex";
+
+                // Switch to overview view
+                switchNavSection("compliance");
+                logToTerminal(`[Session Active] Successfully logged in via SSO. Session established for tenant: "${tenant}"`, "info");
+            } catch (err) {
+                logToTerminal(`[SSO Error] Failed to parse JWT token: ${err.message}`, "error");
+                const errorDiv = document.getElementById("portal-login-error-msg");
+                errorDiv.innerText = "SSO Authentication Failure: Invalid JWT claims signature.";
+                errorDiv.style.display = "block";
+            }
+        }
+
+        // Add SSO message listener
+        if (typeof window !== "undefined" && window.addEventListener) {
+            window.addEventListener("message", (event) => {
+                if (event.origin !== window.location.origin) return;
+                if (event.data && event.data.type === "oauth-callback") {
+                    const token = event.data.token;
+                    handleOAuthToken(token);
+                }
+            });
+        }
+
         function terminateSessionLease() {
             logToTerminal(`[Auth Guard] Disposing session lease token for "${currentSession.username}"...`);
             logToTerminal(`[Vault] Session context revoked. Key vault closed.`, "warn");
@@ -3763,7 +3822,7 @@
         function togglePolicyEnforcement(name) {
             if (currentSession.role !== "admin") {
                 logToTerminal(`[Security Alert] Policy override denied: User "${currentSession.username}" lacks Global Security Administrator clearance.`, "error");
-                alert("Access Denied: Only a Global Security Administrator (admin.security) is authorized to modify compliance policy enforcement parameters.");
+                alert("Access Denied: Only a Global Security Administrator (admin) is authorized to modify compliance policy enforcement parameters.");
                 return;
             }
 

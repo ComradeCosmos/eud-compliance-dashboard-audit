@@ -137,7 +137,7 @@ try {
     // Enforce role and load test queue
     vm.runInContext(`
         currentSession.isLoggedIn = true;
-        currentSession.username = "admin.security";
+        currentSession.username = "admin";
         currentSession.role = "admin";
         
         // Seed some custom test devices in the fleet to verify existing device preservation rules

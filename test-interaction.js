@@ -166,7 +166,7 @@ try {
     console.log('Simulating login as admin...');
     vm.runInContext(`
         currentSession.isLoggedIn = true;
-        currentSession.username = "admin.security";
+        currentSession.username = "admin";
         currentSession.role = "admin";
         currentSession.roleLabel = "Global Security & Compliance Administrator";
     `, context);
