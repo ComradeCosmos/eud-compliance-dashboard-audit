@@ -4,92 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Corporate SSO Gateway - OAuth 2.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
     <style>
-        :root {
-            --bg-main: #0b0f19;
-            --bg-card: rgba(17, 24, 39, 0.7);
-            --border-clean: rgba(255, 255, 255, 0.08);
-            --border-glow: rgba(0, 168, 204, 0.3);
-            --color-accent: #00a8cc;
-            --color-accent-hover: #33c0dd;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --status-admin: #10b981;
-            --status-analyst: #3b82f6;
-            --status-operator: #f59e0b;
-            --status-auditor: #8b5cf6;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
         body {
-            background-color: var(--bg-main);
-            color: var(--text-primary);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(0, 168, 204, 0.08) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
-            overflow-x: hidden;
             padding: 1.5rem;
+            background: var(--bg-main);
         }
 
         .oauth-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-clean);
-            border-radius: 12px;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             width: 100%;
-            max-width: 500px;
-            padding: 2.25rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
-            animation: fadeIn 0.4s ease-out;
+            max-width: 460px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+            border: 1px solid var(--border-clean);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header {
+        .oauth-header {
             text-align: center;
             margin-bottom: 2rem;
+            border-bottom: 2px solid var(--text-primary);
+            padding-bottom: 1.25rem;
         }
 
         .brand-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
             text-transform: uppercase;
             color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
-        .brand-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: var(--color-accent);
-            box-shadow: 0 0 8px var(--color-accent);
+        .brand-title span {
+            color: var(--color-accent);
         }
 
         .subtitle {
-            font-size: 0.82rem;
-            color: var(--text-secondary);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.05em;
         }
 
         .instructions {
@@ -103,34 +62,32 @@
         .profile-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.75rem;
             margin-bottom: 2rem;
         }
 
         .profile-option {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--bg-card);
             border: 1px solid var(--border-clean);
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 1rem 1.25rem;
             display: flex;
             align-items: center;
             gap: 1rem;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.15s ease;
         }
 
         .profile-option:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: var(--color-accent);
-            transform: translateX(4px);
+            background: var(--bg-secondary);
+            border-color: var(--text-primary);
         }
 
         .profile-option.selected {
-            background: rgba(0, 168, 204, 0.05);
-            border-color: var(--color-accent);
-            box-shadow: 0 0 12px rgba(0, 168, 204, 0.15);
+            background: var(--color-accent-light) !important;
+            border-color: var(--color-accent) !important;
+            border-left: 4px solid var(--color-accent) !important;
+            border-radius: 0 4px 4px 0;
         }
 
         .profile-radio {
@@ -141,8 +98,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            transition: all 0.15s ease;
             flex-shrink: 0;
+            background: var(--bg-card);
         }
 
         .profile-option.selected .profile-radio {
@@ -156,7 +114,7 @@
             background-color: var(--color-accent);
             opacity: 0;
             transform: scale(0.5);
-            transition: all 0.2s;
+            transition: all 0.15s ease;
         }
 
         .profile-option.selected .profile-radio-dot {
@@ -176,61 +134,28 @@
         }
 
         .profile-username {
-            font-size: 0.9rem;
-            font-weight: 600;
-            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
         }
 
         .profile-badge {
             font-size: 0.65rem;
             padding: 0.1rem 0.4rem;
-            border-radius: 4px;
+            border-radius: 3px;
             font-weight: 700;
             text-transform: uppercase;
+            border: 1px solid var(--border-clean);
         }
 
-        .badge-admin { background: rgba(16, 185, 129, 0.1); color: var(--status-admin); border: 1px solid rgba(16, 185, 129, 0.2); }
-        .badge-analyst { background: rgba(59, 130, 246, 0.1); color: var(--status-analyst); border: 1px solid rgba(59, 130, 246, 0.2); }
-        .badge-operator { background: rgba(245, 158, 11, 0.1); color: var(--status-operator); border: 1px solid rgba(245, 158, 11, 0.2); }
-        .badge-auditor { background: rgba(139, 92, 246, 0.1); color: var(--status-auditor); border: 1px solid rgba(139, 92, 246, 0.2); }
+        .badge-admin { background: #f0fdf4; color: var(--status-low); border-color: #bbf7d0; }
+        .badge-analyst { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+        .badge-operator { background: #fefce8; color: var(--status-medium); border-color: #fef08a; }
+        .badge-auditor { background: #f9fafb; color: var(--text-secondary); border-color: #e5e7eb; }
 
         .profile-desc {
             font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-
-        .btn-submit {
-            width: 100%;
-            background-color: var(--color-accent);
-            color: var(--bg-main);
-            border: none;
-            border-radius: 6px;
-            padding: 0.85rem;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            box-shadow: 0 4px 6px -1px rgba(0, 168, 204, 0.2);
-        }
-
-        .btn-submit:hover {
-            background-color: var(--color-accent-hover);
-            box-shadow: 0 4px 12px -1px rgba(0, 168, 204, 0.4);
-            transform: translateY(-1px);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
-        }
-
-        .btn-submit:disabled {
-            background-color: var(--text-muted);
-            color: rgba(255, 255, 255, 0.3);
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
+            color: var(--text-muted);
         }
 
         .footer {
@@ -239,23 +164,25 @@
             font-size: 0.65rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border-clean);
-            padding-top: 1rem;
+            padding-top: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
 
-<div class="oauth-card">
-    <div class="header">
+<div class="card oauth-card">
+    <div class="oauth-header">
         <div class="brand-title">
-            <span class="brand-dot"></span>
-            Aethelred Corp SSO
+            <span>EUD</span> SSO Gateway
         </div>
-        <div class="subtitle">OAuth 2.0 Federated Identity Service</div>
+        <div class="subtitle">OAuth 2.0 Federated Identity</div>
     </div>
 
     <div class="instructions">
-        Select a corporate identity to authorize the EUD Compliance Platform.
+        Select a corporate identity profile to grant access leases to the compliance audit console.
     </div>
 
     <div class="profile-list" id="profiles">
@@ -265,9 +192,9 @@
             <div class="profile-details">
                 <div class="profile-name-row">
                     <span class="profile-username">admin</span>
-                    <span class="profile-badge badge-admin">Admin</span>
+                    <span class="badge badge-admin">Admin</span>
                 </div>
-                <div class="profile-desc">Full fleet control & Settings Dispatch</div>
+                <div class="profile-desc">Full GRC settings override & alert dispatch</div>
             </div>
         </div>
 
@@ -277,9 +204,9 @@
             <div class="profile-details">
                 <div class="profile-name-row">
                     <span class="profile-username">analyst</span>
-                    <span class="profile-badge badge-analyst">Analyst</span>
+                    <span class="badge badge-analyst">Analyst</span>
                 </div>
-                <div class="profile-desc">Fleet Ledger overrides & CSV ingestion</div>
+                <div class="profile-desc">Manual ledger adjustments & CSV ingestion</div>
             </div>
         </div>
 
@@ -289,9 +216,9 @@
             <div class="profile-details">
                 <div class="profile-name-row">
                     <span class="profile-username">operator</span>
-                    <span class="profile-badge badge-operator">Operator</span>
+                    <span class="badge badge-operator">Operator</span>
                 </div>
-                <div class="profile-desc">Port containments & Device registration</div>
+                <div class="profile-desc">Host containment actions & device enrollment</div>
             </div>
         </div>
 
@@ -301,19 +228,19 @@
             <div class="profile-details">
                 <div class="profile-name-row">
                     <span class="profile-username">auditor</span>
-                    <span class="profile-badge badge-auditor">Auditor</span>
+                    <span class="badge badge-auditor">Auditor</span>
                 </div>
-                <div class="profile-desc">Strict Read-Only reporting metrics</div>
+                <div class="profile-desc">Strict Read-Only reporting views</div>
             </div>
         </div>
     </div>
 
-    <button id="auth-btn" class="btn-submit" disabled onclick="authenticate()">
+    <button id="auth-btn" class="btn" disabled onclick="authenticate()">
         Approve & Authenticate
     </button>
 
     <div class="footer">
-        Secured via OAuth 2.0 Authorization Code Flow (OIDC Claims Layer).
+        Secured via OAuth 2.0 Authorization Code Flow
     </div>
 </div>
 
