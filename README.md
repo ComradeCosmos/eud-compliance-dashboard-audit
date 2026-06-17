@@ -39,14 +39,15 @@ graph TD
 
 ## Key Features
 
-### 1. Premium Frontend Dashboard
-*   **SOC Aesthetics**: Harmonious, high-contrast dark mode tailored for Security Operations Centers (SOCs) with clean glassmorphism and real-time SLA dial gauges.
-*   **Role-Based Access Control (RBAC)**: Interface gating for four customized operational personas:
-    *   **Administrator**: Full administrative and data mutation capabilities.
-    *   **Security Analyst**: Incident inspection, risk overrides, threat containment triggers.
-    *   **System Operator**: Telemetry collection and manual device registration.
-    *   **Compliance Auditor**: Restricted read-only ledger access.
+### 1. Premium Frontend Dashboard & Portals
+*   **Official AM/NS INDIA Brand Typography**: Imported Google Fonts (Montserrat & Inter) configured to exactly match the bold, geometric block layout and tight letter-spacing (`-0.05em`) of the corporate logo across all headers.
+*   **Global Background Drift Animations**: Dynamic floating spheres (`drift1` and `drift2` CSS keyframes) sliding behind all pages, overlayed with a premium glassmorphic blur backdrop on the Auth Gateways.
+*   **Fluid Navigation & Interactions**: Smooth CSS page transitions (`slideInFade` keyframe) for tab/section switches, and micro-interactive hover styling on buttons, dashboard widgets, and data cards.
+*   **Real-time Slide Telemetry Simulator**: Fully fluctuating random-walk live data generator that dynamically updates the Fleet Scale, enrollment indicators, progress bars, and compliance averages every 3 seconds to simulate an active pipeline.
+*   **Corporate Authentications & OAuth Simulator**: Multi-factor credentials validator supporting regular username/vault-PIN checks alongside simulated Google and GitHub SSO identity assertions.
+*   **Developer Administration Console**: Accessible database records manager allowing users with Operator/Developer/Admin privileges to adjust user accounts, delete listings, and generate custom masked API keys (`amns_sk_...`).
 *   **Executive Policy Isolation**: Restricts the SLA dial gauge, checklists, and exception lists to evaluate and render compliance metrics using strictly the **6 core mandated policies** (Active Directory, BitLocker, Zscaler, Nessus, SentinelOne, and SCCM), preventing custom dynamic policies from polluting executive SLA reports.
+
 
 ### 2. Zero-Dependency Python Validation Engine (`excel_validator.py`)
 *   **Native XML/Zip XLSX Parser**: Direct extraction and parsing of `.xlsx` files without requiring heavy libraries like `pandas` or `openpyxl`.

@@ -7,8 +7,65 @@ import subprocess
 import argparse
 import json
 import base64
+import sqlite3
+import secrets
 from datetime import datetime
 import excel_validator
+
+def get_db_conn():
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+    return sqlite3.connect(db_path)
+
+def init_db():
+    try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        
+        # Create users table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                username TEXT PRIMARY KEY,
+                password TEXT NOT NULL,
+                role TEXT NOT NULL,
+                oauth_provider TEXT,
+                created_at TEXT NOT NULL
+            )
+        ''')
+        
+        # Create api_keys table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS api_keys (
+                key_id TEXT PRIMARY KEY,
+                api_key TEXT NOT NULL,
+                username TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                request_count INTEGER DEFAULT 0,
+                FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE
+            )
+        ''')
+        
+        # Seed default users
+        default_users = [
+            ("admin", "admin", "admin", None),
+            ("analyst", "analyst", "analyst", None),
+            ("operator", "operator", "operator", None),
+            ("auditor", "auditor", "auditor", None),
+            ("dev_admin", "dev_admin", "developer", None)
+        ]
+        
+        for username, password, role, oauth in default_users:
+            cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+            if not cursor.fetchone():
+                cursor.execute(
+                    "INSERT INTO users (username, password, role, oauth_provider, created_at) VALUES (?, ?, ?, ?, ?)",
+                    (username, password, role, oauth, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                )
+                
+        conn.commit()
+        conn.close()
+        print("[Database Manager] SQLite database initialized and seeded successfully.")
+    except Exception as e:
+        sys.stderr.write(f"[ERROR] Failed to initialize SQLite database: {e}\n")
 
 # Secure HTTP Request Handler
 class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -47,6 +104,24 @@ class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_validate_sheet()
         elif self.path == '/api/reconcile-sheets':
             self.handle_reconcile_sheets()
+        elif self.path == '/api/auth/signup':
+            self.handle_signup()
+        elif self.path == '/api/auth/login':
+            self.handle_login()
+        elif self.path == '/api/auth/oauth':
+            self.handle_oauth()
+        elif self.path == '/api/developer/users':
+            self.handle_dev_get_users()
+        elif self.path == '/api/developer/update-role':
+            self.handle_dev_update_role()
+        elif self.path == '/api/developer/delete-user':
+            self.handle_dev_delete_user()
+        elif self.path == '/api/developer/keys':
+            self.handle_dev_get_keys()
+        elif self.path == '/api/developer/generate-key':
+            self.handle_dev_generate_key()
+        elif self.path == '/api/developer/delete-key':
+            self.handle_dev_delete_key()
         else:
             self.send_error(404, "API endpoint not found")
 
@@ -145,6 +220,239 @@ class SecureRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "message": f"Server-side reconciliation failed: {str(e)}"
             })
 
+    def handle_signup(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '').strip()
+            password = req_json.get('password', '')
+            role = req_json.get('role', 'operator')
+            
+            if not username or not password:
+                self.send_json_response({"success": False, "message": "Username and password required."}, 400)
+                return
+                
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT 1 FROM users WHERE username = ?", (username,))
+            if cursor.fetchone():
+                conn.close()
+                self.send_json_response({"success": False, "message": "Username already exists."}, 400)
+                return
+                
+            cursor.execute(
+                "INSERT INTO users (username, password, role, created_at) VALUES (?, ?, ?, ?)",
+                (username, password, role, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            )
+            conn.commit()
+            conn.close()
+            
+            self.send_json_response({"success": True, "message": "User registered successfully!"})
+            
+        except Exception as e:
+            self.send_json_response({"success": False, "message": f"Signup error: {str(e)}"}, 500)
+
+    def handle_login(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '').strip()
+            password = req_json.get('password', '')
+            
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT username, password, role FROM users WHERE username = ?", (username,))
+            user = cursor.fetchone()
+            conn.close()
+            
+            if not user or user[1] != password:
+                self.send_json_response({"success": False, "message": "Invalid username or passcode."}, 401)
+                return
+                
+            self.send_json_response({
+                "success": True,
+                "username": user[0],
+                "role": user[2]
+            })
+            
+        except Exception as e:
+            self.send_json_response({"success": False, "message": f"Login error: {str(e)}"}, 500)
+
+    def handle_oauth(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '').strip()
+            provider = req_json.get('provider', 'google')
+            
+            if not username:
+                self.send_json_response({"success": False, "message": "OAuth username required."}, 400)
+                return
+                
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            
+            cursor.execute("SELECT username, role FROM users WHERE username = ?", (username,))
+            user = cursor.fetchone()
+            
+            if not user:
+                # Create user with role analyst by default
+                cursor.execute(
+                    "INSERT INTO users (username, password, role, oauth_provider, created_at) VALUES (?, ?, ?, ?, ?)",
+                    (username, "oauth_derived_secret", "analyst", provider, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                )
+                conn.commit()
+                role = "analyst"
+            else:
+                role = user[1]
+                
+            conn.close()
+            
+            self.send_json_response({
+                "success": True,
+                "username": username,
+                "role": role,
+                "oauth": True
+            })
+            
+        except Exception as e:
+            self.send_json_response({"success": False, "message": f"OAuth error: {str(e)}"}, 500)
+
+    def handle_dev_get_users(self):
+        try:
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute("SELECT username, role, oauth_provider, created_at FROM users")
+            users = cursor.fetchall()
+            conn.close()
+            
+            user_list = []
+            for u in users:
+                user_list.append({
+                    "username": u[0],
+                    "role": u[1],
+                    "oauth_provider": u[2] or "LDAP/Standard",
+                    "created_at": u[3]
+                })
+                
+            self.send_json_response({"success": True, "users": user_list})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
+    def handle_dev_update_role(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '')
+            role = req_json.get('role', '')
+            
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET role = ? WHERE username = ?", (role, username))
+            conn.commit()
+            conn.close()
+            
+            self.send_json_response({"success": True, "message": "User role updated successfully!"})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
+    def handle_dev_delete_user(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '')
+            
+            if username == "admin":
+                self.send_json_response({"success": False, "message": "Cannot delete root admin user."}, 400)
+                return
+                
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+            conn.commit()
+            conn.close()
+            
+            self.send_json_response({"success": True, "message": "User deleted successfully!"})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
+    def handle_dev_get_keys(self):
+        try:
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute("SELECT key_id, api_key, username, created_at, request_count FROM api_keys")
+            keys = cursor.fetchall()
+            conn.close()
+            
+            key_list = []
+            for k in keys:
+                key_list.append({
+                    "key_id": k[0],
+                    "api_key": k[1],
+                    "username": k[2],
+                    "created_at": k[3],
+                    "request_count": k[4]
+                })
+                
+            self.send_json_response({"success": True, "keys": key_list})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
+    def handle_dev_generate_key(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            username = req_json.get('username', '')
+            
+            token = secrets.token_hex(16)
+            api_key = f"amns_sk_{token}"
+            key_id = f"id_{token[:8]}"
+            
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO api_keys (key_id, api_key, username, created_at, request_count) VALUES (?, ?, ?, ?, 0)",
+                (key_id, api_key, username, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+            )
+            conn.commit()
+            conn.close()
+            
+            self.send_json_response({"success": True, "key": {"key_id": key_id, "api_key": api_key, "username": username}})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
+    def handle_dev_delete_key(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            post_data = self.rfile.read(content_length)
+            req_json = json.loads(post_data.decode('utf-8'))
+            
+            key_id = req_json.get('key_id', '')
+            
+            conn = get_db_conn()
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM api_keys WHERE key_id = ?", (key_id,))
+            conn.commit()
+            conn.close()
+            
+            self.send_json_response({"success": True, "message": "API Key revoked successfully!"})
+        except Exception as e:
+            self.send_json_response({"success": False, "message": str(e)}, 500)
+
 
 def generate_self_signed_cert(cert_path, key_path):
     print("[Certificate Manager] Generating new self-signed SSL/TLS certificates...")
@@ -180,6 +488,7 @@ def generate_self_signed_cert(cert_path, key_path):
 
 
 def main():
+    init_db()
     parser = argparse.ArgumentParser(description="Secure Corporate Network Hosting Server for EUD Dashboard")
     parser.add_argument("--port", type=int, help="Port to bind the server to (default: 4430 for HTTPS, 8080 for HTTP)")
     parser.add_argument("--bind", default="127.0.0.1", help="Interface to bind to (default: 127.0.0.1 for local isolation)")

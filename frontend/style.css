@@ -29,7 +29,8 @@
     --status-critical: #b91c1c; /* Muted Crimson Red */
     
     /* Font Systems */
-    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display: 'Montserrat', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
@@ -39,8 +40,12 @@
     padding: 0;
 }
 
-body {
+html {
     background-color: var(--bg-main);
+}
+
+body {
+    background-color: transparent;
     color: var(--text-primary);
     font-family: var(--font-sans);
     line-height: 1.5;
@@ -562,3 +567,90 @@ header h1 {
 .badge-analyst { background: #eff6ff !important; color: #1e40af !important; border-color: #bfdbfe !important; }
 .badge-operator { background: #fefce8 !important; color: var(--status-medium) !important; border-color: #fef08a !important; }
 .badge-auditor { background: #f9fafb !important; color: var(--text-secondary) !important; border-color: #e5e7eb !important; }
+
+/* Animated slide dots */
+.slide-dot.active {
+    background: var(--color-accent) !important;
+    transform: scale(1.3);
+}
+
+/* Pulse glow animation for Live Ingest Badge */
+@keyframes pulse-glow {
+    0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.4); }
+    100% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 10px 4px rgba(185, 28, 28, 0.2); }
+}
+
+/* Background floating sliding spheres for investor appeal */
+@keyframes drift1 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(100px, 80px) scale(1.15); }
+    100% { transform: translate(-50px, 150px) scale(0.9); }
+}
+
+@keyframes drift2 {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-150px, -100px) scale(0.85); }
+    100% { transform: translate(80px, -40px) scale(1.1); }
+}
+
+/* Premium Page Slide & Fade Transitions */
+.section-view {
+    animation: slideInFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideInFade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Interactive Hover States & Premium Micro-Animations */
+.card, .chart-card, .metric-widget {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card:hover, .chart-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    border-color: var(--color-accent) !important;
+}
+
+.metric-widget:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    border-color: var(--color-accent) !important;
+    background: var(--color-accent-light) !important;
+}
+
+.menu-item {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease;
+}
+
+.menu-item:hover {
+    transform: translateX(4px);
+}
+
+.btn {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(185, 28, 28, 0.2);
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+/* Global Brand Typography Matches for AM/NS INDIA Logo */
+h1, h2, h3, h4, h5, h6, .brand-logo, .brand-logo span {
+    font-family: var(--font-display) !important;
+    font-weight: 900 !important;
+    letter-spacing: -0.05em !important;
+}
