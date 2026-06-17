@@ -556,3 +556,9 @@ header h1 {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+
+/* Custom SSO Identity Badges */
+.badge-admin { background: #f0fdf4 !important; color: var(--status-low) !important; border-color: #bbf7d0 !important; }
+.badge-analyst { background: #eff6ff !important; color: #1e40af !important; border-color: #bfdbfe !important; }
+.badge-operator { background: #fefce8 !important; color: var(--status-medium) !important; border-color: #fef08a !important; }
+.badge-auditor { background: #f9fafb !important; color: var(--text-secondary) !important; border-color: #e5e7eb !important; }

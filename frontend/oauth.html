@@ -18,16 +18,16 @@
 
         .oauth-card {
             width: 100%;
-            max-width: 460px;
+            max-width: 480px;
             box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
             border: 1px solid var(--border-clean);
         }
 
         .oauth-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-bottom: 2px solid var(--text-primary);
-            padding-bottom: 1.25rem;
+            padding-bottom: 1rem;
         }
 
         .brand-title {
@@ -52,28 +52,33 @@
         }
 
         .instructions {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
             text-align: center;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
         .profile-list {
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            margin-bottom: 2rem;
+            gap: 0.6rem;
+            margin-bottom: 1.5rem;
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid var(--border-clean);
+            padding: 0.5rem;
+            background: var(--bg-secondary);
         }
 
         .profile-option {
             background: var(--bg-card);
             border: 1px solid var(--border-clean);
             border-radius: 4px;
-            padding: 1rem 1.25rem;
+            padding: 0.75rem 1rem;
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
             cursor: pointer;
             transition: all 0.15s ease;
         }
@@ -91,8 +96,8 @@
         }
 
         .profile-radio {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             border-radius: 50%;
             border: 2px solid var(--text-muted);
             display: flex;
@@ -108,8 +113,8 @@
         }
 
         .profile-radio-dot {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
             background-color: var(--color-accent);
             opacity: 0;
@@ -130,18 +135,18 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
         }
 
         .profile-username {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--text-primary);
         }
 
         .profile-badge {
-            font-size: 0.65rem;
-            padding: 0.1rem 0.4rem;
+            font-size: 0.6rem;
+            padding: 0.05rem 0.35rem;
             border-radius: 3px;
             font-weight: 700;
             text-transform: uppercase;
@@ -154,17 +159,17 @@
         .badge-auditor { background: #f9fafb; color: var(--text-secondary); border-color: #e5e7eb; }
 
         .profile-desc {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--text-muted);
         }
 
         .footer {
-            margin-top: 1.5rem;
+            margin-top: 1.25rem;
             text-align: center;
-            font-size: 0.65rem;
+            font-size: 0.62rem;
             color: var(--text-muted);
             border-top: 1px solid var(--border-clean);
-            padding-top: 1.25rem;
+            padding-top: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-weight: 700;
@@ -185,59 +190,31 @@
         Select a corporate identity profile to grant access leases to the compliance audit console.
     </div>
 
-    <div class="profile-list" id="profiles">
-        <!-- Admin -->
-        <div class="profile-option" onclick="selectProfile('admin')">
-            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
-            <div class="profile-details">
-                <div class="profile-name-row">
-                    <span class="profile-username">admin</span>
-                    <span class="badge badge-admin">Admin</span>
-                </div>
-                <div class="profile-desc">Full GRC settings override & alert dispatch</div>
-            </div>
-        </div>
+    <!-- Dynamic User list -->
+    <div class="profile-list" id="profiles"></div>
 
-        <!-- Analyst -->
-        <div class="profile-option" onclick="selectProfile('analyst')">
-            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
-            <div class="profile-details">
-                <div class="profile-name-row">
-                    <span class="profile-username">analyst</span>
-                    <span class="badge badge-analyst">Analyst</span>
-                </div>
-                <div class="profile-desc">Manual ledger adjustments & CSV ingestion</div>
-            </div>
-        </div>
-
-        <!-- Operator -->
-        <div class="profile-option" onclick="selectProfile('operator')">
-            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
-            <div class="profile-details">
-                <div class="profile-name-row">
-                    <span class="profile-username">operator</span>
-                    <span class="badge badge-operator">Operator</span>
-                </div>
-                <div class="profile-desc">Host containment actions & device enrollment</div>
-            </div>
-        </div>
-
-        <!-- Auditor -->
-        <div class="profile-option" onclick="selectProfile('auditor')">
-            <div class="profile-radio"><span class="profile-radio-dot"></span></div>
-            <div class="profile-details">
-                <div class="profile-name-row">
-                    <span class="profile-username">auditor</span>
-                    <span class="badge badge-auditor">Auditor</span>
-                </div>
-                <div class="profile-desc">Strict Read-Only reporting views</div>
-            </div>
-        </div>
-    </div>
-
-    <button id="auth-btn" class="btn" disabled onclick="authenticate()">
+    <button id="auth-btn" class="btn" style="width: 100%; margin-bottom: 1.25rem;" disabled onclick="authenticate()">
         Approve & Authenticate
     </button>
+
+    <!-- Register New User form -->
+    <div style="border-top: 1px dashed var(--border-clean); padding-top: 1rem; margin-top: 0.5rem;">
+        <h3 style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.75rem; letter-spacing: 0.05em;">Register Federated SSO Profile</h3>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="reg-username" placeholder="Username (e.g. jdoe)" style="flex-grow: 1; background: var(--bg-card); border: 1px solid var(--border-clean); padding: 0.5rem 0.75rem; color: var(--text-primary); border-radius: 4px; outline: none; font-size: 0.82rem;">
+                <input type="password" id="reg-pin" placeholder="PIN/Passcode" style="width: 120px; background: var(--bg-card); border: 1px solid var(--border-clean); padding: 0.5rem 0.75rem; color: var(--text-primary); border-radius: 4px; outline: none; font-size: 0.82rem;">
+                <select id="reg-role" style="background: var(--bg-card); border: 1px solid var(--border-clean); padding: 0.5rem 0.75rem; color: var(--text-primary); border-radius: 4px; outline: none; font-size: 0.82rem;">
+                    <option value="admin">Admin</option>
+                    <option value="analyst">Analyst</option>
+                    <option value="operator">Operator</option>
+                    <option value="auditor">Auditor</option>
+                </select>
+            </div>
+            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem;" onclick="registerUser()">Register SSO Profile</button>
+        </div>
+        <div id="reg-msg" style="display: none; font-size: 0.75rem; margin-top: 0.5rem; font-weight: 700; text-align: center;"></div>
+    </div>
 
     <div class="footer">
         Secured via OAuth 2.0 Authorization Code Flow
@@ -247,7 +224,7 @@
 <script>
     let selectedUser = null;
 
-    const directory = {
+    const defaultDirectory = {
         "admin": {
             role: "admin",
             roleLabel: "Global Security & Compliance Administrator",
@@ -270,27 +247,172 @@
         }
     };
 
+    let activeDirectory = { ...defaultDirectory };
+    let customUsers = [];
+
+    function loadUsers() {
+        try {
+            customUsers = JSON.parse(localStorage.getItem("eud_custom_oauth_users") || "[]");
+        } catch(e) {
+            customUsers = [];
+        }
+
+        activeDirectory = { ...defaultDirectory };
+        customUsers.forEach(u => {
+            activeDirectory[u.username] = {
+                role: u.role,
+                roleLabel: getRoleLabel(u.role),
+                authorizations: getRoleAuthorizations(u.role)
+            };
+        });
+    }
+
+    function getRoleLabel(role) {
+        switch (role) {
+            case "admin": return "Global Security & Compliance Administrator";
+            case "analyst": return "Global Security Analyst";
+            case "operator": return "Security Operations Operator";
+            case "auditor": return "External Compliance Auditor";
+            default: return "SSO Visitor Profile";
+        }
+    }
+
+    function getRoleAuthorizations(role) {
+        switch (role) {
+            case "admin": return ["Reconciliation Approval", "CSV Ingestion Authority", "Secret Key Leasing", "Sift Fleet Access", "Outbound Alerts Dispatch"];
+            case "analyst": return ["Reconciliation Approval", "CSV Ingestion Authority", "Sift Fleet Access"];
+            case "operator": return ["Reconciliation Approval", "Sift Fleet Access"];
+            case "auditor": return ["Read-Only Ledger Access"];
+            default: return [];
+        }
+    }
+
+    function renderProfiles() {
+        const listDiv = document.getElementById("profiles");
+        listDiv.innerHTML = "";
+
+        Object.keys(activeDirectory).forEach(user => {
+            const profile = activeDirectory[user];
+            const isSelected = (selectedUser === user) ? "selected" : "";
+            
+            const badgeClass = `badge-${profile.role}`;
+            const labelText = profile.role.charAt(0).toUpperCase() + profile.role.slice(1);
+
+            const div = document.createElement("div");
+            div.className = `profile-option ${isSelected}`;
+            div.setAttribute("onclick", `selectProfile('${user}')`);
+            div.innerHTML = `
+                <div class="profile-radio"><span class="profile-radio-dot"></span></div>
+                <div class="profile-details">
+                    <div class="profile-name-row">
+                        <span class="profile-username">${user}</span>
+                        <span class="profile-badge ${badgeClass}">${labelText}</span>
+                    </div>
+                    <div class="profile-desc">${getRoleDesc(profile.role)}</div>
+                </div>
+            `;
+            listDiv.appendChild(div);
+        });
+    }
+
+    function getRoleDesc(role) {
+        switch (role) {
+            case "admin": return "Full GRC settings override & alert dispatch";
+            case "analyst": return "Manual ledger adjustments & CSV ingestion";
+            case "operator": return "Host containment actions & device enrollment";
+            case "auditor": return "Strict Read-Only reporting views";
+            default: return "Federated profile access";
+        }
+    }
+
     function selectProfile(user) {
         selectedUser = user;
-        
-        // Update UI selection states
-        const options = document.querySelectorAll('.profile-option');
-        options.forEach(opt => {
-            opt.classList.remove('selected');
-        });
-        
-        // Add selected class to chosen element index
-        const indexMap = { 'admin': 0, 'analyst': 1, 'operator': 2, 'auditor': 3 };
-        options[indexMap[user]].classList.add('selected');
-        
-        // Enable submit button
+        renderProfiles();
         document.getElementById('auth-btn').disabled = false;
+    }
+
+    function registerUser() {
+        const username = document.getElementById("reg-username").value.trim().toLowerCase();
+        const role = document.getElementById("reg-role").value;
+        const pin = document.getElementById("reg-pin").value.trim();
+        const msgDiv = document.getElementById("reg-msg");
+        
+        msgDiv.style.display = "none";
+
+        if (!username) {
+            msgDiv.innerText = "Username cannot be empty.";
+            msgDiv.style.color = "var(--status-critical)";
+            msgDiv.style.display = "block";
+            return;
+        }
+
+        if (!pin) {
+            msgDiv.innerText = "PIN/Passcode cannot be empty.";
+            msgDiv.style.color = "var(--status-critical)";
+            msgDiv.style.display = "block";
+            return;
+        }
+
+        // Validate username formatting to prevent injection/breakage
+        if (!/^[a-z0-9_\-\.]+$/.test(username)) {
+            msgDiv.innerText = "Username must be alphanumeric or contain . _ -";
+            msgDiv.style.color = "var(--status-high)";
+            msgDiv.style.display = "block";
+            return;
+        }
+
+        if (activeDirectory[username]) {
+            msgDiv.innerText = "Username already exists.";
+            msgDiv.style.color = "var(--status-critical)";
+            msgDiv.style.display = "block";
+            return;
+        }
+
+        const newUser = {
+            username: username,
+            role: role,
+            pin: pin,
+            label: "SSO Federated User"
+        };
+
+        customUsers.push(newUser);
+        localStorage.setItem("eud_custom_oauth_users", JSON.stringify(customUsers));
+        
+        // Log action in audit logs to show registration
+        let logs = [];
+        try {
+            logs = JSON.parse(localStorage.getItem("eud_identity_audit_logs") || "[]");
+        } catch(e){}
+        logs.unshift({
+            username: "SSO Provider",
+            role: "system",
+            action: "User Registration",
+            details: `Federated SSO profile successfully registered for user "${username}" (role: ${role})`,
+            timestamp: new Date().toLocaleString()
+        });
+        localStorage.setItem("eud_identity_audit_logs", JSON.stringify(logs.slice(0, 50)));
+
+        loadUsers();
+        renderProfiles();
+
+        msgDiv.innerText = `Registered user "${username}" successfully!`;
+        msgDiv.style.color = "var(--status-low)";
+        msgDiv.style.display = "block";
+        document.getElementById("reg-username").value = "";
+        document.getElementById("reg-pin").value = "";
+
+        // Notify opener to reload lists in real-time
+        if (window.opener && window.opener.populateIdentitySSOAudits) {
+            try {
+                window.opener.populateIdentitySSOAudits();
+            } catch(e){}
+        }
     }
 
     function authenticate() {
         if (!selectedUser) return;
         
-        const profile = directory[selectedUser];
+        const profile = activeDirectory[selectedUser];
         
         // Construct simulated JWT
         const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
@@ -316,6 +438,10 @@
             alert("No main app window found! Direct login bypassed.");
         }
     }
+
+    // Initialize Page
+    loadUsers();
+    renderProfiles();
 </script>
 
 </body>

@@ -105,6 +105,13 @@ const domMock = {
         createElement: (tag) => createMockElement('temp-' + Math.random(), tag),
         body: { appendChild: () => {}, removeChild: () => {} }
     },
+    localStorage: {
+        _store: {},
+        getItem: function(key) { return this._store[key] || null; },
+        setItem: function(key, val) { this._store[key] = String(val); },
+        removeItem: function(key) { delete this._store[key]; },
+        clear: function() { this._store = {}; }
+    },
     FileReader: class {},
     XLSX: {
         read: () => ({ SheetNames: ['Sheet1'], Sheets: {} }),

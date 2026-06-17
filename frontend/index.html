@@ -85,6 +85,7 @@
                     <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
                     <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">Reconciliation
                     </li>
+                    <li class="menu-item" id="menu-sso" onclick="switchNavSection('sso')">SSO Directory & Audits</li>
                 </ul>
             </nav>
 
@@ -688,6 +689,88 @@
                 </div>
             </div>
 
+            <!-- Section: SSO Directory & Audits -->
+            <div id="section-sso" class="section-view" style="display: none;">
+                <div class="card" style="margin-bottom: 2rem;">
+                    <h2>SSO Federated Identity Registry</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        View federated user directories, add new identities, and inspect user activity audit trails.
+                    </p>
+
+                    <!-- Add User Form & Directory List -->
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2.5rem; margin-bottom: 1rem;">
+                        <!-- Registration card -->
+                        <div style="border-right: 1px solid var(--border-clean); padding-right: 2.5rem;">
+                            <h3 style="font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1.25rem;">Register Federated SSO User</h3>
+                            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                <div class="input-group">
+                                    <label for="sso-reg-user">Username</label>
+                                    <input type="text" id="sso-reg-user" placeholder="e.g. jdoe">
+                                </div>
+                                <div class="input-group">
+                                    <label for="sso-reg-pin">MFA PIN / Passcode</label>
+                                    <input type="password" id="sso-reg-pin" placeholder="Enter PIN/Passcode">
+                                </div>
+                                <div class="input-group">
+                                    <label for="sso-reg-role">Role</label>
+                                    <select id="sso-reg-role" style="width: 100%; background: var(--bg-card); border: 1px solid var(--border-clean); padding: 0.6rem; color: var(--text-primary); border-radius: 4px; outline: none; font-size: 0.85rem;">
+                                        <option value="admin">Admin</option>
+                                        <option value="analyst">Analyst</option>
+                                        <option value="operator">Operator</option>
+                                        <option value="auditor">Auditor</option>
+                                    </select>
+                                </div>
+                                <button class="btn" onclick="registerUserFromDashboard()">Add User Profile</button>
+                                <div id="sso-reg-dashboard-msg" style="display: none; font-size: 0.8rem; font-weight: bold; text-align: center; margin-top: 0.5rem;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Directory Table -->
+                        <div>
+                            <h3 style="font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1.25rem;">User Directory</h3>
+                            <div style="overflow-x: auto;">
+                                <table class="fleet-table" style="width: 100%; font-size: 0.85rem; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: var(--bg-secondary); text-align: left;">
+                                            <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);">Username</th>
+                                            <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);">Role</th>
+                                            <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);">Auth Provider</th>
+                                            <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);">Active Lease</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sso-directory-tbody">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1rem;">GRC System Audit Trail</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Real-time audit logging of user authentication, configuration overrides, and ledger actions.
+                    </p>
+                    <div style="overflow-x: auto; max-height: 400px; overflow-y: auto; border: 1px solid var(--border-clean);">
+                        <table class="fleet-table" style="width: 100%; font-size: 0.8rem; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: var(--bg-secondary); text-align: left;">
+                                    <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); width: 22%;">Timestamp</th>
+                                    <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); width: 15%;">User</th>
+                                    <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); width: 12%;">Role</th>
+                                    <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); width: 18%;">Action</th>
+                                    <th style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); width: 33%;">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sso-audit-logs-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Section: Settings -->
             <div id="section-settings" class="section-view" style="display: none;">
                 <div class="card">
@@ -777,6 +860,47 @@
                 authorizations: ["Read-Only Ledger Access"]
             }
         };
+
+        function getRoleLabel(role) {
+            switch (role) {
+                case "admin": return "Global Security & Compliance Administrator";
+                case "analyst": return "Global Security Analyst";
+                case "operator": return "Security Operations Operator";
+                case "auditor": return "External Compliance Auditor";
+                default: return "SSO Visitor Profile";
+            }
+        }
+
+        function getRoleAuthorizations(role) {
+            switch (role) {
+                case "admin": return ["Reconciliation Approval", "CSV Ingestion Authority", "Secret Key Leasing", "Sift Fleet Access", "Outbound Alerts Dispatch"];
+                case "analyst": return ["Reconciliation Approval", "CSV Ingestion Authority", "Sift Fleet Access"];
+                case "operator": return ["Reconciliation Approval", "Sift Fleet Access"];
+                case "auditor": return ["Read-Only Ledger Access"];
+                default: return [];
+            }
+        }
+
+        function loadCustomUsersIntoDirectory() {
+            if (typeof localStorage === "undefined") return;
+            try {
+                const customUsers = JSON.parse(localStorage.getItem("eud_custom_oauth_users") || "[]");
+                customUsers.forEach(u => {
+                    simulatedLDAPDirectory[u.username] = {
+                        pin: u.pin || u.username,
+                        role: u.role,
+                        roleLabel: getRoleLabel(u.role),
+                        authorizations: getRoleAuthorizations(u.role)
+                    };
+                });
+            } catch (e) {
+                console.error("Failed to load custom users into simulatedLDAPDirectory:", e);
+            }
+        }
+
+        // Initialize custom directory profiles on boot
+        loadCustomUsersIntoDirectory();
+
 
         // Global Reconciliation Workspace Data (Declared at the top to prevent TDZ ReferenceErrors on page reload)
         let reconcilerSheets = [];
@@ -1133,6 +1257,26 @@
             term.scrollTop = term.scrollHeight;
         }
 
+        function auditLogAction(username, role, action, details) {
+            if (typeof localStorage === "undefined") return;
+            try {
+                let logs = JSON.parse(localStorage.getItem("eud_identity_audit_logs") || "[]");
+                logs.unshift({
+                    username: username || "system",
+                    role: role || "system",
+                    action: action,
+                    details: details,
+                    timestamp: new Date().toLocaleString()
+                });
+                localStorage.setItem("eud_identity_audit_logs", JSON.stringify(logs.slice(0, 100)));
+                if (typeof populateIdentitySSOAudits === "function") {
+                    populateIdentitySSOAudits();
+                }
+            } catch (e) {
+                console.error("Failed to write audit log:", e);
+            }
+        }
+
         function switchNavSection(target) {
             // NIST CSF 2.0 Airtight Auth Boundaries
             if (!currentSession.isLoggedIn && target !== 'login') {
@@ -1206,6 +1350,9 @@
                     case "settings":
                         titleEl.innerText = "Console Settings & Pipeline Parameters";
                         break;
+                    case "sso":
+                        titleEl.innerText = "SSO Identity Directory & Audit Trail";
+                        break;
                     default:
                         titleEl.innerText = "Executive Overview";
                 }
@@ -1216,6 +1363,8 @@
                 generateComplianceReport();
             } else if (target === "risk") {
                 renderPoliciesGrid();
+            } else if (target === "sso") {
+                populateIdentitySSOAudits();
             } else if (target === "reconciler") {
                 if (typeof renderReconciliationUI === "function" && reconciliationResults && (reconciliationResults.matches.length > 0 || reconciliationResults.gaps.length > 0 || reconciliationResults.rogues.length > 0)) {
                     renderReconciliationUI();
@@ -1618,6 +1767,7 @@
             handleFleetQueryChange();
 
             logToTerminal(`[Database] Fleet ledger purged successfully. Total active assets: 0.`, "warning");
+            auditLogAction(currentSession.username, currentSession.role, "Purge Fleet Data", "Cleared active fleet dataset records from RAM.");
             alert("Database Purged: All assets have been cleared successfully.");
         }
 
@@ -3070,6 +3220,7 @@
             if (!creds || creds.pin !== pin) {
                 loginFailCount++;
                 logToTerminal(`[Auth Fail] Challenge rejection for "${user}" (Attempt ${loginFailCount}/3).`, "error");
+                auditLogAction(user, "unknown", "Standard Login Failure", `Authentication failed. Invalid PIN matched. (Attempt ${loginFailCount}/3)`);
 
                 if (loginFailCount >= 3) {
                     lockoutUntil = Date.now() + 60000; // 60 seconds lockout
@@ -3095,6 +3246,7 @@
 
             logToTerminal(`[Vault] Authenticated session lease for tenant context: "${tenant}"`, "info");
             logToTerminal(`[RBAC Guard] Loaded user profile. Assigned Role: ${creds.role.toUpperCase()}. Unlocking bounds...`, "info");
+            auditLogAction(user, creds.role, "Standard Login", "Successful authentication via LDAP passcode PIN verification.");
 
             // Update user profile section details dynamically
             document.getElementById("profile-analyst-name").innerText = user;
@@ -3167,6 +3319,7 @@
                 logToTerminal(`[SSO Auth] OAuth 2.0 flow completed. Valid JWT token parsed.`, "info");
                 logToTerminal(`[Vault] Authenticated session lease for tenant context: "${tenant}"`, "info");
                 logToTerminal(`[RBAC Guard] Loaded user profile from JWT claims. Assigned Role: ${decodedPayload.role.toUpperCase()}. Unlocking bounds...`, "info");
+                auditLogAction(decodedPayload.sub, decodedPayload.role, "SSO Login", "Successful federated SSO session lease established via JWT claims.");
 
                 // Update UI elements
                 document.getElementById("profile-analyst-name").innerText = decodedPayload.sub;
@@ -3196,6 +3349,7 @@
                 logToTerminal(`[Session Active] Successfully logged in via SSO. Session established for tenant: "${tenant}"`, "info");
             } catch (err) {
                 logToTerminal(`[SSO Error] Failed to parse JWT token: ${err.message}`, "error");
+                auditLogAction("Federated SSO", "unknown", "SSO Login Failure", `Authentication failed: ${err.message}`);
                 const errorDiv = document.getElementById("portal-login-error-msg");
                 errorDiv.innerText = "SSO Authentication Failure: Invalid JWT claims signature.";
                 errorDiv.style.display = "block";
@@ -3214,6 +3368,9 @@
         }
 
         function terminateSessionLease() {
+            const loggedOutUser = currentSession.username;
+            const loggedOutRole = currentSession.role;
+
             logToTerminal(`[Auth Guard] Disposing session lease token for "${currentSession.username}"...`);
             logToTerminal(`[Vault] Session context revoked. Key vault closed.`, "warn");
 
@@ -3228,6 +3385,8 @@
 
             // Enforce controls
             enforceRoleBasedControls();
+
+            auditLogAction(loggedOutUser || "unknown", loggedOutRole || "unknown", "Session Logout", "Terminated session lease and locked dashboard.");
 
             // Hide App, show portal login
             document.getElementById("login-screen-canvas").style.display = "flex";
@@ -3255,6 +3414,7 @@
             logToTerminal(`[Settings] Kafka compliance raw topic committed to: "${topic}" (partitions: ${partitions})`, "info");
             logToTerminal(`[Settings] Vault provider path synchronized with server: "${vaultAddr}" (mount: "${vaultEngine}")`, "info");
             logToTerminal("[Settings] Configuration successfully committed and replicated to downstream gateway.", "info");
+            auditLogAction(currentSession.username, currentSession.role, "Save Configuration", `Updated Kafka raw topic to "${topic}" (partitions: ${partitions}), and Vault server address to "${vaultAddr}" (mount: "${vaultEngine}").`);
 
             // Switch back to compliance overview as active view
             switchNavSection("compliance");
@@ -4884,6 +5044,7 @@
                     if (data.success) {
                         reconciliationResults = data.results;
                         logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
+                        auditLogAction(currentSession.username, currentSession.role, "Run Reconciliation (Python)", `Aligned ${reconcilerSheets.length} sheets. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`);
                         renderReconciliationUI();
                     } else {
                         logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
@@ -5284,6 +5445,7 @@
 
             reconciliationResults = { matches: matches, gaps: gaps, rogues: rogues };
             logToTerminal(`[Reconciler] Local alignment complete. Matches: ${matches.length}, Gaps: ${gaps.length}, Rogues: ${rogues.length}`, "info");
+            auditLogAction(currentSession.username, currentSession.role, "Run Reconciliation (Local)", `Aligned ${reconcilerSheets.length} sheets. Matches: ${matches.length}, Gaps: ${gaps.length}, Rogues: ${rogues.length}`);
             renderReconciliationUI();
         }
 
@@ -6256,6 +6418,7 @@
 
             const successMsg = `Excel Reconciliation Merge Complete! Integrated custom sheet columns. Added ${newlyCreated} new records and updated ${mergedUpdated} existing records.`;
             logToTerminal(`[Reconciler] ${successMsg}`, "info");
+            auditLogAction(currentSession.username, currentSession.role, "Ingest Merge", successMsg);
             alert(successMsg);
         }
 
@@ -6292,6 +6455,146 @@
             document.body.removeChild(link);
 
             logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
+        }
+
+        function populateIdentitySSOAudits() {
+            // 1. Populate User Directory Table
+            const directoryTbody = document.getElementById("sso-directory-tbody");
+            if (directoryTbody) {
+                directoryTbody.innerHTML = "";
+
+                // First, load custom users from localStorage into simulatedLDAPDirectory to sync them
+                loadCustomUsersIntoDirectory();
+
+                Object.keys(simulatedLDAPDirectory).forEach(username => {
+                    const userObj = simulatedLDAPDirectory[username];
+                    let isCustom = false;
+                    try {
+                        const customUsers = JSON.parse(localStorage.getItem("eud_custom_oauth_users") || "[]");
+                        isCustom = customUsers.some(u => u.username === username);
+                    } catch(e){}
+                    const provider = isCustom ? "Federated SSO (OAuth 2.0)" : "Simulated LDAP (Active Directory)";
+                    const isCurrent = (currentSession.isLoggedIn && currentSession.username === username) ? 
+                                      `<span style="color: var(--status-low); font-weight: 700;">ACTIVE SESSION</span>` : 
+                                      `<span style="color: var(--text-muted);">INACTIVE</span>`;
+                    
+                    const roleLabel = userObj.role.charAt(0).toUpperCase() + userObj.role.slice(1);
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); font-weight: 700;">${username}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);"><span class="badge group-non-sift">${roleLabel}</span></td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); font-family: var(--font-mono); font-size: 0.75rem;">${provider}</td>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);">${isCurrent}</td>
+                    `;
+                    directoryTbody.appendChild(row);
+                });
+            }
+
+            // 2. Populate Audits Table
+            const auditsTbody = document.getElementById("sso-audit-logs-tbody");
+            if (auditsTbody) {
+                auditsTbody.innerHTML = "";
+                let logs = [];
+                try {
+                    logs = JSON.parse(localStorage.getItem("eud_identity_audit_logs") || "[]");
+                } catch (e) {
+                    console.error("Failed to parse eud_identity_audit_logs", e);
+                }
+
+                if (logs.length === 0) {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `<td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No system audit actions recorded.</td>`;
+                    auditsTbody.appendChild(row);
+                } else {
+                    logs.forEach(log => {
+                        const row = document.createElement("tr");
+                        const badgeClass = log.role === "admin" ? "group-sift" : "group-non-sift";
+                        const roleText = (log.role || "unknown").toUpperCase();
+                        row.innerHTML = `
+                            <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); font-family: var(--font-mono);">${log.timestamp}</td>
+                            <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); font-weight: 700;">${log.username}</td>
+                            <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean);"><span class="badge ${badgeClass}" style="font-size: 0.7rem;">${roleText}</span></td>
+                            <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); font-weight: 600;">${log.action}</td>
+                            <td style="padding: 0.75rem; border-bottom: 1px solid var(--border-clean); color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${log.details}">${log.details}</td>
+                        `;
+                        auditsTbody.appendChild(row);
+                    });
+                }
+            }
+        }
+
+        function registerUserFromDashboard() {
+            const usernameInput = document.getElementById("sso-reg-user");
+            const pinInput = document.getElementById("sso-reg-pin");
+            const roleInput = document.getElementById("sso-reg-role");
+            const msgEl = document.getElementById("sso-reg-dashboard-msg");
+
+            if (!usernameInput || !pinInput || !roleInput || !msgEl) return;
+
+            const username = usernameInput.value.trim().toLowerCase();
+            const pin = pinInput.value.trim();
+            const role = roleInput.value;
+
+            msgEl.style.display = "none";
+
+            if (!username) {
+                msgEl.innerText = "Username cannot be empty.";
+                msgEl.style.color = "var(--status-critical)";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            if (!pin) {
+                msgEl.innerText = "PIN/Passcode cannot be empty.";
+                msgEl.style.color = "var(--status-critical)";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            if (!/^[a-z0-9_\-\.]+$/.test(username)) {
+                msgEl.innerText = "Username must be alphanumeric or contain . _ -";
+                msgEl.style.color = "var(--status-high)";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            if (simulatedLDAPDirectory[username]) {
+                msgEl.innerText = "Username already exists.";
+                msgEl.style.color = "var(--status-critical)";
+                msgEl.style.display = "block";
+                return;
+            }
+
+            // Save user
+            let customUsers = [];
+            try {
+                customUsers = JSON.parse(localStorage.getItem("eud_custom_oauth_users") || "[]");
+            } catch (e) {
+                customUsers = [];
+            }
+
+            customUsers.push({
+                username: username,
+                role: role,
+                pin: pin,
+                label: "SSO Federated User"
+            });
+
+            localStorage.setItem("eud_custom_oauth_users", JSON.stringify(customUsers));
+
+            // Log action to GRC system logs
+            auditLogAction(currentSession.username || "system", currentSession.role || "system", "User Registration", `Registered custom profile "${username}" (role: ${role}) via dashboard registry.`);
+
+            // Refresh UI list and audits
+            populateIdentitySSOAudits();
+
+            msgEl.innerText = `User "${username}" registered successfully!`;
+            msgEl.style.color = "var(--status-low)";
+            msgEl.style.display = "block";
+
+            // Clear inputs
+            usernameInput.value = "";
+            pinInput.value = "";
         }
 </script>
 </body>
