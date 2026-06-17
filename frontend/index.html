@@ -33,7 +33,7 @@
             <div
                 style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
                 <img src="logo.png" alt="AM/NS India EUD Logo"
-                    style="height: 54px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                    style="height: 54px;">
                 <div>
                     <div
                         style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
@@ -129,7 +129,7 @@
         <!-- Top Navigation -->
         <header style="background: var(--bg-card); border-bottom: 1px solid var(--border-clean); padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 40px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 40px;">
                 <div>
                     <span style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: -0.04em;">AM/NS <span style="color: var(--color-accent);">Compliance</span></span>
                     <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: -0.1rem;">Endpoint Security Gateway</div>
@@ -160,7 +160,7 @@
                 <!-- Slider Wrapper -->
                 <div id="hero-slider-wrapper" style="display: flex; width: 300%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
                     <!-- Slide 1: Fleet Coverage Ledger -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
                         <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">Corporate Directory Status</h3>
@@ -210,9 +210,9 @@
                             </div>
                         </div>
                     </div>
-
+ 
                     <!-- Slide 2: Real-time Compliance Metrics -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem;">
+                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
                         <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">Risk Engine Monitor</h3>
@@ -224,11 +224,11 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
                                 <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Risk Classification</span>
-                                <div style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">LOW</div>
+                                <div id="hero-risk-class" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">LOW</div>
                             </div>
                             <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
                                 <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Mandates Tracked</span>
-                                <div style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">6 / 6</div>
+                                <div id="hero-mandates-val" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">6 / 6</div>
                             </div>
                         </div>
                         
@@ -236,35 +236,35 @@
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                                      <span>Zscaler Network Access</span>
-                                     <strong style="color: var(--status-medium);">88.5% Encrypted</strong>
+                                     <strong id="hero-zscaler-val" style="color: var(--status-medium);">88.5% Encrypted</strong>
                                 </div>
                                 <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div style="width: 88.5%; height: 100%; background: var(--status-medium); border-radius: 3px;"></div>
+                                     <div id="hero-zscaler-bar" style="width: 88.5%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;"></div>
                                 </div>
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                                      <span>Nessus Vulnerability Scan</span>
-                                     <strong style="color: var(--status-low);">94.0% Inspected</strong>
+                                     <strong id="hero-nessus-val" style="color: var(--status-low);">94.0% Inspected</strong>
                                 </div>
                                 <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div style="width: 94.0%; height: 100%; background: var(--status-low); border-radius: 3px;"></div>
+                                     <div id="hero-nessus-bar" style="width: 94.0%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
                                 </div>
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                                      <span>SCCM Config Agent</span>
-                                     <strong style="color: var(--status-low);">95.6% Active</strong>
+                                     <strong id="hero-sccm-val" style="color: var(--status-low);">95.6% Active</strong>
                                 </div>
                                 <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div style="width: 95.6%; height: 100%; background: var(--status-low); border-radius: 3px;"></div>
+                                     <div id="hero-sccm-bar" style="width: 95.6%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
+ 
                     <!-- Slide 3: SIEM Ingestion Logs Simulator -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem; background: #ffffff;">
                         <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                             <div>
                                 <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">SIEM Ingest Stream</h3>
@@ -276,11 +276,11 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
                                 <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Active Developer Keys</span>
-                                <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">24</div>
+                                <div id="hero-active-keys" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">24</div>
                             </div>
                             <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
                                 <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Throughput rate</span>
-                                <div style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--color-accent); margin-top: 0.15rem;">1,280 ev/s</div>
+                                <div id="hero-throughput" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--color-accent); margin-top: 0.15rem;">1,280 ev/s</div>
                             </div>
                         </div>
 
@@ -312,19 +312,19 @@
             </div>
             
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: var(--bg-card);">
+                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
                     <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Multi-Sheet Reconciler</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
                         Seamlessly import telemetry datasets from Active Directory, SCCM, Nessus, and Zscaler. Align reports automatically by Device ID/Hostname to identify coverage gaps and unmanaged assets.
                     </p>
                 </div>
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: var(--bg-card);">
+                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
                     <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Risk Engine & Controls</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
                         Customize compliance mandate policies. Enable/disable specific checks like BitLocker or Zscaler dynamically and recalculate compliance indices and risk classifications at run-time.
                     </p>
                 </div>
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: var(--bg-card);">
+                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
                     <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Audit & Developer APIs</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
                         Export detailed audit logs as Excel-compatible CSVs. Leverage the Developer Console to manage users, configure roles, issue API Keys, and track programmatic query volume.
@@ -349,7 +349,7 @@
         <aside class="sidebar">
             <div class="brand-section" style="flex-direction: row; align-items: center; gap: 0.75rem;">
                 <img src="logo.png" alt="AM/NS India EUD Logo"
-                    style="height: 36px; border-radius: 4px; border: 1px solid var(--border-clean);">
+                    style="height: 36px;">
                 <div style="display: flex; flex-direction: column; gap: 0.1rem;">
                     <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;"> <span>EUD</span></div>
                     <p
@@ -7427,8 +7427,9 @@
             }
         }, 3000);
 
-        // Fluctuate Slide 1 calculations in real time for dynamic interactivity
+        // Fluctuate Slide 1, Slide 2, and Slide 3 calculations in real time for dynamic interactivity
         function updateHeroLiveMetrics() {
+            // Slide 1 Elements
             const scaleEl = document.getElementById("hero-fleet-scale");
             const complianceEl = document.getElementById("hero-avg-compliance");
             const adValEl = document.getElementById("hero-ad-val");
@@ -7438,37 +7439,140 @@
             const s1ValEl = document.getElementById("hero-s1-val");
             const s1BarEl = document.getElementById("hero-s1-bar");
 
+            // Slide 2 Elements
+            const riskClassEl = document.getElementById("hero-risk-class");
+            const mandatesEl = document.getElementById("hero-mandates-val");
+            const zscalerValEl = document.getElementById("hero-zscaler-val");
+            const zscalerBarEl = document.getElementById("hero-zscaler-bar");
+            const nessusValEl = document.getElementById("hero-nessus-val");
+            const nessusBarEl = document.getElementById("hero-nessus-bar");
+            const sccmValEl = document.getElementById("hero-sccm-val");
+            const sccmBarEl = document.getElementById("hero-sccm-bar");
+
+            // Slide 3 Elements
+            const keysEl = document.getElementById("hero-active-keys");
+            const throughputEl = document.getElementById("hero-throughput");
+
             if (!scaleEl) return; // safety guard for headless tests
 
-            // Fluctuate Fleet Scale slightly around 10,029
-            const fleetScale = 10020 + Math.floor(Math.random() * 16);
+            // Helper to get color code based on percentage
+            function getMetricColor(pct) {
+                if (pct < 80) return "var(--status-critical)";
+                if (pct < 90) return "var(--status-medium)";
+                return "var(--status-low)";
+            }
+
+            // --- Slide 1 Fluctuations ---
+            // Fluctuate Fleet Scale wildly between 8,000 and 12,000
+            const fleetScale = 8000 + Math.floor(Math.random() * 4001);
             scaleEl.innerText = fleetScale.toLocaleString();
 
-            // Fluctuate individual agent metrics
-            const adPct = (98.0 + Math.random() * 1.5).toFixed(1);
-            const bitPct = (90.5 + Math.random() * 2.0).toFixed(1);
-            const s1Pct = (96.5 + Math.random() * 1.2).toFixed(1);
+            // Fluctuate individual agent metrics widely
+            const adPct = (70.0 + Math.random() * 30.0).toFixed(1);
+            const bitPct = (60.0 + Math.random() * 40.0).toFixed(1);
+            const s1Pct = (75.0 + Math.random() * 25.0).toFixed(1);
 
-            if (adValEl) adValEl.innerText = `${adPct}% Compliant`;
-            if (adBarEl && adBarEl.style) adBarEl.style.width = `${adPct}%`;
+            if (adValEl) {
+                adValEl.innerText = `${adPct}% Compliant`;
+                adValEl.style.color = getMetricColor(parseFloat(adPct));
+            }
+            if (adBarEl && adBarEl.style) {
+                adBarEl.style.width = `${adPct}%`;
+                adBarEl.style.backgroundColor = getMetricColor(parseFloat(adPct));
+            }
 
-            if (bitlockerValEl) bitlockerValEl.innerText = `${bitPct}% Audited`;
-            if (bitlockerBarEl && bitlockerBarEl.style) bitlockerBarEl.style.width = `${bitPct}%`;
+            if (bitlockerValEl) {
+                bitlockerValEl.innerText = `${bitPct}% Audited`;
+                bitlockerValEl.style.color = getMetricColor(parseFloat(bitPct));
+            }
+            if (bitlockerBarEl && bitlockerBarEl.style) {
+                bitlockerBarEl.style.width = `${bitPct}%`;
+                bitlockerBarEl.style.backgroundColor = getMetricColor(parseFloat(bitPct));
+            }
 
-            if (s1ValEl) s1ValEl.innerText = `${s1Pct}% Active`;
-            if (s1BarEl && s1BarEl.style) s1BarEl.style.width = `${s1Pct}%`;
+            if (s1ValEl) {
+                s1ValEl.innerText = `${s1Pct}% Active`;
+                s1ValEl.style.color = getMetricColor(parseFloat(s1Pct));
+            }
+            if (s1BarEl && s1BarEl.style) {
+                s1BarEl.style.width = `${s1Pct}%`;
+                s1BarEl.style.backgroundColor = getMetricColor(parseFloat(s1Pct));
+            }
 
             // Calculate and display average compliance
             const avgCompliance = ((parseFloat(adPct) + parseFloat(bitPct) + parseFloat(s1Pct)) / 3).toFixed(1);
             if (complianceEl) {
                 complianceEl.innerText = `${avgCompliance}%`;
                 if (complianceEl.style) {
-                    if (avgCompliance >= 95) {
-                        complianceEl.style.color = "var(--status-low)";
-                    } else {
-                        complianceEl.style.color = "var(--status-medium)";
-                    }
+                    complianceEl.style.color = getMetricColor(parseFloat(avgCompliance));
                 }
+            }
+
+            // --- Slide 2 Fluctuations ---
+            if (riskClassEl) {
+                const rVal = Math.random();
+                let riskText = "LOW";
+                let riskColor = "var(--status-low)";
+                if (rVal < 0.25) {
+                    riskText = "CRITICAL";
+                    riskColor = "var(--status-critical)";
+                } else if (rVal < 0.5) {
+                    riskText = "HIGH";
+                    riskColor = "var(--status-high)";
+                } else if (rVal < 0.75) {
+                    riskText = "MEDIUM";
+                    riskColor = "var(--status-medium)";
+                }
+                riskClassEl.innerText = riskText;
+                if (riskClassEl.style) riskClassEl.style.color = riskColor;
+            }
+
+            if (mandatesEl) {
+                const activeMandates = 2 + Math.floor(Math.random() * 5); // 2 to 6
+                mandatesEl.innerText = `${activeMandates} / 6`;
+                if (mandatesEl.style) {
+                    mandatesEl.style.color = activeMandates === 6 ? "var(--text-primary)" : "var(--status-medium)";
+                }
+            }
+
+            const zPct = (55.0 + Math.random() * 45.0).toFixed(1);
+            if (zscalerValEl) {
+                zscalerValEl.innerText = `${zPct}% Encrypted`;
+                zscalerValEl.style.color = getMetricColor(parseFloat(zPct));
+            }
+            if (zscalerBarEl && zscalerBarEl.style) {
+                zscalerBarEl.style.width = `${zPct}%`;
+                zscalerBarEl.style.backgroundColor = getMetricColor(parseFloat(zPct));
+            }
+
+            const nPct = (65.0 + Math.random() * 35.0).toFixed(1);
+            if (nessusValEl) {
+                nessusValEl.innerText = `${nPct}% Inspected`;
+                nessusValEl.style.color = getMetricColor(parseFloat(nPct));
+            }
+            if (nessusBarEl && nessusBarEl.style) {
+                nessusBarEl.style.width = `${nPct}%`;
+                nessusBarEl.style.backgroundColor = getMetricColor(parseFloat(nPct));
+            }
+
+            const sccmPct = (70.0 + Math.random() * 30.0).toFixed(1);
+            if (sccmValEl) {
+                sccmValEl.innerText = `${sccmPct}% Active`;
+                sccmValEl.style.color = getMetricColor(parseFloat(sccmPct));
+            }
+            if (sccmBarEl && sccmBarEl.style) {
+                sccmBarEl.style.width = `${sccmPct}%`;
+                sccmBarEl.style.backgroundColor = getMetricColor(parseFloat(sccmPct));
+            }
+
+            // --- Slide 3 Fluctuations ---
+            if (keysEl) {
+                keysEl.innerText = (10 + Math.floor(Math.random() * 41)).toString(); // 10 to 50
+            }
+
+            if (throughputEl) {
+                const tp = 450 + Math.floor(Math.random() * 3351); // 450 to 3800
+                throughputEl.innerText = `${tp.toLocaleString()} ev/s`;
             }
         }
         setInterval(updateHeroLiveMetrics, 3000);
