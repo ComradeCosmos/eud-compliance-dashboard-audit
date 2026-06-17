@@ -613,9 +613,6 @@
                             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Role:
                                 <strong>Global Security & Compliance Administrator</strong>
                             </p>
-                            <p style="font-size: 0.9rem; color: var(--text-secondary);">Assigned Tenant: <span
-                                    class="badge group-sift" id="profile-tenant-badge"
-                                    style="font-size: 0.75rem;">Empire Corp</span></p>
                         </div>
                     </div>
 
@@ -3098,7 +3095,6 @@
 
             // Update user profile section details dynamically
             document.getElementById("profile-analyst-name").innerText = user;
-            document.getElementById("profile-tenant-badge").innerText = tenant;
 
             // Update role label in Profile view
             const roleLabelEl = document.querySelector("#section-profile p strong");
@@ -3157,7 +3153,6 @@
 
             // Reset profile displays
             document.getElementById("profile-analyst-name").innerText = "-";
-            document.getElementById("profile-tenant-badge").innerText = "-";
 
             logToTerminal(`[Session Closed] Vault lease revoked. Portal lock active.`, "info");
             alert("Vault Lease Revoked: Session successfully disposed. Dashboard is locked.");
