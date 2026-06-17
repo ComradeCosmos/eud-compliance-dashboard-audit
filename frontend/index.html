@@ -1205,52 +1205,184 @@
 
         // CSV Ingestion & Export
         function triggerCsvExport() {
-            logToTerminal(`[Export] Extracting active query records for export...`);
-            let csvLines = [];
+            logToTerminal(`[Export] Opening fleet export column selector...`);
 
-            // Dynamically compile CSV headers from activeTableHeaders
-            const headerLine = activeTableHeaders.map(h => `"${sanitizeCSVCell(h)}"`).join(",");
-            csvLines.push(headerLine);
+            if (filteredDataset.length === 0) {
+                alert("No records to export.");
+                return;
+            }
 
-            filteredDataset.forEach(row => {
-                const lineValues = activeTableKeys.map((key, headerIdx) => {
-                    let val = "";
-                    let isCustom = key.startsWith("custom:");
-                    let isCompliance = key.startsWith("compliance:");
-                    let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
+            // Create modal element
+            const modal = document.createElement("div");
+            modal.id = "fleet-export-column-selector-modal";
+            modal.style = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100000; font-family: var(--font-sans);";
 
-                    if (isCustom) {
-                        val = (row.custom_properties && row.custom_properties[actualKey] !== undefined) ? row.custom_properties[actualKey] : "-";
-                    } else if (isCompliance) {
-                        const swAgent = row.software.find(sw => sw.name === actualKey || sw.key === key);
-                        val = swAgent ? swAgent.installed : "MISSING";
-                    } else {
-                        if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
-                            const swAgent = row.software.find(sw => sw.key === actualKey);
-                            val = swAgent ? swAgent.installed : "MISSING";
-                        } else {
-                            val = row[actualKey] !== undefined ? row[actualKey] : "-";
-                        }
-                    }
-                    return val;
-                });
+            const standardKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
+            const complianceKeys = ["ad", "bitlocker", "zscaler", "nessus", "sentinelone", "sccm"];
 
-                const line = lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",");
-                csvLines.push(line);
+            let coreCheckboxes = '';
+            let complianceCheckboxes = '';
+            let customCheckboxes = '';
+
+            activeTableKeys.forEach((key, idx) => {
+                const header = activeTableHeaders[idx];
+                const isCustom = key.startsWith("custom:") || (!standardKeys.includes(key) && !complianceKeys.includes(key) && !key.startsWith("compliance:"));
+                const isCompliance = key.startsWith("compliance:") || complianceKeys.includes(key);
+                
+                const isStandard = standardKeys.includes(key) && !isCustom && !isCompliance;
+                const isLocked = key === "id" || key === "canonical_name";
+
+                const checkboxHtml = `
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" class="fleet-export-col-checkbox" data-key="${key}" data-header="${header}" checked ${isLocked ? 'disabled' : ''}>
+                        ${header}
+                    </label>
+                `;
+
+                if (isStandard) {
+                    coreCheckboxes += checkboxHtml;
+                } else if (isCompliance) {
+                    complianceCheckboxes += checkboxHtml;
+                } else {
+                    customCheckboxes += checkboxHtml;
+                }
             });
 
-            const csvContent = csvLines.join("\n");
-            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `eud_compliance_export_${Date.now()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            let customSectionHtml = '';
+            if (customCheckboxes) {
+                customSectionHtml = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                            Custom Telemetry Columns
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            ${customCheckboxes}
+                        </div>
+                    </div>
+                `;
+            }
 
-            logToTerminal(`[Export] File successfully compiled. Dispatched ${filteredDataset.length} rows as CSV download stream.`, "info");
+            modal.innerHTML = `
+                <div class="card" style="width: 580px; max-height: 80vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-clean); padding: 2rem; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                            Customize Fleet Export
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">
+                            Select the columns you want to include in the exported reconciled fleet CSV.
+                        </p>
+                    </div>
+
+                    <div style="flex-grow: 1; overflow-y: auto; padding-right: 0.5rem;">
+                        <!-- Core Attributes Section -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                                Core Attributes
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                ${coreCheckboxes}
+                            </div>
+                        </div>
+
+                        <!-- Core Policies Section -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                                Core Security Policies
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                ${complianceCheckboxes}
+                            </div>
+                        </div>
+
+                        <!-- Custom Section -->
+                        ${customSectionHtml}
+                    </div>
+
+                    <!-- Footer Controls -->
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                        <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.6rem 1.2rem;" id="btn-fleet-export-cancel">Cancel</button>
+                        <button class="btn" style="font-size: 0.8rem; padding: 0.6rem 1.2rem;" id="btn-fleet-export-download">Download CSV</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Add event listeners (safely guarded)
+            const cancelBtn = document.getElementById("btn-fleet-export-cancel");
+            if (cancelBtn && cancelBtn.addEventListener) {
+                cancelBtn.addEventListener("click", () => {
+                    document.body.removeChild(modal);
+                });
+            }
+
+            const downloadBtn = document.getElementById("btn-fleet-export-download");
+            if (downloadBtn && downloadBtn.addEventListener) {
+                downloadBtn.addEventListener("click", () => {
+                    // Collect checked checkboxes
+                    const checkboxes = modal.querySelectorAll(".fleet-export-col-checkbox:checked");
+                    const selectedCols = Array.from(checkboxes).map(cb => ({
+                        key: cb.getAttribute("data-key"),
+                        header: cb.getAttribute("data-header")
+                    }));
+
+                    if (selectedCols.length === 0) {
+                        alert("Please select at least one column to export.");
+                        return;
+                    }
+
+                    // Generate CSV content
+                    let csvLines = [];
+                    
+                    // Header row
+                    const headerLine = selectedCols.map(c => `"${sanitizeCSVCell(c.header)}"`).join(",");
+                    csvLines.push(headerLine);
+
+                    // Rows
+                    filteredDataset.forEach(row => {
+                        const lineValues = selectedCols.map(c => {
+                            const key = c.key;
+                            let val = "";
+                            let isCustom = key.startsWith("custom:");
+                            let isCompliance = key.startsWith("compliance:");
+                            let actualKey = (isCustom || isCompliance) ? key.substring(key.indexOf(":") + 1) : key;
+
+                            if (isCustom) {
+                                val = (row.custom_properties && row.custom_properties[actualKey] !== undefined) ? row.custom_properties[actualKey] : "-";
+                            } else if (isCompliance) {
+                                const swAgent = row.software.find(sw => sw.name === actualKey || sw.key === key);
+                                val = swAgent ? swAgent.installed : "MISSING";
+                            } else {
+                                if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
+                                    const swAgent = row.software.find(sw => sw.key === actualKey);
+                                    val = swAgent ? swAgent.installed : "MISSING";
+                                } else {
+                                    val = row[actualKey] !== undefined ? row[actualKey] : "-";
+                                }
+                            }
+                            return val;
+                        });
+
+                        const line = lineValues.map(v => `"${sanitizeCSVCell(v)}"`).join(",");
+                        csvLines.push(line);
+                    });
+
+                    const csvContent = csvLines.join("\n");
+                    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `eud_compliance_export_${Date.now()}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+
+                    // Remove modal
+                    document.body.removeChild(modal);
+                    logToTerminal(`[Export] File successfully compiled. Dispatched ${filteredDataset.length} rows as customized CSV download stream.`, "info");
+                });
+            }
         }
 
         function handleCsvImport(event) {
