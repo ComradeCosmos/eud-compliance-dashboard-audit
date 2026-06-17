@@ -74,6 +74,17 @@ graph TD
 │   ├── style.css              # Custom dark-theme stylesheet
 │   ├── logo.png               # Corporate sidebar branding logo
 │   └── favicon.png            # Browser tab icon
+├── tests/                     # Automated test suite scripts
+│   ├── test-distinct-merge-keys.js
+│   ├── test-interaction.js
+│   ├── test-mismatched-keys-prevention.js
+│   ├── test-rogue-actions.js
+│   ├── test-runtime.js
+│   ├── test-syntax.js
+│   ├── test-telemetry-leakage.js
+│   ├── verify-ad-windows-only.js
+│   ├── verify-details-table.js
+│   └── verify-reporting-policies.js
 ├── host_secure.py             # Secure HTTPS/HTTP Python server (AWS compatible)
 ├── excel_validator.py         # Native XML/zip Excel parser & validation engine
 ├── Dockerfile                 # Docker container config (for AWS App Runner / ECS)
@@ -119,36 +130,36 @@ The server automatically prioritizes the `PORT` environment variable injected by
 
 ## Running Verification Tests
 
-Run the standard automated test suites in the dashboard root directory to verify syntax, security policies, and reconciliation logic:
+Run the standard automated test suites inside the `tests/` directory to verify syntax, security policies, and reconciliation logic:
 
 ```bash
 # Verify JavaScript Syntax in index.html script tags
-node test-syntax.js
+node tests/test-syntax.js
 
 # Verify DOM Runtime Boot
-node test-runtime.js
+node tests/test-runtime.js
 
 # Verify Detailed Interaction & Reconciliation Flows
-node test-interaction.js
+node tests/test-interaction.js
 
 # Verify Telemetry Leakage & Successive Merges
-node test-telemetry-leakage.js
+node tests/test-telemetry-leakage.js
 
 # Verify Multi-Attribute Identity Resolution with Distinct Keys
-node test-distinct-merge-keys.js
+node tests/test-distinct-merge-keys.js
 
 # Verify Custom Telemetry Table rendering
-node verify-details-table.js
+node tests/verify-details-table.js
 
 # Verify Core Reporting Policies Isolation
-node verify-reporting-policies.js
+node tests/verify-reporting-policies.js
 
 # Verify Windows-Only AD Enrollment applicability
-node verify-ad-windows-only.js
+node tests/verify-ad-windows-only.js
 
 # Verify Mismatched Alignment Keys Prevention
-node test-mismatched-keys-prevention.js
+node tests/test-mismatched-keys-prevention.js
 
 # Verify Rogue Assets Management workflows
-node test-rogue-actions.js
+node tests/test-rogue-actions.js
 ```
