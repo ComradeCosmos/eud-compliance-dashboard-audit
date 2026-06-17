@@ -35,20 +35,21 @@
                 style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); color: var(--status-critical); padding: 0.75rem; font-size: 0.85rem; font-weight: 700; text-align: center; border-radius: 4px;">
             </div>
 
-            <div class="input-group" style="margin-bottom: 0.25rem;">
-                <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
-                <input type="text" id="portal-login-user" placeholder="e.g. analyst"
-                    style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
-            </div>
-            <div class="input-group" style="margin-bottom: 0.5rem;">
-                <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
-                <input type="password" id="portal-login-passcode" placeholder="••••••••"
-                    style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
-            </div>
+            <form onsubmit="event.preventDefault(); simulateLogin();" style="margin: 0; padding: 0; display: flex; flex-direction: column; width: 100%;">
+                <div class="input-group" style="margin-bottom: 0.25rem;">
+                    <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
+                    <input type="text" id="portal-login-user" placeholder="e.g. analyst"
+                        style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                </div>
+                <div class="input-group" style="margin-bottom: 0.5rem;">
+                    <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
+                    <input type="password" id="portal-login-passcode" placeholder="••••••••"
+                        style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                </div>
 
-            <button class="btn"
-                style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;"
-                onclick="simulateLogin()">Authenticate Session Lease</button>
+                <button type="submit" class="btn"
+                    style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate Session Lease</button>
+            </form>
 
         </div>
     </div>
