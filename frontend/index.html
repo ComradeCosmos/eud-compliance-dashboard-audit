@@ -35,20 +35,23 @@
                 style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); color: var(--status-critical); padding: 0.75rem; font-size: 0.85rem; font-weight: 700; text-align: center; border-radius: 4px;">
             </div>
 
-            <form onsubmit="event.preventDefault(); simulateLogin();" style="margin: 0; padding: 0; display: flex; flex-direction: column; width: 100%;">
+            <form onsubmit="event.preventDefault(); simulateLogin();"
+                style="margin: 0; padding: 0; display: flex; flex-direction: column; width: 100%;">
                 <div class="input-group" style="margin-bottom: 0.25rem;">
                     <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
                     <input type="text" id="portal-login-user" placeholder="e.g. analyst"
                         style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                 </div>
                 <div class="input-group" style="margin-bottom: 0.5rem;">
-                    <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
+                    <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
+                        PIN</label>
                     <input type="password" id="portal-login-passcode" placeholder="••••••••"
                         style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                 </div>
 
                 <button type="submit" class="btn"
-                    style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate Session Lease</button>
+                    style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate
+                    Session Lease</button>
             </form>
 
         </div>
@@ -108,9 +111,14 @@
             </header>
 
             <!-- Non-blocking import progress indicator -->
-            <div id="import-progress-indicator" style="display: none; position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--bg-card); border: 1px solid var(--border-clean); border-radius: 6px; padding: 0.75rem 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); align-items: center; gap: 0.75rem;">
-                <div style="width: 18px; height: 18px; border: 2px solid var(--color-accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;"></div>
-                <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">Recalculating scores...</span>
+            <div id="import-progress-indicator"
+                style="display: none; position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--bg-card); border: 1px solid var(--border-clean); border-radius: 6px; padding: 0.75rem 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); align-items: center; gap: 0.75rem;">
+                <div
+                    style="width: 18px; height: 18px; border: 2px solid var(--color-accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;">
+                </div>
+                <span
+                    style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">Recalculating
+                    scores...</span>
             </div>
 
             <!-- Section: Scoring & Controls -->
@@ -608,7 +616,7 @@
                         </div>
                         <div>
                             <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);"
-                                id="profile-analyst-name">alkes.s</h3>
+                                id="profile-analyst-name">Cosmos</h3>
                             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Role:
                                 <strong>Global Security & Compliance Administrator</strong>
                             </p>
@@ -955,7 +963,7 @@
         ];
 
         // Corporate User Assigned and Office Locations catalogs
-        const userAssignedCatalog = ["alkes.s", "j.doe", "s.johnson", "a.taylor", "r.jones", "m.smith", "d.brown", "c.miller", "l.davis", "k.wilson"];
+        const userAssignedCatalog = ["Cosmos.s", "j.doe", "s.johnson", "a.taylor", "r.jones", "m.smith", "d.brown", "c.miller", "l.davis", "k.wilson"];
         const officeLocationsCatalog = ["New York HQs", "London Office", "Singapore Hub", "Remote - US", "Munich Lab", "Tokyo branch"];
 
         // Seed generator for highly deterministic, realistic dataset at true corporate scale (exactly 10,029 devices)
@@ -1402,7 +1410,7 @@
                 const mac = macIdx !== -1 ? String(row[macIdx]).trim() : `00:1A:2B:3C:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
                 const manufacturer = mfgIdx !== -1 ? String(row[mfgIdx]).trim() : "Imported Asset";
                 const os = osIdx !== -1 ? String(row[osIdx]).trim() : "Windows 11 Enterprise";
-                                let os_family = osFamilyIdx !== -1 ? String(row[osFamilyIdx]).trim() : "";
+                let os_family = osFamilyIdx !== -1 ? String(row[osFamilyIdx]).trim() : "";
                 if (!os_family) {
                     os_family = (os.toLowerCase().includes("mac") ? "macOS" : (os.toLowerCase().includes("linux") || os.toLowerCase().includes("ubuntu") ? "Linux" : "Windows"));
                 } else {
@@ -1433,7 +1441,7 @@
                 function getAgentStatus(idx, agentName) {
                     if (idx === -1) return { installed: "MISSING (AGENT UNREPORTED)", status: "NON_COMPLIANT" };
                     const val = String(row[idx]).trim();
-                    
+
                     if (agentName.toLowerCase().includes("ad") || agentName.toLowerCase().includes("active directory")) {
                         const lowerVal = val.toLowerCase();
                         const nonCompliantAD = ["workgroup", "none", "no", "failed", "false", "0", "not enrolled", "not_enrolled", "unenrolled", "missing", "-", "not joined", "not_joined", "non-joined", "unjoined", "not domain joined", "not domain-joined", "unassociated", "notregistered", "not registered"];
@@ -4046,9 +4054,9 @@
         }
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
-        
+
         // reconcilerSheets and reconciliationResults are declared globally at the top of the script block to prevent TDZ ReferenceErrors on page reload
-        reconcilerSheets = []; 
+        reconcilerSheets = [];
         reconciliationResults = {
             matches: [],
             gaps: [],
@@ -4063,12 +4071,12 @@
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
-            
+
             const candidates = [];
             lowerHeaders.forEach((h, idx) => {
                 let score = 0;
                 let type = "";
-                
+
                 if (nameKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
                     score = 3;
                     type = "name";
@@ -4079,7 +4087,7 @@
                     score = 1;
                     type = "mac";
                 }
-                
+
                 if (score > 0) {
                     // Calculate uniqueness
                     const vals = rows.slice(1).map(r => {
@@ -4088,7 +4096,7 @@
                     }).filter(v => v !== "" && v !== "-" && v !== "disabled" && v !== "unknown" && v !== "not available" && v !== "to be filled by o.e.m.");
                     const uniqueVals = new Set(vals);
                     const uniqueness = vals.length > 0 ? uniqueVals.size / vals.length : 0;
-                    
+
                     candidates.push({
                         idx,
                         score,
@@ -4096,7 +4104,7 @@
                     });
                 }
             });
-            
+
             const validCandidates = candidates.filter(c => c.uniqueness > 0.1);
             if (validCandidates.length > 0) {
                 validCandidates.sort((a, b) => {
@@ -4185,7 +4193,7 @@
             if (sheet.role === "primary") return null; // Primary is the directory baseline, not an agent telemetry sheet
             const fn = sheet.filename.toLowerCase();
             const words = fn.split(/[^a-z0-9]+/);
-            
+
             // Check filename matches first
             if (fn.includes("sentinel") || fn.includes("sentiel") || fn.includes("s1") || fn.includes("edr") || fn.includes("antivirus")) {
                 return "sentinelone";
@@ -4202,14 +4210,14 @@
             if (fn.includes("sccm") || fn.includes("mecm") || fn.includes("patch") || fn.includes("management")) {
                 return "sccm";
             }
-            
+
             // "ad" is too short for simple includes, use word list
             if (words.includes("ad") || words.includes("adcomputers") || fn.includes("adcomputers") || fn.includes("ad_computers") || fn.includes("ad-computers") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
                 if (sheet.role !== "primary") {
                     return "ad";
                 }
             }
-            
+
             // If filename doesn't match any key, fall back to matching headers
             const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
             for (const k of swKeys) {
@@ -4218,7 +4226,7 @@
                     return k;
                 }
             }
-            
+
             return null; // unknown classification
         }
 
@@ -4338,7 +4346,7 @@
                     const aIsSec = a.sheetRole === "Secondary" ? 1 : 0;
                     const bIsSec = b.sheetRole === "Secondary" ? 1 : 0;
                     if (aIsSec !== bIsSec) return bIsSec - aIsSec;
-                    
+
                     const aProp = a.property.toLowerCase();
                     const bProp = b.property.toLowerCase();
                     const aIsVer = (aProp.includes("version") || aProp.includes("connector") || aProp.includes("client")) ? 1 : 0;
@@ -4353,7 +4361,7 @@
                         continue;
                     }
                     const propName = p.property.toLowerCase().trim();
-                    
+
                     // Decouple SentinelOne/others from AD enrollment
                     if (swKey !== "ad") {
                         const words = propName.split(/[^a-z0-9]+/);
@@ -4436,7 +4444,7 @@
             }
             const rawLines = text.split(/\r?\n/);
             const lines = [];
-            
+
             let sep = ",";
             const firstLine = rawLines[0] || "";
             let commaCount = (firstLine.match(/,/g) || []).length;
@@ -4449,15 +4457,15 @@
             for (let lineText of rawLines) {
                 lineText = lineText.trim();
                 if (!lineText) continue;
-                
+
                 const row = [];
                 let currentField = "";
                 let inQuotes = false;
-                
+
                 for (let i = 0; i < lineText.length; i++) {
                     const c = lineText[i];
                     const next = lineText[i + 1];
-                    
+
                     if (c === '"') {
                         if (inQuotes && next === '"') {
                             currentField += '"';
@@ -4486,7 +4494,7 @@
 
             Array.from(files).forEach(file => {
                 logToTerminal(`[Reconciler] Upload request received for source file: "${file.name}"`);
-                
+
                 const isExcel = file.name.toLowerCase().endsWith(".xlsx") || file.name.toLowerCase().endsWith(".xls");
 
                 if (usePython) {
@@ -4503,45 +4511,45 @@
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ filename: file.name, content: base64 })
                             })
-                            .then(res => res.json())
-                            .then(data => {
-                                if (data.success) {
-                                    logToTerminal(`[Reconciler] Python validation completed for "${file.name}"`, "info");
-                                    if (data.validation_report && data.validation_report.warnings.length > 0) {
-                                        data.validation_report.warnings.forEach(warn => {
-                                            logToTerminal(`[Reconciler Validation Warning] ${warn}`, "warn");
-                                        });
-                                    }
-                                    if (data.validation_report && data.validation_report.errors.length > 0) {
-                                        data.validation_report.errors.forEach(err => {
-                                            logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
-                                        });
-                                    }
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        logToTerminal(`[Reconciler] Python validation completed for "${file.name}"`, "info");
+                                        if (data.validation_report && data.validation_report.warnings.length > 0) {
+                                            data.validation_report.warnings.forEach(warn => {
+                                                logToTerminal(`[Reconciler Validation Warning] ${warn}`, "warn");
+                                            });
+                                        }
+                                        if (data.validation_report && data.validation_report.errors.length > 0) {
+                                            data.validation_report.errors.forEach(err => {
+                                                logToTerminal(`[Reconciler Validation Error] ${err}`, "error");
+                                            });
+                                        }
 
-                                    const headers = data.headers;
-                                    let keyIdx = autoDetectKeyIdx(headers, data.rows);
+                                        const headers = data.headers;
+                                        let keyIdx = autoDetectKeyIdx(headers, data.rows);
 
-                                    const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
-                                    const sheetObj = {
-                                        id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
-                                        filename: data.filename,
-                                        rows: data.rows.slice(1),
-                                        headers: data.headers,
-                                        keyIdx: keyIdx,
-                                        role: role
-                                    };
-                                    reconcilerSheets.push(sheetObj);
-                                    logToTerminal(`[Reconciler] Loaded ${data.rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
-                                    renderReconcilerQueue();
-                                } else {
-                                    logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
-                                    alert(`❌ Python Validation Failed: ${data.message}`);
-                                }
-                            })
-                            .catch(err => {
-                                logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
-                                runFallbackReconcilerParse(file, isExcel);
-                            });
+                                        const role = reconcilerSheets.length === 0 ? "primary" : "secondary";
+                                        const sheetObj = {
+                                            id: `sheet-${Math.random().toString(36).substring(2, 8)}`,
+                                            filename: data.filename,
+                                            rows: data.rows.slice(1),
+                                            headers: data.headers,
+                                            keyIdx: keyIdx,
+                                            role: role
+                                        };
+                                        reconcilerSheets.push(sheetObj);
+                                        logToTerminal(`[Reconciler] Loaded ${data.rows.length - 1} rows from "${file.name}". Auto-detected match key: "${headers[keyIdx]}"`, "info");
+                                        renderReconcilerQueue();
+                                    } else {
+                                        logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
+                                        alert(`❌ Python Validation Failed: ${data.message}`);
+                                    }
+                                })
+                                .catch(err => {
+                                    logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to client-side parsing.`, "warn");
+                                    runFallbackReconcilerParse(file, isExcel);
+                                });
                         } catch (err) {
                             logToTerminal(`[Reconciler] Error preparing backend upload: ${err.message}. Falling back to client-side parsing.`, "warn");
                             runFallbackReconcilerParse(file, isExcel);
@@ -4700,7 +4708,7 @@
         function updateSheetRole(id, role) {
             const sheet = reconcilerSheets.find(s => s.id === id);
             if (!sheet) return;
-            
+
             if (role === "primary") {
                 reconcilerSheets.forEach(s => {
                     if (s.id !== id && s.role === "primary") {
@@ -4708,7 +4716,7 @@
                     }
                 });
             }
-            
+
             sheet.role = role;
             logToTerminal(`[Reconciler] Role for "${sheet.filename}" updated to ${role.toUpperCase()}`);
             renderReconcilerQueue();
@@ -4727,11 +4735,11 @@
             if (!sheet) return;
             reconcilerSheets = reconcilerSheets.filter(s => s.id !== id);
             logToTerminal(`[Reconciler] File "${sheet.filename}" removed from queue.`);
-            
+
             if (reconcilerSheets.length > 0 && !reconcilerSheets.some(s => s.role === "primary")) {
                 reconcilerSheets[0].role = "primary";
             }
-            
+
             renderReconcilerQueue();
         }
 
@@ -4753,21 +4761,21 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sheets: reconcilerSheets })
                 })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        reconciliationResults = data.results;
-                        logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
-                        renderReconciliationUI();
-                    } else {
-                        logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
-                        alert(`❌ Reconciliation Failed: ${data.message}`);
-                    }
-                })
-                .catch(err => {
-                    logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to local alignment.`, "warn");
-                    runLocalReconciliation();
-                });
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            reconciliationResults = data.results;
+                            logToTerminal(`[Reconciler] Python alignment complete. Matches: ${reconciliationResults.matches.length}, Gaps: ${reconciliationResults.gaps.length}, Rogues: ${reconciliationResults.rogues.length}`, "info");
+                            renderReconciliationUI();
+                        } else {
+                            logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
+                            alert(`❌ Reconciliation Failed: ${data.message}`);
+                        }
+                    })
+                    .catch(err => {
+                        logToTerminal(`[Reconciler] Python backend connection error: ${err.message}. Falling back to local alignment.`, "warn");
+                        runLocalReconciliation();
+                    });
             } else {
                 runLocalReconciliation();
             }
@@ -4776,7 +4784,7 @@
         function getColIndices(headers, filename) {
             const hLow = headers.map(h => String(h).toLowerCase().trim());
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
-            
+
             let isZscaler = false;
             if (filename) {
                 const fnLow = String(filename).toLowerCase();
@@ -4784,7 +4792,7 @@
                     isZscaler = true;
                 }
             }
-            
+
             const serialKeywords = isZscaler
                 ? ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"]
                 : ["serialnumber", "serial", "s/n", "sn", "uuid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"];
@@ -4893,7 +4901,7 @@
 
             const primaryHeaders = primarySheet.headers;
             const primaryKeyIdx = primarySheet.keyIdx;
-            
+
             const primIndices = getColIndices(primaryHeaders, primarySheet.filename);
             const primMeta = {
                 key_idx: primaryKeyIdx,
@@ -4905,13 +4913,13 @@
             const secSheetsProcessed = secondarySheets.map(sheet => {
                 const secIndices = getColIndices(sheet.headers, sheet.filename);
                 const validRows = sheet.rows.filter(r => r && !r.every(cell => String(cell).trim() === ""));
-                
+
                 // Pre-build index maps for fast O(1) lookups
                 const keyMap = new Map();
                 const nameMap = new Map();
                 const serialMap = new Map();
                 const macMap = new Map();
-                
+
                 validRows.forEach((sRow, rIdx) => {
                     // 1. Key Value
                     const secKeyVal = normalizeValue(sRow[sheet.keyIdx]);
@@ -4919,7 +4927,7 @@
                         if (!keyMap.has(secKeyVal)) keyMap.set(secKeyVal, []);
                         keyMap.get(secKeyVal).push(rIdx);
                     }
-                    
+
                     // 2. Name values
                     if (secIndices.nameIndices) {
                         secIndices.nameIndices.forEach(sIdx => {
@@ -4932,7 +4940,7 @@
                             }
                         });
                     }
-                    
+
                     // 3. Serial values
                     if (secIndices.serialIndices) {
                         secIndices.serialIndices.forEach(sIdx => {
@@ -4945,7 +4953,7 @@
                             }
                         });
                     }
-                    
+
                     // 4. MAC values
                     if (secIndices.macIndices) {
                         secIndices.macIndices.forEach(sIdx => {
@@ -5007,9 +5015,9 @@
                 secSheetsProcessed.forEach(sec => {
                     let matchedRow = null;
                     let matchedRIdx = -1;
-                    
+
                     // Try to find match via O(1) lookups
-                    
+
                     // 1. Check key match
                     const primKeyVal = normalizeValue(pRow[primaryKeyIdx]);
                     if (primKeyVal && sec.keyMap.has(primKeyVal)) {
@@ -5018,7 +5026,7 @@
                             matchedRIdx = candidates[0];
                         }
                     }
-                    
+
                     // 2. Check name match
                     if (matchedRIdx === -1 && primMeta.name_indices) {
                         for (let pIdx of primMeta.name_indices) {
@@ -5034,7 +5042,7 @@
                             }
                         }
                     }
-                    
+
                     // 3. Check serial match
                     if (matchedRIdx === -1 && primMeta.serial_indices) {
                         for (let pIdx of primMeta.serial_indices) {
@@ -5050,7 +5058,7 @@
                             }
                         }
                     }
-                    
+
                     // 4. Check MAC match
                     if (matchedRIdx === -1 && primMeta.mac_indices) {
                         for (let pIdx of primMeta.mac_indices) {
@@ -5070,7 +5078,7 @@
                             if (matchedRIdx !== -1) break;
                         }
                     }
-                    
+
                     if (matchedRIdx !== -1) {
                         matchedRow = sec.rows[matchedRIdx];
                         sec.matchedIndices.add(matchedRIdx);
@@ -5173,7 +5181,7 @@
             const matchRate = totalPrimary > 0 ? (matches.length / totalPrimary) * 100 : 0;
 
             document.getElementById("recon-stat-matches").innerHTML = matches.length.toLocaleString();
-            
+
             const matchesWidget = document.getElementById("recon-stat-matches").parentElement;
             let subtext = matchesWidget.querySelector("p");
             if (subtext) {
@@ -5182,7 +5190,7 @@
 
             document.getElementById("recon-stat-gaps").innerText = gaps.length.toLocaleString();
             document.getElementById("recon-stat-rogues").innerText = rogues.length.toLocaleString();
-            
+
             const matchRateEl = document.getElementById("recon-stat-match-rate");
             matchRateEl.innerText = `${matchRate.toFixed(1)}%`;
             matchRateEl.style.color = matchRate === 100 ? "var(--status-low)" : (matchRate >= 85 ? "var(--status-medium)" : "var(--status-critical)");
@@ -5199,7 +5207,7 @@
             const roguesInFleet = fleetDataset.filter(d => d.custom_properties && d.custom_properties["Reconciliation Match"] === "ROGUE_UNMANAGED").length;
 
             const hasMergedData = (matchesInFleet > 0 || gapsInFleet > 0 || roguesInFleet > 0);
-            
+
             if (hasMergedData) {
                 logToTerminal(`[Audit Reconciler] Verification: Matches=${matches.length} (Fleet: ${matchesInFleet}), Gaps=${gaps.length} (Fleet: ${gapsInFleet}), Rogues=${rogues.length} (Fleet: ${roguesInFleet}).`, "info");
                 if (matches.length === matchesInFleet && gaps.length === gapsInFleet && rogues.length === roguesInFleet) {
@@ -5255,7 +5263,7 @@
                         const tr = document.createElement("tr");
                         const missingBadges = item.missingInSheets.map(s => `<span class="badge risk-critical" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Missing in: ${escapeHTML(s)}</span>`).join("");
                         const primaryDetails = primaryHeaders.map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(item.primaryRow[idx] || "-")}`).join(" | ");
-                        
+
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-critical);">${item.name.toUpperCase()}</strong></td>
@@ -5275,12 +5283,12 @@
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
                         const detectedBadges = item.sheets.map(s => `<span class="badge risk-medium" style="font-size:0.65rem; padding: 0.15rem 0.4rem; display: inline-block; margin: 0.1rem 0.2rem 0.1rem 0;">Source: ${escapeHTML(s.filename)}</span>`).join("");
-                        
+
                         const detailsHtml = item.sheets.map(s => {
                             const details = s.headers.slice(0, 4).map((h, idx) => `<strong>${escapeHTML(h)}:</strong> ${escapeHTML(s.row[idx] || "-")}`).join(" | ");
                             return `<div style="margin-bottom: 0.25rem; font-size: 0.72rem; color: var(--text-secondary);"><strong style="color:var(--text-primary);">${escapeHTML(s.filename)}:</strong> ${details}</div>`;
                         }).join("");
-                        
+
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-medium);">${item.name.toUpperCase()}</strong> <span class="badge risk-medium" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">UNMANAGED</span></td>
@@ -5299,7 +5307,7 @@
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
-                        
+
                         const propertiesHtml = item.mergedProperties.map(p => {
                             const sourceLabel = p.source.length > 20 ? p.source.substring(0, 17) + "..." : p.source;
                             return `
@@ -5804,7 +5812,7 @@
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "udid", "externalid", "external device id", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
-            
+
             if (nameKeywords.some(kw => kw.length <= 3 ? h.split(/[^a-z0-9]+/).includes(kw) : h.includes(kw))) {
                 return "name";
             }
@@ -5832,7 +5840,7 @@
             if (primarySheet) {
                 const primaryKeyHeader = primarySheet.headers[primarySheet.keyIdx];
                 const primaryKeyClass = getHeaderClassification(primaryKeyHeader);
-                
+
                 const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
                 for (const sec of secondarySheets) {
                     const secKeyHeader = sec.headers[sec.keyIdx];
@@ -5891,7 +5899,7 @@
                                 return false;
                             }
                             const propName = p.property.toLowerCase().trim();
-                            
+
                             // Decouple SentinelOne/others from AD enrollment
                             if (sw.key !== "ad") {
                                 const words = propName.split(/[^a-z0-9]+/);
@@ -5899,7 +5907,7 @@
                                     return false;
                                 }
                             }
-                            
+
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
                                 bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
@@ -6133,42 +6141,207 @@
             alert(successMsg);
         }
 
-        function exportReconciliationReport() {
-            logToTerminal("[Reconciler] Generating detailed CSV export of cross-sheet anomalies report...");
-            
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += `"Recon Device ID","Hostname","Audit Status","Details / Properties"\n`;
+        function getColumnValue(item, columnName, sheetRole, filename) {
+            if (columnName === 'Device ID') return item.id || '';
+            if (columnName === 'Hostname') return item.name || '';
+            if (columnName === 'Audit Status') return item.status || '';
 
-            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
-            if (!primarySheet) return;
+            // Check primary/directory sheet if role matches
+            if (sheetRole === 'primary') {
+                const primarySheet = reconcilerSheets.find(s => s.role === 'primary');
+                if (primarySheet && item.primaryRow) {
+                    const idx = primarySheet.headers.indexOf(columnName);
+                    if (idx !== -1) return item.primaryRow[idx] || '';
+                }
+                return '';
+            }
 
-            reconciliationResults.gaps.forEach(item => {
-                const details = item.mergedProperties.map(p => `[${p.source}] ${p.property}:${p.value}`).join(" | ").replace(/"/g, '""');
-                csvContent += `"${item.id}","${item.name}","COVERAGE_GAP","${details} | Missing: ${item.missingInSheets.join('; ')}"\n`;
-            });
+            // Check mergedProperties first
+            if (item.mergedProperties) {
+                const prop = item.mergedProperties.find(p => p.property === columnName && p.source === filename);
+                if (prop) return prop.value || '';
+            }
 
-            reconciliationResults.rogues.forEach(item => {
-                const details = item.sheets.map(s => `${s.filename}: [${s.headers.slice(0,4).map((h, idx) => `${h}:${s.row[idx] || "-"}`).join(', ')}]`).join(" | ").replace(/"/g, '""');
-                csvContent += `"${item.id}","${item.name}","ROGUE_UNMANAGED","${details}"\n`;
-            });
+            // For raw rogues, check their sheets array
+            if (item.sheets) {
+                const sheetRec = item.sheets.find(s => s.filename === filename);
+                if (sheetRec) {
+                    const idx = sheetRec.headers.indexOf(columnName);
+                    if (idx !== -1) return sheetRec.row[idx] || '';
+                }
+            }
 
-            reconciliationResults.matches.forEach(item => {
-                const details = item.mergedProperties.map(p => `[${p.source}] ${p.property}:${p.value}`).join(" | ").replace(/"/g, '""');
-                csvContent += `"${item.id}","${item.name}","ALIGNED_MATCH","${details}"\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `fleet_reconciliation_report_${Date.now()}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            logToTerminal("[Reconciler] Export successful. Dispatched report download stream.", "info");
+            return '';
         }
 
-</script>
+        function exportReconciliationReport() {
+            logToTerminal("[Reconciler] Opening custom CSV column selector export config...");
+
+            // Gather all unique headers grouped by sheet/file
+            const primarySheet = reconcilerSheets.find(s => s.role === "primary");
+            const secondarySheets = reconcilerSheets.filter(s => s.role === "secondary");
+
+            if (!primarySheet && secondarySheets.length === 0) {
+                alert("No sheets loaded for reconciliation. Please upload files first.");
+                return;
+            }
+
+            // Create modal element
+            const modal = document.createElement("div");
+            modal.id = "export-column-selector-modal";
+            modal.style = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100000; font-family: var(--font-sans);";
+
+            let primaryCheckboxes = '';
+            if (primarySheet) {
+                primaryCheckboxes = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                            Primary Directory (${primarySheet.filename})
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            ${primarySheet.headers.map(h => `
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                                    <input type="checkbox" class="export-col-checkbox" data-role="primary" data-filename="${primarySheet.filename}" data-header="${h}" checked>
+                                    ${h}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            let secondaryCheckboxes = '';
+            secondarySheets.forEach(sheet => {
+                secondaryCheckboxes += `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                            Secondary Telemetry (${sheet.filename})
+                        </h4>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            ${sheet.headers.map(h => `
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                                    <input type="checkbox" class="export-col-checkbox" data-role="secondary" data-filename="${sheet.filename}" data-header="${h}" checked>
+                                    ${h}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            modal.innerHTML = `
+                <div class="card" style="width: 580px; max-height: 80vh; overflow-y: auto; background: var(--bg-card); border: 1px solid var(--border-clean); padding: 2rem; border-radius: 4px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">
+                            Customize Reconciliation Export
+                        </h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary);">
+                            Select the columns you want to include in the generated CSV report.
+                        </p>
+                    </div>
+
+                    <div style="flex-grow: 1; overflow-y: auto; padding-right: 0.5rem;">
+                        <!-- Standard Columns Section -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
+                                Standard Attributes
+                            </h4>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                                    <input type="checkbox" class="export-col-checkbox" data-role="standard" data-header="Device ID" checked disabled>
+                                    Device ID
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                                    <input type="checkbox" class="export-col-checkbox" data-role="standard" data-header="Hostname" checked disabled>
+                                    Hostname
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); cursor: pointer;">
+                                    <input type="checkbox" class="export-col-checkbox" data-role="standard" data-header="Audit Status" checked>
+                                    Audit Status
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Primary Columns Section -->
+                        ${primaryCheckboxes}
+
+                        <!-- Secondary Columns Section -->
+                        ${secondaryCheckboxes}
+                    </div>
+
+                    <!-- Footer Controls -->
+                    <div style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                        <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.6rem 1.2rem;" id="btn-export-cancel">Cancel</button>
+                        <button class="btn" style="font-size: 0.8rem; padding: 0.6rem 1.2rem;" id="btn-export-download">Download CSV</button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Add event listeners (safely guarded)
+            const cancelBtn = document.getElementById("btn-export-cancel");
+            if (cancelBtn && cancelBtn.addEventListener) {
+                cancelBtn.addEventListener("click", () => {
+                    document.body.removeChild(modal);
+                });
+            }
+
+            const downloadBtn = document.getElementById("btn-export-download");
+            if (downloadBtn && downloadBtn.addEventListener) {
+                downloadBtn.addEventListener("click", () => {
+                    // Collect checked checkboxes
+                    const checkboxes = modal.querySelectorAll(".export-col-checkbox:checked");
+                    const selectedCols = Array.from(checkboxes).map(cb => ({
+                        role: cb.getAttribute("data-role"),
+                        filename: cb.getAttribute("data-filename"),
+                        header: cb.getAttribute("data-header")
+                    }));
+
+                    if (selectedCols.length === 0) {
+                        alert("Please select at least one column to export.");
+                        return;
+                    }
+
+                    // Generate CSV content
+                    let csvContent = "data:text/csv;charset=utf-8,";
+                    
+                    // Header row
+                    const headerRowStr = selectedCols.map(c => `"${c.header.replace(/"/g, '""')}"`).join(",");
+                    csvContent += headerRowStr + "\n";
+
+                    // Rows
+                    const allItems = [
+                        ...reconciliationResults.gaps,
+                        ...reconciliationResults.rogues,
+                        ...reconciliationResults.matches
+                    ];
+
+                    allItems.forEach(item => {
+                        const rowValues = selectedCols.map(c => {
+                            const rawVal = getColumnValue(item, c.header, c.role, c.filename);
+                            return `"${String(rawVal).replace(/"/g, '""')}"`;
+                        });
+                        csvContent += rowValues.join(",") + "\n";
+                    });
+
+                    // Trigger download
+                    const encodedUri = encodeURI(csvContent);
+                    const link = document.createElement("a");
+                    link.setAttribute("href", encodedUri);
+                    link.setAttribute("download", `fleet_reconciliation_report_${Date.now()}.csv`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    // Remove modal
+                    document.body.removeChild(modal);
+                    logToTerminal("[Reconciler] Customized CSV export complete.", "info");
+                });
+            }
+        }
+
+    </script>
 </body>
 
 </html>
