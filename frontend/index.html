@@ -771,7 +771,7 @@
                 <div>
                     <h1 id="main-section-title">Executive Overview</h1>
                     <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;"
-                        id="dashboard-date">Fleet Telemetry Report</p>
+                        id="dashboard-date">Fleet Compliance Ledger</p>
                 </div>
 
             </header>
@@ -1168,7 +1168,7 @@
                 <div class="card" style="margin-top: 1.5rem;">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
-                        <h2>Active Assests</h2>
+                        <h2>Fleet Compliance Ledger</h2>
 
                         <!-- Import / Export / Clear Controls -->
                         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
@@ -7895,30 +7895,86 @@
                 }
             });
 
-            // Dynamically expand table headers with newly merged custom Excel property columns
-            const mergedKeys = new Set();
-            fleetDataset.forEach(dev => {
-                if (dev.custom_properties) {
-                    for (let key in dev.custom_properties) {
-                        if (key.startsWith('[') && key.includes('] ')) {
-                            mergedKeys.add(key);
+            if (primarySheet) {
+                const headers = primarySheet.headers;
+                const lowerHeaders = headers.map(h => String(h).toLowerCase().trim());
+
+                function findColIdx(keywords) {
+                    for (let kw of keywords) {
+                        for (let idx = 0; idx < headers.length; idx++) {
+                            const h = lowerHeaders[idx];
+                            if (kw.length <= 3) {
+                                const words = h.split(/[^a-z0-9]+/);
+                                if (words.includes(kw)) return idx;
+                            } else {
+                                if (h.includes(kw)) return idx;
+                            }
                         }
                     }
+                    return -1;
                 }
-            });
 
-            mergedKeys.forEach(k => {
-                const customKey = `custom:${k}`;
-                if (!activeTableKeys.includes(customKey)) {
-                    // Extract clean name and source file for header label
-                    const cleanName = k.replace(/^[.*?]s*/, '');
-                    const sourceName = k.match(/^[(.*?)]/) ? k.match(/^[(.*?)]/)[1] : 'Excel';
-                    const headerLabel = `${cleanName} (${sourceName})`;
+                const nameIdx = findColIdx(["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]);
+                const idIdx = findColIdx(["deviceid", "device id", "id", "assetid", "asset id", "uuid"]);
+                const serialIdx = findColIdx(["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"]);
+                const macIdx = findColIdx(["macaddress", "mac", "physical", "ethernet", "hardware"]);
+                const mfgIdx = findColIdx(["manufacturer", "mfg", "make", "brand"]);
+                const osIdx = findColIdx(["os", "operating system", "osversion", "os version", "platform"]);
+                const osFamilyIdx = findColIdx(["osfamily", "os family"]);
+                const userIdx = findColIdx(["assigneduser", "user", "username", "owner", "assigned"]);
+                const loginIdx = findColIdx(["lastlogin", "login", "active", "date", "time"]);
+                const locIdx = findColIdx(["location", "site", "office", "building"]);
+                const locGrpIdx = findColIdx(["locationgroup", "locgroup", "group"]);
+                const condIdx = findColIdx(["condition", "status", "state"]);
 
-                    activeTableHeaders.push(headerLabel);
-                    activeTableKeys.push(customKey);
-                }
-            });
+                const adIdx = findColIdx(["active directory", "ad", "active_directory", "domain"]);
+                const bitlockerIdx = findColIdx(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
+                const zscalerIdx = findColIdx(["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"]);
+                const nessusIdx = findColIdx(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
+                const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
+                const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
+
+                const fieldIndexMap = [
+                    { idx: idIdx,       key: "id",             label: null },
+                    { idx: nameIdx,     key: "canonical_name", label: null },
+                    { idx: serialIdx,   key: "serial",         label: null },
+                    { idx: macIdx,      key: "mac",            label: null },
+                    { idx: mfgIdx,      key: "manufacturer",   label: null },
+                    { idx: osIdx,       key: "os",             label: null },
+                    { idx: osFamilyIdx, key: "os_family",      label: null },
+                    { idx: userIdx,     key: "user_assigned",  label: null },
+                    { idx: loginIdx,    key: "last_login",     label: null },
+                    { idx: locIdx,      key: "location",       label: null },
+                    { idx: locGrpIdx,   key: "location_group", label: null },
+                    { idx: condIdx,     key: "condition",      label: null },
+                    { idx: adIdx,       key: "compliance:Active Directory",  label: null },
+                    { idx: bitlockerIdx,key: "compliance:BitLocker",         label: null },
+                    { idx: zscalerIdx,  key: "compliance:Zscaler",          label: null },
+                    { idx: nessusIdx,   key: "compliance:Nessus",           label: null },
+                    { idx: s1Idx,       key: "compliance:SentinelOne",       label: null },
+                    { idx: sccmIdx,     key: "compliance:SCCM",             label: null },
+                ];
+                const colIndexToKey = {};
+                fieldIndexMap.forEach(({ idx, key }) => {
+                    if (idx !== -1) colIndexToKey[idx] = key;
+                });
+
+                const newHeaders = [];
+                const newKeys = [];
+                headers.forEach((h, idx) => {
+                    const mappedKey = colIndexToKey[idx];
+                    if (mappedKey) {
+                        newHeaders.push(h);
+                        newKeys.push(mappedKey);
+                    } else {
+                        // Non-standard column → show as custom property
+                        newHeaders.push(h);
+                        newKeys.push(`custom:${h}`);
+                    }
+                });
+                activeTableHeaders = newHeaders;
+                activeTableKeys = newKeys;
+            }
 
             recalculateAllScores();
             renderReconciliationUI();
