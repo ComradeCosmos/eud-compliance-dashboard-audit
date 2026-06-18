@@ -2477,25 +2477,49 @@
             filteredDataset = [...fleetDataset];
             selectedDevice = null;
 
-            activeTableHeaders = ["Device ID", "Name", "User", "Last Login", "Location", "Group", "Condition"];
-            activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
-
-            const importedKeys = new Set();
-            fleetDataset.forEach(dev => {
-                if (dev.custom_properties) {
-                    for (let key in dev.custom_properties) {
-                        importedKeys.add(key);
-                    }
-                }
+            // Build table headers directly from the primary sheet columns (in original order).
+            // Each sheet column is mapped to the underlying device field key, or custom:{header}
+            // for anything that doesn't have a direct mapping.
+            const fieldIndexMap = [
+                { idx: idIdx,       key: "id",             label: null },
+                { idx: nameIdx,     key: "canonical_name", label: null },
+                { idx: serialIdx,   key: "serial",         label: null },
+                { idx: macIdx,      key: "mac",            label: null },
+                { idx: mfgIdx,      key: "manufacturer",   label: null },
+                { idx: osIdx,       key: "os",             label: null },
+                { idx: osFamilyIdx, key: "os_family",      label: null },
+                { idx: userIdx,     key: "user_assigned",  label: null },
+                { idx: loginIdx,    key: "last_login",     label: null },
+                { idx: locIdx,      key: "location",       label: null },
+                { idx: locGrpIdx,   key: "location_group", label: null },
+                { idx: condIdx,     key: "condition",      label: null },
+                { idx: adIdx,       key: "compliance:Active Directory",  label: null },
+                { idx: bitlockerIdx,key: "compliance:BitLocker",         label: null },
+                { idx: zscalerIdx,  key: "compliance:Zscaler",          label: null },
+                { idx: nessusIdx,   key: "compliance:Nessus",           label: null },
+                { idx: s1Idx,       key: "compliance:SentinelOne",       label: null },
+                { idx: sccmIdx,     key: "compliance:SCCM",             label: null },
+            ];
+            const colIndexToKey = {};
+            fieldIndexMap.forEach(({ idx, key }) => {
+                if (idx !== -1) colIndexToKey[idx] = key;
             });
 
-            importedKeys.forEach(k => {
-                const customKey = `custom:${k}`;
-                if (!activeTableKeys.includes(customKey)) {
-                    activeTableHeaders.push(k);
-                    activeTableKeys.push(customKey);
+            const newHeaders = [];
+            const newKeys = [];
+            headers.forEach((h, idx) => {
+                const mappedKey = colIndexToKey[idx];
+                if (mappedKey) {
+                    newHeaders.push(h);
+                    newKeys.push(mappedKey);
+                } else {
+                    // Non-standard column → show as custom property
+                    newHeaders.push(h);
+                    newKeys.push(`custom:${h}`);
                 }
             });
+            activeTableHeaders = newHeaders;
+            activeTableKeys = newKeys;
 
             currentPage = 1;
             // Switch to the compliance view immediately so user sees the table
@@ -3026,7 +3050,7 @@
                         if (isCustom) {
                             val = (dev.custom_properties && dev.custom_properties[actualKey] !== undefined) ? dev.custom_properties[actualKey] : "-";
                         } else if (isCompliance) {
-                            const swAgent = dev.software.find(sw => sw.name === actualKey || sw.key === key);
+                            const swAgent = dev.software && dev.software.find(sw => sw.name === actualKey);
                             val = swAgent ? swAgent.installed : "MISSING";
                         } else {
                             if (actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
@@ -3059,10 +3083,10 @@
                             rowHtml += `<td><span class="badge ${getConditionBadgeClass(val)}">${escapeHTML(String(val).replace("_", " "))}</span></td>`;
                         } else if (actualKey === "location_group") {
                             rowHtml += `<td><span class="badge ${val === 'Sift' ? 'group-sift' : 'group-non-sift'}">${escapeHTML(String(val))}</span></td>`;
-                        } else if (isCompliance || actualKey === "ad" || actualKey === "bitlocker" || actualKey === "zscaler" || actualKey === "nessus" || actualKey === "sentinelone" || actualKey === "sccm") {
-                            const swAgent = dev.software.find(sw => sw.name === actualKey || sw.key === key || sw.key === actualKey);
-                            const isCompliant = swAgent ? swAgent.status === 'COMPLIANT' : false;
-                            rowHtml += `<td><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}">${escapeHTML(String(val))}</span></td>`;
+                        } else if (isCompliance) {
+                            const swAgent = dev.software && dev.software.find(sw => sw.name === actualKey);
+                            const isCmp = swAgent ? swAgent.status === 'COMPLIANT' : false;
+                            rowHtml += `<td><span class="badge ${isCmp ? 'risk-low' : 'risk-critical'}">${escapeHTML(String(val))}</span></td>`;
                         } else {
                             rowHtml += `<td>${escapeHTML(String(val))}</td>`;
                         }
