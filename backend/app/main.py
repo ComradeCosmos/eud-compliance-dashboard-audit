@@ -20,15 +20,13 @@ from backend.app.database import engine, Base, get_db, SessionLocal
 from backend.app.evidence.router import router as evidence_router
 from backend.app.assessment.router import router as assessment_router
 from backend.app.checklist.router import router as checklist_router
-from backend.app.risk.router import router as risk_router
-from backend.app.siem.router import router as siem_router
 from backend.app.reports.router import router as reports_router
 from backend.app.scanners.router import router as scanners_router
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="SAMP API & Dashboard Gateway",
-    description="Integrated SIEM Event Ingestion Pipeline, Risk Engine & Security Audit Management Platform",
+    title="EUD Compliance & Reconciliation Dashboard Gateway",
+    description="End-User Device Compliance Auditing & Multi-Sheet Asset Reconciliation Platform",
     version="1.0.0"
 )
 
@@ -71,8 +69,6 @@ def on_startup():
 app.include_router(evidence_router)
 app.include_router(assessment_router)
 app.include_router(checklist_router)
-app.include_router(risk_router)
-app.include_router(siem_router)
 app.include_router(reports_router)
 app.include_router(scanners_router)
 

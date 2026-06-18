@@ -99,16 +99,7 @@ def evaluate_evidence_and_upsert_findings(db: Session, assessment_id: int) -> Li
         details = ""
         matching_evidence_id = None
         
-        if ctrl_type == "MANUAL":
-            # For manual items, preserve existing status if present, otherwise default to FAIL
-            if code in existing_findings:
-                status = existing_findings[code].status
-                details = existing_findings[code].details or "Preserved auditor manual assessment."
-            else:
-                status = "FAIL"
-                details = "Pending auditor manual checklist verification."
-                
-        elif not ctrl_rules:
+        if not ctrl_rules:
             # If no rule defined, set to FAIL by default unless custom logic applies
             status = "FAIL"
             details = "No automated check rules defined for this control."

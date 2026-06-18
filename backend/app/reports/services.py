@@ -91,7 +91,7 @@ def generate_html_report(db: Session, assessment_id: int) -> str:
     <!DOCTYPE html>
     <html>
     <head>
-        <title>SAMP Compliance Report</title>
+        <title>EUD Compliance Report</title>
         <meta charset="utf-8">
     </head>
     <body style="font-family: system-ui, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 40px; margin: 0;">
@@ -99,7 +99,7 @@ def generate_html_report(db: Session, assessment_id: int) -> str:
             <div style="border-bottom: 2px solid #ef4444; padding-bottom: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <h1 style="margin: 0; font-size: 24px; color: #0f172a; text-transform: uppercase;">AM/NS India Security Portal</h1>
-                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">Security Audit Management Platform (SAMP)</p>
+                    <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em;">End-User Device Compliance Dashboard (EUD)</p>
                 </div>
                 <div style="text-align: right;">
                     <div style="font-size: 28px; font-weight: 800; color: #ef4444;">{data['overall_score']}%</div>
@@ -126,7 +126,7 @@ def generate_html_report(db: Session, assessment_id: int) -> str:
                 🔒 Evidence Cryptographic Verification: {integrity_text}
             </div>
 
-            <h3 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px; text-transform: uppercase; font-size: 16px; letter-spacing: 0.05em;">Evaluated Security Controls (15 Mandates)</h3>
+            <h3 style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-top: 40px; margin-bottom: 20px; text-transform: uppercase; font-size: 16px; letter-spacing: 0.05em;">Evaluated Security Controls (10 Mandates)</h3>
             <table style="width: 100%; border-collapse: collapse; text-align: left;">
                 <thead>
                     <tr style="background-color: #f1f5f9;">
@@ -226,7 +226,7 @@ def generate_pdf_report(db: Session, assessment_id: int) -> bytes:
     
     # Header block
     story.append(Paragraph("AM/NS INDIA SECURITY COMPLIANCE REPORT", title_style))
-    story.append(Paragraph("Security Audit Management Platform (SAMP) — Automated SLA Ledger", subtitle_style))
+    story.append(Paragraph("End-User Device Compliance Dashboard (EUD) — Automated SLA Ledger", subtitle_style))
     story.append(Spacer(1, 10))
     
     # Meta information block (2-column layout table)
@@ -265,7 +265,7 @@ def generate_pdf_report(db: Session, assessment_id: int) -> bytes:
     story.append(Spacer(1, 15))
     
     # Controls Table
-    story.append(Paragraph("EVALUATED CONTROL FINDINGS (15 SECURITY MANDATES)", h2_style))
+    story.append(Paragraph("EVALUATED CONTROL FINDINGS (10 SECURITY MANDATES)", h2_style))
     
     # Header row
     table_data = [

@@ -92,7 +92,7 @@ matchRateEl.parentElement = createMockElement('recon-stat-match-rate-parent');
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -206,6 +206,7 @@ vm.runInContext(`
             name: "DELL-EUD-EXIST",
             normalized: "delleudexist",
             mergedProperties: [
+                { source: "primary_dir.csv", sheetRole: "Primary", property: "Department", value: "Sales" },
                 { source: "secondary_agent.csv", sheetRole: "Secondary", property: "Agent Status", value: "ACTIVE" }
             ],
             primaryRow: ["DELL-EUD-EXIST", "SN-999-ABC"],
@@ -218,7 +219,9 @@ vm.runInContext(`
             id: "gap-1",
             name: "DELL-EUD-NEWGAP",
             normalized: "delleudnewgap",
-            mergedProperties: [],
+            mergedProperties: [
+                { source: "primary_dir.csv", sheetRole: "Primary", property: "Department", value: "Marketing" }
+            ],
             primaryRow: ["DELL-EUD-NEWGAP", "SN-111-GAP"],
             missingInSheets: ["secondary_agent.csv"],
             presentInSheets: ["primary_dir.csv"],
@@ -267,8 +270,8 @@ vm.runInContext(`
     const device = fleetDataset[0];
     console.log('Merged custom properties:', device.custom_properties);
 
-    if (!device.custom_properties || device.custom_properties["[secondary_agent.csv] Agent Status"] !== "ACTIVE") {
-        throw new Error("FAIL: Custom properties from secondary sheet were not successfully merged into the existing record!");
+    if (!device.custom_properties || device.custom_properties["Department"] !== "Sales" || device.custom_properties["[secondary_agent.csv] Agent Status"] !== undefined) {
+        throw new Error("FAIL: Custom properties from primary sheet were not successfully merged into the existing record or secondary properties were not filtered out!");
     }
 
     console.log("✔ Mismatched alignment keys prevention test passed cleanly! Existing records updated, zero new records created. 🎉");

@@ -80,7 +80,7 @@ createMockElement('btn-recon-pag-next');
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},

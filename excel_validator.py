@@ -5,15 +5,21 @@ import io
 import zipfile
 import xml.etree.ElementTree as ET
 
-# Regular Expression for MAC Address validation
+# ==============================================================================
+# REGULAR EXPRESSIONS & UTILITY VALIDATORS
+# ==============================================================================
+
+# Standard MAC Address formats (e.g. 00:1A:2B:3C:4D:5E or 00-1A-2B-3C-4D-5E)
 MAC_REGEX = re.compile(r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$')
-# Regular Expression for standard corporate hostnames
+
+# Corporate Hostnames (alphanumeric and hyphens only)
 HOSTNAME_REGEX = re.compile(r'^[a-zA-Z0-9-]+$')
-# Regular Expression for timestamps like "2026-05-27 14:30" or "2026-05-27"
+
+# Audit Dates (YYYY-MM-DD or YYYY-MM-DD HH:MM)
 DATE_REGEX = re.compile(r'^\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?$')
 
 def is_valid_ip(ip_str):
-    """Checks if a string is a valid IPv4 address."""
+    """Verifies if a string is a valid IPv4 address."""
     parts = ip_str.split('.')
     if len(parts) != 4:
         return False
@@ -27,42 +33,60 @@ def is_valid_ip(ip_str):
     return True
 
 def is_valid_mac(mac_str):
-    """Checks if a string matches a standard MAC address format."""
+    """Verifies if a MAC address matches standard formats."""
     return bool(MAC_REGEX.match(mac_str))
 
 def is_valid_hostname(host_str):
-    """Checks if a hostname contains only alphanumeric and hyphens."""
+    """Verifies hostnames against corporate characters constraint (alphanumeric and hyphens)."""
     return bool(HOSTNAME_REGEX.match(host_str))
 
 def is_valid_date(date_str):
-    """Checks if a date matches the YYYY-MM-DD or YYYY-MM-DD HH:MM pattern."""
+    """Checks date formats (expected standard YYYY-MM-DD format)."""
     return bool(DATE_REGEX.match(date_str))
 
+
+# ==============================================================================
+# FUZZY COLUMN MAPPING
+# ==============================================================================
+
 def find_index(headers, keywords):
-    """Fuzzy maps headers to find column index using keyword matching rules."""
+    """
+    Finds the index of a header matching any of the given keywords.
+    Ensures short word tokens match exactly, and handles special exclusions 
+    (e.g., preventing Active Directory (AD) columns from matching third-party software agents).
+    """
     is_ad = any(k in keywords for k in ["ad", "active directory", "active_directory"])
     for kw in keywords:
         for idx, h in enumerate(headers):
             h_lower = str(h).lower().strip()
             
-            # Exclude AD columns for non-AD agents
+            # Exclude Active Directory properties for non-AD agents (e.g. S1, Nessus, Zscaler)
             if not is_ad:
                 words = re.split(r'[^a-z0-9]+', h_lower)
                 if "ad" in words or "active directory" in h_lower or "active_directory" in h_lower:
                     continue
                     
             if len(kw) <= 3:
-                # Whole word match for short keywords (e.g., ad, mac, sn)
+                # Require exact full-word match for short strings (e.g. 'ad', 'mac', 'sn')
                 words = re.split(r'[^a-z0-9]+', h_lower)
                 if kw in words:
                     return idx
             else:
+                # Substring match for longer descriptive keywords
                 if kw in h_lower:
                     return idx
     return -1
 
+
+# ==============================================================================
+# PURE PYTHON SPREADSHEET PARSING (Zero Dependencies)
+# ==============================================================================
+
 def get_shared_strings(z):
-    """Reads sharedStrings.xml from the XLSX zip archive."""
+    """
+    Reads the sharedStrings.xml file in an XLSX zip archive.
+    Excel compresses string data into a single file and references them by index.
+    """
     try:
         with z.open("xl/sharedStrings.xml") as f:
             tree = ET.parse(f)
@@ -79,12 +103,15 @@ def get_shared_strings(z):
         return []
 
 def parse_xlsx(file_bytes):
-    """Parses a zip-compressed .xlsx file bytes using ElementTree, returning rows."""
+    """
+    Parses a standard .xlsx zipped spreadsheet file using standard xml parser.
+    Builds a list of rows, dynamically expanding empty cells and translating shared string indexes.
+    """
     try:
         with zipfile.ZipFile(io.BytesIO(file_bytes)) as z:
             strings = get_shared_strings(z)
             
-            # Locate first sheet XML
+            # Locate first sheet XML (usually xl/worksheets/sheet1.xml)
             sheet_file = None
             for name in z.namelist():
                 if name.startswith("xl/worksheets/sheet") and name.endswith(".xml"):
@@ -113,7 +140,7 @@ def parse_xlsx(file_bytes):
                         if not ref:
                             continue
                         
-                        # Translate cell reference (e.g. AA12 -> column index)
+                        # Convert cell reference (e.g. 'AA12' -> column index 26)
                         col_letters = ''.join([c for c in ref if c.isalpha()])
                         col_idx = 0
                         for char in col_letters:
@@ -129,6 +156,7 @@ def parse_xlsx(file_bytes):
                         if v_node is not None:
                             v_text = v_node.text or ""
                             if t == 's':
+                                # Resolve string index from sharedStrings.xml
                                 try:
                                     val = strings[int(v_text)]
                                 except (ValueError, IndexError):
@@ -142,6 +170,7 @@ def parse_xlsx(file_bytes):
                     row_list = [row_vals.get(i, "") for i in range(max_col_idx + 1)]
                     parsed_rows.append(row_list)
                 
+                # Align row lengths for table structure integrity
                 if parsed_rows:
                     max_len = max(len(r) for r in parsed_rows)
                     for r in parsed_rows:
@@ -152,13 +181,13 @@ def parse_xlsx(file_bytes):
         raise ValueError(f"Failed to parse Excel spreadsheet: {e}")
 
 def parse_csv(file_content_str):
-    """Parses a CSV string, dynamically sniffing delimiters, returning rows."""
+    """Parses raw CSV content string, dynamically sniffing delimiters."""
     try:
         sample = file_content_str[:4096]
         dialect = csv.Sniffer().sniff(sample)
         delimiter = dialect.delimiter
     except Exception:
-        # Fallback delimiters
+        # Delimiter heuristics fallback
         first_line = file_content_str.split('\n')[0]
         if ';' in first_line and ',' not in first_line:
             delimiter = ';'
@@ -170,9 +199,17 @@ def parse_csv(file_content_str):
     reader = csv.reader(io.StringIO(file_content_str), delimiter=delimiter)
     return list(reader)
 
+
+# ==============================================================================
+# SPREADSHEET STRUCTURAL AUDIT VALIDATION
+# ==============================================================================
+
 def validate_sheet_data(headers, rows, filename=None):
-    """Validates structural constraints and field formats inside the sheet rows."""
-    # Fuzzy match column headers
+    """
+    Validates structural formatting and field layouts of spreadsheet cells.
+    Detects warnings (e.g. empty serials, bad MAC formats) and errors (blank hostnames).
+    """
+    # 1. Map columns fuzzy
     device_name_idx = find_index(headers, ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"])
     
     is_zscaler = False
@@ -203,7 +240,7 @@ def validate_sheet_data(headers, rows, filename=None):
         
     ip_idx = find_index(headers, ["ip", "ipaddress", "ip_address", "subnet"])
     
-    # Core compliance controls
+    # Core compliance parameters mapping
     ad_idx = find_index(headers, ["active directory", "ad", "active_directory", "domain"])
     bitlocker_idx = find_index(headers, ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"])
     zscaler_idx = find_index(headers, ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"])
@@ -263,7 +300,7 @@ def validate_sheet_data(headers, rows, filename=None):
             cond_val = str(row[condition_idx]).strip().upper().replace(" ", "_")
             valid_conditions = {"IN_USE", "IN_REPAIR", "IN_STORE", "EXPIRED", "DISPOSED", "DECOMMISSIONED", "LOANABLE_RESERVED", "NOT_TRACEABLE", "RESERVED"}
             if cond_val and cond_val not in valid_conditions:
-                # Check fuzzy normalization match
+                # Fuzzy normalization condition matches
                 norm_cond = cond_val.replace("-", "_")
                 if norm_cond not in {"IN_USE", "USE", "ACTIVE", "IN_REPAIR", "REPAIR", "IN_STORE", "STORE", "EXPIRED", "DISPOSED", "DECOMMISSIONED", "RETIRED", "DONATED_UNDER_CSR", "DONATED", "CSR", "LOANABLE_RESERVED", "LOANABLE", "NOT_TRACEABLE", "UNTRACEABLE", "RESERVED"}:
                     warnings.append(f"Row {r_idx}: Condition state '{row[condition_idx]}' is unrecognized.")
@@ -289,7 +326,13 @@ def validate_sheet_data(headers, rows, filename=None):
         "errors": errors
     }
 
+
+# ==============================================================================
+# ALIGNMENT DATA NORMALIZATION
+# ==============================================================================
+
 def normalize_value(val):
+    """Strip all non-alphanumeric characters and lowercase for key matching."""
     if val is None:
         return ""
     val_str = str(val).strip()
@@ -299,12 +342,16 @@ def normalize_value(val):
     return re.sub(r'[^a-zA-Z0-9]', '', val_str).lower()
 
 def norm_mac_list(val):
+    """Extracts and normalizes all MAC addresses found in a string."""
     if not val:
         return []
     macs = re.findall(r'[0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}[:.-][0-9a-fA-F]{2}', str(val))
     return [m.lower().replace('.', ':').replace('-', ':') for m in macs]
 
 def get_col_indices(headers, filename=None):
+    """
+    Extracts name, serial, and MAC columns from headers based on common naming patterns.
+    """
     h_low = [str(h).lower().strip() for h in headers]
     name_keywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"]
     
@@ -341,12 +388,22 @@ def get_col_indices(headers, filename=None):
         
     return find_indices(name_keywords), find_indices(serial_keywords), find_indices(mac_keywords)
 
+
+# ==============================================================================
+# RECONCILIATION ENGINE (O(1) Multi-Sheet Alignment)
+# ==============================================================================
+
 def row_matches(prim_row, prim_meta, sec_row, sec_meta):
+    """
+    Returns True if a primary corporate row matches a secondary agent row on
+    (a) unique key value, (b) hostname, (c) serial number, or (d) MAC address.
+    """
     prim_key_val = normalize_value(prim_row[prim_meta['key_idx']]) if prim_meta['key_idx'] < len(prim_row) else ""
     sec_key_val = normalize_value(sec_row[sec_meta['key_idx']]) if sec_meta['key_idx'] < len(sec_row) else ""
     if prim_key_val and prim_key_val == sec_key_val:
         return True
         
+    # Check matching hostnames
     for p_idx in prim_meta.get('name_indices', []):
         for s_idx in sec_meta.get('name_indices', []):
             if p_idx < len(prim_row) and s_idx < len(sec_row):
@@ -355,6 +412,7 @@ def row_matches(prim_row, prim_meta, sec_row, sec_meta):
                 if p_name and p_name == s_name:
                     return True
                     
+    # Check matching serials
     for p_idx in prim_meta.get('serial_indices', []):
         for s_idx in sec_meta.get('serial_indices', []):
             if p_idx < len(prim_row) and s_idx < len(sec_row):
@@ -363,6 +421,7 @@ def row_matches(prim_row, prim_meta, sec_row, sec_meta):
                 if p_serial and p_serial == s_serial:
                     return True
                     
+    # Check matching MAC addresses
     for p_idx in prim_meta.get('mac_indices', []):
         for s_idx in sec_meta.get('mac_indices', []):
             if p_idx < len(prim_row) and s_idx < len(sec_row):
@@ -377,12 +436,21 @@ def row_matches(prim_row, prim_meta, sec_row, sec_meta):
     return False
 
 def reconcile_sheets_data(primary_sheet, secondary_sheets):
-    """Executes reconciliation logic across a primary sheet and multiple secondary sheets."""
+    """
+    Primary reconciliation alignment engine.
+    Matches devices in the Primary Corporate Directory against multiple secondary telemetry datasets.
+    
+    Returns a dictionary structured as follows:
+    - matches: Devices successfully aligned across datasets.
+    - gaps: Devices in the Corporate Directory but missing from telemetry.
+    - rogues: Telemetry entries that do not map to any Corporate Directory device.
+    """
     primary_key_idx = primary_sheet["keyIdx"]
     primary_headers = primary_sheet["headers"]
     primary_rows = primary_sheet["rows"]
     primary_filename = primary_sheet.get("filename", "")
     
+    # Step 1: Pre-process and map Primary Directory column indexes
     prim_name_indices, prim_serial_indices, prim_mac_indices = get_col_indices(primary_headers, primary_filename)
     prim_meta = {
         'key_idx': primary_key_idx,
@@ -391,6 +459,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         'mac_indices': prim_mac_indices
     }
     
+    # Step 2: Index all Secondary sheets to create maps for O(1) matching lookups
     sec_sheets_processed = []
     for sheet in secondary_sheets:
         key_idx = sheet["keyIdx"]
@@ -405,33 +474,33 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                 
         name_indices, serial_indices, mac_indices = get_col_indices(headers, filename)
         
-        # Pre-build index maps for fast O(1) lookups
+        # Pre-build lookup maps for O(1) matching
         key_map = {}
         name_map = {}
         serial_map = {}
         mac_map = {}
         
         for r_idx, s_row in enumerate(valid_rows):
-            # 1. Key Value
+            # 1. Match Key
             sec_key_val = normalize_value(s_row[key_idx]) if key_idx < len(s_row) else ""
             if sec_key_val:
                 key_map.setdefault(sec_key_val, []).append(r_idx)
                 
-            # 2. Name values
+            # 2. Hostnames
             for s_idx in name_indices:
                 if s_idx < len(s_row):
                     s_name = normalize_value(s_row[s_idx])
                     if s_name:
                         name_map.setdefault(s_name, []).append(r_idx)
                         
-            # 3. Serial values
+            # 3. Serials
             for s_idx in serial_indices:
                 if s_idx < len(s_row):
                     s_serial = normalize_value(s_row[s_idx])
                     if s_serial:
                         serial_map.setdefault(s_serial, []).append(r_idx)
                         
-            # 4. MAC values
+            # 4. MAC Addresses
             for s_idx in mac_indices:
                 if s_idx < len(s_row):
                     s_mac_val = s_row[s_idx]
@@ -464,6 +533,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
     
     import random
     
+    # Step 3: Match each Corporate Directory entry against Telemetries
     for p_row_idx, p_row in enumerate(primary_rows):
         if not p_row or all(str(c).strip() == "" for c in p_row):
             continue
@@ -474,7 +544,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         missing_in_sheets = []
         merged_properties = []
         
-        # Capture primary properties
+        # Pull clean Corporate Directory custom properties
         for idx, h in enumerate(primary_headers):
             if idx != primary_key_idx:
                 val = str(p_row[idx]).strip() if idx < len(p_row) else ""
@@ -485,19 +555,19 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                     "value": val if val else "-"
                 })
                 
-        # Resolve secondary mappings using pre-built lookup maps
+        # Query secondary telemetry lookup maps for matches
         for sec in sec_sheets_processed:
             matched_row = None
             matched_r_idx = -1
             
-            # 1. Key match
+            # (a) Match unique key
             prim_key_val = normalize_value(p_row[primary_key_idx]) if primary_key_idx < len(p_row) else ""
             if prim_key_val and prim_key_val in sec["key_map"]:
                 candidates = sec["key_map"][prim_key_val]
                 if candidates:
                     matched_r_idx = candidates[0]
                     
-            # 2. Name match
+            # (b) Match hostname
             if matched_r_idx == -1 and prim_name_indices:
                 for p_idx in prim_name_indices:
                     if p_idx < len(p_row):
@@ -508,7 +578,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                                 matched_r_idx = candidates[0]
                                 break
                                 
-            # 3. Serial match
+            # (c) Match Serial Number
             if matched_r_idx == -1 and prim_serial_indices:
                 for p_idx in prim_serial_indices:
                     if p_idx < len(p_row):
@@ -519,7 +589,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                                 matched_r_idx = candidates[0]
                                 break
                                 
-            # 4. MAC match
+            # (d) Match MAC address
             if matched_r_idx == -1 and prim_mac_indices:
                 for p_idx in prim_mac_indices:
                     if p_idx < len(p_row):
@@ -554,6 +624,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                 
         random_suffix = ''.join(random.choices('abcdefghijklmnopqrstuvwxyz0123456789', k=4))
         
+        # Categorize aligned devices as Gaps (missing telemetry) or Matches
         if len(missing_in_sheets) > 0:
             gaps.append({
                 "id": f"dev-gap-{random_suffix}",
@@ -575,7 +646,7 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
                 "status": "MATCHED"
             })
             
-    # Resolve rogue assets
+    # Step 4: Any telemetry records left unclaimed are marked as Rogue Assets
     rogues_map = {}
     for sec in sec_sheets_processed:
         for r_idx, s_row in enumerate(sec["rows"]):
@@ -614,4 +685,3 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
         "gaps": gaps,
         "rogues": rogues
     }
-

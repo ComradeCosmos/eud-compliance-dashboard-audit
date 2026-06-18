@@ -69,37 +69,4 @@ controls:
     description: Validates that HTTP requests are automatically redirected to HTTPS.
     recommendation: Configure a global redirect from port 80 to port 443 in the web server.
 
-  - code: CTRL-011
-    title: Role-Based Access Control
-    type: MANUAL
-    severity: HIGH
-    description: Auditors verify RBAC authorization checks are enforced on endpoints.
-    recommendation: Conduct audit of access policies, map all endpoints to roles, and verify restriction.
 
-  - code: CTRL-012
-    title: Inactive Account Disable
-    type: MANUAL
-    severity: MEDIUM
-    description: Auditors verify LDAP/AD automated deactivation policies are active.
-    recommendation: Review Active Directory account deactivation logs for accounts idle > 90 days.
-
-  - code: CTRL-013
-    title: Audit Log Completeness
-    type: MANUAL
-    severity: HIGH
-    description: Auditors verify access, modifications, and security events are logged.
-    recommendation: Review centralized logging daemon configs to verify auditing completeness.
-
-  - code: CTRL-014
-    title: Security Alerting
-    type: MANUAL
-    severity: MEDIUM
-    description: Auditors verify alerts are raised on anomalous login attempts.
-    recommendation: Check SIEM alerting rules for brute-force or anomalous geolocation logins.
-
-  - code: CTRL-015
-    title: Logout Session Kill
-    type: MANUAL
-    severity: HIGH
-    description: Auditors verify backend session tokens are revoked upon logout.
-    recommendation: Test session revocation endpoint and confirm server-side token state is deleted.

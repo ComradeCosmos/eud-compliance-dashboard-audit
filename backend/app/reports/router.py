@@ -35,7 +35,7 @@ def get_pdf_report(assessment_id: int, db: Session = Depends(get_db)):
             content=pdf_content,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=SAMP_Report_Assessment_{assessment_id}.pdf"
+                "Content-Disposition": f"attachment; filename=EUD_Report_Assessment_{assessment_id}.pdf"
             }
         )
     except ValueError as ve:

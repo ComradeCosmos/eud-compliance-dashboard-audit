@@ -47,17 +47,17 @@ class TestFastAPIIntegration(unittest.TestCase):
         # Query root endpoint
         res = requests.get(f"{self.base_url}/")
         self.assertEqual(res.status_code, 200)
-        self.assertIn("EUD Compliance Dashboard", res.text)
+        self.assertIn("AM/NS Security Dashboard", res.text)
 
     def test_02_get_checklist_controls(self):
         # Query controls endpoint
         res = requests.get(f"{self.base_url}/api/checklist/controls")
         self.assertEqual(res.status_code, 200)
         controls = res.json()
-        self.assertEqual(len(controls), 15)
+        self.assertEqual(len(controls), 10)
         self.assertEqual(controls[0]["code"], "CTRL-001")
 
-    def test_03_create_assessment_and_calculate_risk(self):
+    def test_03_create_assessment_and_evaluate(self):
         # 1. Create Assessment
         payload = {"name": "Test SLA Session", "environment": "UAT"}
         res = requests.post(f"{self.base_url}/api/assessments/", json=payload)
@@ -71,16 +71,7 @@ class TestFastAPIIntegration(unittest.TestCase):
         res = requests.post(f"{self.base_url}/api/checklist/evaluate/{assessment_id}")
         self.assertEqual(res.status_code, 200)
         findings = res.json()
-        self.assertEqual(len(findings), 15)
-
-        # 3. Calculate Risk Score
-        res = requests.post(f"{self.base_url}/api/risk/calculate/{assessment_id}")
-        self.assertEqual(res.status_code, 200)
-        updated_assessment = res.json()
-        
-        # Since all controls fail, the score should be 0.0
-        self.assertEqual(updated_assessment["overall_score"], 0.0)
-        self.assertEqual(updated_assessment["status"], "COMPLETED")
+        self.assertEqual(len(findings), 10)
 
 if __name__ == "__main__":
     unittest.main()

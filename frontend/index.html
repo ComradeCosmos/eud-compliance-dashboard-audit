@@ -247,7 +247,7 @@
 
             <!-- Close Button -->
             <button onclick="document.getElementById('login-screen-canvas').style.display = 'none';"
-                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">✕</button>
+                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">Ã¢Å“â€¢</button>
 
             <div
                 style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
@@ -290,7 +290,7 @@
                     <div class="input-group" style="margin-bottom: 0.5rem;">
                         <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
-                        <input type="password" id="portal-login-passcode" placeholder="••••••••"
+                        <input type="password" id="portal-login-passcode" placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
 
@@ -312,7 +312,7 @@
                     <div class="input-group" style="margin-bottom: 0.25rem;">
                         <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
-                        <input type="password" id="portal-signup-passcode" placeholder="••••••••"
+                        <input type="password" id="portal-signup-passcode" placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.5rem;">
@@ -684,7 +684,7 @@
             style="border-top: 1px solid var(--border-clean); padding: 3rem 2rem; background: var(--bg-card); text-align: center;">
             <p
                 style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-                ArcelorMittal Nippon Steel India © 2026. All Rights Reserved.
+                ArcelorMittal Nippon Steel India Ã‚Â© 2026. All Rights Reserved.
             </p>
             <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
                 Authorized Personnel Only. Security Auditing and User Activity Logging Active.
@@ -697,7 +697,7 @@
         <aside class="sidebar">
             <div class="brand-section"
                 style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;"
-                onclick="switchNavSection('hub')">
+                onclick="switchNavSection('compliance')">
                 <div style="display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap;">
                     <div
                         style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; white-space: nowrap;">
@@ -715,70 +715,29 @@
                         Dashboard</div>
                     <p
                         style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin: 0; white-space: nowrap;">
-                        Security & Compliance</p>
+                        Security</p>
                 </div>
             </div>
 
             <!-- Top navigation menu -->
             <nav style="padding: 0.5rem 0.25rem;">
                 <ul class="sidebar-menu">
-                    <!-- Root Gateway Link -->
-                    <li class="menu-item active" id="menu-hub" onclick="switchNavSection('hub')">
-                        Gateway Portal
-                    </li>
-
-                    <!-- Group: SIEM Ingest Module -->
-                    <li class="sidebar-group-header" id="group-header-siem" onclick="toggleSidebarGroup('siem')">
-                        SIEM Ingest Stream
-                    </li>
-                    <ul class="sidebar-submenu" id="submenu-siem" style="display: none;">
-                        <li class="menu-item" id="menu-siem" onclick="switchNavSection('siem')">
-                            Ingest Console
-                        </li>
-                    </ul>
-
-                    <!-- Group: Centralized Risk Engine -->
-                    <li class="sidebar-group-header" id="group-header-risk" onclick="toggleSidebarGroup('risk')">
-                        Centralized Risk Engine
-                    </li>
-                    <ul class="sidebar-submenu" id="submenu-risk" style="display: none;">
-                        <li class="menu-item" id="menu-risk-engine" onclick="switchNavSection('risk-engine')">
-                            Risk Calculator
-                        </li>
-                    </ul>
-
-                    <!-- Group: SAMP Auditor -->
-                    <li class="sidebar-group-header" id="group-header-samp" onclick="toggleSidebarGroup('samp')">
-                        SAMP Auditor
-                    </li>
-                    <ul class="sidebar-submenu" id="submenu-samp" style="display: none;">
-                        <li class="menu-item" id="menu-samp-auditor" onclick="switchNavSection('samp-auditor')">
-                            Manual Audit Checklist
-                        </li>
-                    </ul>
-
                     <!-- Group: EUD Asset Reconciler -->
-                    <li class="sidebar-group-header" id="group-header-reconciler"
+                    <li class="sidebar-group-header active" id="group-header-reconciler"
                         onclick="toggleSidebarGroup('reconciler')">
-                        EUD Asset Reconciler
+                        Reconciler
                     </li>
-                    <ul class="sidebar-submenu" id="submenu-reconciler" style="display: none;">
-                        <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">
-                            Compliance Ledger
-                        </li>
-                        <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">
-                            Scoring & Controls
-                        </li>
-                        <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">
-                            Reporting Center
+                    <ul class="sidebar-submenu" id="submenu-reconciler" style="display: block;">
+                        <li class="menu-item active" id="menu-compliance" onclick="switchNavSection('compliance')">
+                            Ledger
                         </li>
                         <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">
-                            Asset Reconciliation
+                            Reconciliation
                         </li>
                     </ul>
 
                     <li class="menu-item" id="menu-dev-db" onclick="switchNavSection('dev-db')" style="display: none;">
-                        Developer Console
+                        Developer
                     </li>
                 </ul>
             </nav>
@@ -791,8 +750,11 @@
                 <div style="border-top: 1px solid var(--border-clean); margin: 0 0.5rem;"></div>
                 <nav>
                     <ul class="sidebar-menu">
-                        <li class="menu-item" id="menu-profile" onclick="switchNavSection('profile')">User Profile</li>
+                        <li class="menu-item" id="menu-profile" onclick="switchNavSection('profile')">Profile</li>
                         <li class="menu-item" id="menu-settings" onclick="switchNavSection('settings')">Settings</li>
+                        <li class="menu-item" id="menu-logout" onclick="terminateSessionLease()"
+                            style="color: var(--status-critical);">Log Out</li>
+                    </ul>
                         <li class="menu-item" id="menu-logout" onclick="terminateSessionLease()"
                             style="color: var(--status-critical);">Log Out</li>
                     </ul>
@@ -823,526 +785,7 @@
                     scores...</span>
             </div>
 
-            <!-- Section: Gateway Selection Hub -->
-            <div id="section-hub" class="section-view" style="display: block;">
-                <div class="gateway-container">
-                    <h2 class="gateway-title">Unified Gateway Portal</h2>
-                    <p class="gateway-subtitle">Select an Operational Module to Launch</p>
 
-                    <div class="gateway-grid">
-                        <!-- Card 1: SIEM Ingest Stream -->
-                        <div class="gateway-card" onclick="switchNavSection('siem')">
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-                                    <span class="gateway-badge">Module 01</span>
-                                </div>
-                                <h3
-                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
-                                    SIEM Ingest Stream
-                                </h3>
-                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Ingest, hash, and cryptographically verify live system event logs from Active
-                                    Directory, Nessus, EDR, and network gateways.
-                                </p>
-                            </div>
-                            <button class="gateway-card-btn">Launch Console</button>
-                        </div>
-
-                        <!-- Card 2: Centralized Risk Engine -->
-                        <div class="gateway-card" onclick="switchNavSection('risk-engine')">
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-                                    <span class="gateway-badge">Module 02</span>
-                                </div>
-                                <h3
-                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
-                                    Centralized Risk Engine
-                                </h3>
-                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Calculate and fine-tune environment-aware risk index ratings, configure scoring
-                                    policies, and simulate threat modifiers.
-                                </p>
-                            </div>
-                            <button class="gateway-card-btn">Open Controls</button>
-                        </div>
-
-                        <!-- Card 3: SAMP Core Auditing -->
-                        <div class="gateway-card" onclick="switchNavSection('samp-auditor')">
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-                                    <span class="gateway-badge">Module 03</span>
-                                </div>
-                                <h3
-                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
-                                    SAMP Core Auditing
-                                </h3>
-                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Audit enterprise device fleet metrics, log manual verification overrides, and
-                                    evaluate NIST compliance controls.
-                                </p>
-                            </div>
-                            <button class="gateway-card-btn">Start Audit</button>
-                        </div>
-
-                        <!-- Card 4: EUD Asset Reconciler -->
-                        <div class="gateway-card" onclick="switchNavSection('reconciler')">
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
-                                    <span class="gateway-badge">Module 04</span>
-                                </div>
-                                <h3
-                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
-                                    EUD Asset Reconciler
-                                </h3>
-                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Reconcile multi-sheet telemetry from Active Directory, EDR agents, and vulnerability
-                                    scanners to identify coverage gaps.
-                                </p>
-                            </div>
-                            <button class="gateway-card-btn">Reconcile Sheets</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section: SIEM Ingest Console -->
-            <div id="section-siem" class="section-view" style="display: none;">
-                <div class="card" style="padding: 2rem;">
-                    <div
-                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2
-                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
-                            SIEM Ingest Stream Console
-                        </h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Real-time security auditing logging feed. Any raw log ingestions, database operations,
-                            compliance calculations, or cryptographic integrity assertions will log here dynamically.
-                        </p>
-                    </div>
-
-                    <div class="siem-grid">
-                        <!-- Left Panel: Ingest Controls -->
-                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <div>
-                                <label
-                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Log
-                                    Source Type</label>
-                                <select id="siem-source-select"
-                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
-                                    onchange="handleSiemSourceChange()">
-                                    <option value="AD">Active Directory (AD)</option>
-                                    <option value="Nessus">Nessus Vulnerability Scanner</option>
-                                    <option value="EDR">EDR Security Agent</option>
-                                    <option value="Zscaler">Zscaler Network Gateway</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <label
-                                        style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin: 0;">Log
-                                        Payload (JSON / Text)</label>
-                                    <button class="btn"
-                                        style="font-size: 0.7rem; padding: 0.25rem 0.6rem; height: auto; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-secondary);"
-                                        onclick="loadSiemDefaultTemplate()">Load Default Template</button>
-                                </div>
-                                <textarea id="siem-payload-input" rows="8"
-                                    style="width: 100%; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.75rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
-                            </div>
-
-                            <div style="display: flex; gap: 1rem;">
-                                <button class="btn" id="btn-siem-ingest"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: var(--color-accent); border-color: var(--color-accent);"
-                                    onclick="executeManualSiemIngest()">
-                                    Sign & Ingest Log
-                                </button>
-                                <button class="btn" id="btn-siem-verify"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                    onclick="verifyAllSiemEvidence()">
-                                    Verify Hashes
-                                </button>
-                            </div>
-
-                            <div
-                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
-                                <button class="btn" id="btn-siem-export"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                    onclick="exportSiemLogs()">
-                                    Export Logs (JSON)
-                                </button>
-                                <label for="siem-import-file" class="btn"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
-                                    Import Logs (JSON)
-                                </label>
-                                <input type="file" id="siem-import-file" accept=".json" style="display: none;"
-                                    onchange="importSiemLogs(event)">
-                            </div>
-
-                            <div
-                                style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <h4
-                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
-                                        Background Stream Simulation</h4>
-                                    <p style="margin: 0.1rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">
-                                        Simulate dynamic log ingestion periodically</p>
-                                </div>
-                                <div>
-                                    <button class="btn" id="btn-siem-simulate"
-                                        style="font-size: 0.78rem; padding: 0.5rem 1rem; background: #15803d; border-color: #15803d; color: #ffffff;"
-                                        onclick="toggleSiemSimulation(event)">
-                                        Start Simulation
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Panel: Terminal logs -->
-                        <div style="display: flex; flex-direction: column;">
-                            <label
-                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
-                                Terminal Logs</label>
-                            <div id="audit-terminal" class="terminal-console"
-                                style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 430px; max-height: 430px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; box-sizing: border-box;">
-                                <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] SIEM Terminal Console
-                                    initialized. Standing by for ingestion streams...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section: Centralized Risk Engine -->
-            <div id="section-risk-engine" class="section-view" style="display: none;">
-                <div class="card" style="padding: 2rem;">
-                    <div
-                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2
-                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
-                            Centralized Risk Engine
-                        </h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Multi-dimensional compliance risk indexing and environment-aware severity rating engine.
-                        </p>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
-                        <!-- Left Panel: Calculation Inputs -->
-                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <div>
-                                <label
-                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Select
-                                    Audit Assessment</label>
-                                <select id="risk-assessment-select"
-                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
-                                    onchange="handleRiskAssessmentChange()">
-                                    <!-- Dynamic options -->
-                                </select>
-                            </div>
-
-                            <div>
-                                <label
-                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
-                                    Environment Context</label>
-                                <select id="risk-env-select"
-                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
-                                    <option value="Production">Production (Full Severity)</option>
-                                    <option value="UAT">UAT/QA (Downgrade Severity by 1 level)</option>
-                                    <option value="Development">Development (Downgrade Severity by 2 levels)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label
-                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Core
-                                    Severity Weights</label>
-                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
-                                    <div>
-                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">HIGH</span>
-                                        <input type="number" id="weight-high" value="10" min="1"
-                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
-                                    </div>
-                                    <div>
-                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">MEDIUM</span>
-                                        <input type="number" id="weight-medium" value="5" min="1"
-                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
-                                    </div>
-                                    <div>
-                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">LOW</span>
-                                        <input type="number" id="weight-low" value="2" min="1"
-                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button class="btn"
-                                style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;"
-                                onclick="triggerRiskCalculation()">
-                                Calculate Risk Score
-                            </button>
-
-                            <div
-                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
-                                <button class="btn" id="btn-risk-export"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                    onclick="exportRiskConfig()">
-                                    Export Config
-                                </button>
-                                <label for="risk-import-file" class="btn"
-                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
-                                    Import Config
-                                </label>
-                                <input type="file" id="risk-import-file" accept=".json" style="display: none;"
-                                    onchange="importRiskConfig(event)">
-                            </div>
-                        </div>
-
-                        <!-- Right Panel: Results & Findings Breakdown -->
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                            <!-- Score Display Card -->
-                            <div class="card"
-                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
-                                <div>
-                                    <h4
-                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
-                                        Composite Score</h4>
-                                    <div id="risk-rating-label"
-                                        style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--status-low);">
-                                        LOW COMPLIANCE RISK</div>
-                                </div>
-                                <div id="risk-score-value"
-                                    style="font-size: 2.25rem; font-weight: 900; color: var(--text-primary); font-family: var(--font-display);">
-                                    --
-                                </div>
-                            </div>
-
-                            <!-- Findings Table -->
-                            <div>
-                                <h4
-                                    style="margin: 0 0 0.75rem 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">
-                                    Active Findings Severity Mappings</h4>
-                                <div class="fleet-table-container" style="max-height: 280px; overflow-y: auto;">
-                                    <table class="fleet-table" style="width: 100%; font-size: 0.8rem;">
-                                        <thead>
-                                            <tr>
-                                                <th>Code</th>
-                                                <th>Title</th>
-                                                <th>Base Sev</th>
-                                                <th>Effective Sev</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="risk-findings-tbody">
-                                            <tr>
-                                                <td colspan="5"
-                                                    style="text-align: center; color: var(--text-secondary);">Select an
-                                                    assessment session.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section: SAMP Core Auditing / SAMP Auditor -->
-            <div id="section-samp-auditor" class="section-view" style="display: none;">
-                <div class="card" style="padding: 2rem;">
-                    <div
-                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2
-                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
-                            SAMP Core Auditor Board
-                        </h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Audit governance dashboard to verify and override manual compliance checks and sign
-                            cryptographic evidence.
-                        </p>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
-                        <!-- Left Panel: Manual Checklist Controls -->
-                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <div
-                                style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
-                                <div style="flex: 1.5; display: flex; gap: 0.75rem; align-items: flex-end;">
-                                    <div style="flex: 1;">
-                                        <label
-                                            style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select
-                                            Audit Assessment</label>
-                                        <select id="samp-assessment-select"
-                                            style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;"
-                                            onchange="handleSampAssessmentChange()">
-                                            <!-- Dynamic options -->
-                                        </select>
-                                    </div>
-                                    <button class="btn"
-                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                        onclick="exportSampFindingsData()">
-                                        Export Data
-                                    </button>
-                                    <label for="samp-import-file" class="btn"
-                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; box-sizing: border-box;">
-                                        Import Data
-                                    </label>
-                                    <input type="file" id="samp-import-file" accept=".json" style="display: none;"
-                                        onchange="importSampFindingsData(event)">
-                                </div>
-                                <div style="text-align: right; flex: 0.8;">
-                                    <div
-                                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">
-                                        Auditing Progress</div>
-                                    <div id="samp-progress-label"
-                                        style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5
-                                        Controls</div>
-                                </div>
-                            </div>
-
-                            <!-- The active manual control form -->
-                            <div class="card" id="samp-control-card"
-                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                                    <span id="samp-ctrl-code"
-                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">CTRL-011</span>
-                                    <span
-                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">MANUAL
-                                        CONTROL</span>
-                                </div>
-                                <h3 id="samp-ctrl-title"
-                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
-                                    Role-Based Access Control</h3>
-                                <p id="samp-ctrl-desc"
-                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
-                                    Auditors verify RBAC authorization checks are enforced on endpoints.
-                                </p>
-
-                                <div
-                                    style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
-                                    <div>
-                                        <label
-                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Evaluation
-                                            Status</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <button class="btn" id="btn-samp-pass"
-                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #16a34a; color: #16a34a;"
-                                                onclick="setSampControlStatus('PASS')">PASS</button>
-                                            <button class="btn" id="btn-samp-fail"
-                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #dc2626; color: #dc2626;"
-                                                onclick="setSampControlStatus('FAIL')">FAIL</button>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label
-                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Audit
-                                            Findings & Evidence Notes</label>
-                                        <textarea id="samp-ctrl-notes" rows="3"
-                                            placeholder="Enter manual audit findings, LDAP queries verified, endpoint tests conducted, etc..."
-                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
-                                    </div>
-
-                                    <div style="display: flex; gap: 0.75rem;">
-                                        <button class="btn" id="btn-samp-save"
-                                            style="flex: 1.3; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
-                                            onclick="saveSampControlOverride()">Save Finding Override</button>
-                                        <button class="btn" id="btn-samp-sign"
-                                            style="flex: 1; font-size: 0.78rem; padding: 0.55rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                            onclick="signSampControlEvidence()">Sign Evidence</button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- ZAP Vulnerability Scanner Card -->
-                            <div class="card" id="zap-scanner-card"
-                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; margin-top: 0.5rem;">
-                                <div
-                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                                    <span
-                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">ZAP
-                                        SCANNER</span>
-                                    <span
-                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">AUTOMATED
-                                        SECURITY SCAN</span>
-                                </div>
-                                <h3
-                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
-                                    Automated Web Scans</h3>
-                                <p
-                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
-                                    Run active OWASP ZAP and HTTP security header compliance audits on target URLs.
-                                </p>
-                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                    <div>
-                                        <label
-                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Target
-                                            URL</label>
-                                        <input type="text" id="zap-target-url" value="http://127.0.0.1:8080"
-                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); box-sizing: border-box;">
-                                    </div>
-                                    <button class="btn" id="btn-run-zap"
-                                        style="width: 100%; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
-                                        onclick="runSampZapScan()">
-                                        Run Security Audit Scan
-                                    </button>
-                                    <div>
-                                        <label
-                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Scan
-                                            Output Logs</label>
-                                        <div id="zap-terminal"
-                                            style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 180px; max-height: 180px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem; box-sizing: border-box;">
-                                            <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Scanner
-                                                ready. Standing by...</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Panel: Checklist Selector List -->
-                        <div style="display: flex; flex-direction: column;">
-                            <label
-                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual
-                                Controls Checklist</label>
-                            <div style="display: flex; flex-direction: column; gap: 0.75rem;"
-                                id="samp-checklist-items-container">
-                                <!-- Dynamic check items click to edit -->
-                            </div>
-
-                            <div
-                                style="margin-top: 1.5rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
-                                <label
-                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Export
-                                    Compliance Reports</label>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn"
-                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                        onclick="exportSampReport('html')">
-                                        Export HTML
-                                    </button>
-                                    <button class="btn"
-                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                        onclick="exportSampReport('pdf')">
-                                        Export PDF
-                                    </button>
-                                    <button class="btn"
-                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
-                                        onclick="exportSampReport('json')">
-                                        Export JSON
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <!-- Section: Scoring & Controls -->
             <div id="section-risk" class="section-view" style="display: none;">
@@ -1792,11 +1235,11 @@
                             <thead id="fleet-table-head">
                                 <tr>
                                     <th>Device ID</th>
-                                    <th>Canonical Name</th>
-                                    <th>Assigned User</th>
+                                    <th>Name</th>
+                                    <th>User</th>
                                     <th>Last Login</th>
                                     <th>Location</th>
-                                    <th>Loc Group</th>
+                                    <th>Group</th>
                                     <th>Condition</th>
                                     <th>Score</th>
                                     <th>Risk Level</th>
@@ -2300,12 +1743,12 @@
 
         // Software catalogs (Core Enterprise Security Agents & Controls)
         const sampleSoftwareCatalog = [
-            { name: "Active Directory (AD) Enrollment", key: "ad" },
-            { name: "BitLocker Drive Encryption", key: "bitlocker" },
-            { name: "Zscaler Client Connector", key: "zscaler" },
-            { name: "Nessus Vulnerability Agent", key: "nessus" },
-            { name: "SentinelOne Endpoint Protection", key: "sentinelone" },
-            { name: "SCCM Management Agent", key: "sccm" }
+            { name: "Active Directory", key: "ad" },
+            { name: "BitLocker", key: "bitlocker" },
+            { name: "Zscaler", key: "zscaler" },
+            { name: "Nessus", key: "nessus" },
+            { name: "SentinelOne", key: "sentinelone" },
+            { name: "SCCM", key: "sccm" }
         ];
 
         // Corporate User Assigned and Office Locations catalogs
@@ -2416,7 +1859,7 @@
         }
 
         // Global variables for dynamic table headers and keys
-        let activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+        let activeTableHeaders = ["Device ID", "Name", "User", "Last Login", "Location", "Group", "Condition"];
         let activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
         // Global registry of enforced compliance policies (true = Required, false = Optional)
@@ -2797,7 +2240,7 @@
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
 
             if (usePython) {
-                // Use readAsDataURL — browser handles binary-to-base64 natively (avoids freezing btoa loop)
+                // Use readAsDataURL Ã¢â‚¬â€ browser handles binary-to-base64 natively (avoids freezing btoa loop)
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     try {
@@ -2828,7 +2271,7 @@
                                     ingestParsedRows(data.rows);
                                 } else {
                                     logToTerminal(`[Import] Python validation failed: ${data.message}`, "error");
-                                    alert(`❌ Python Validation Failed: ${data.message}`);
+                                    alert(`Ã¢ÂÅ’ Python Validation Failed: ${data.message}`);
                                 }
                             })
                             .catch(err => {
@@ -2880,7 +2323,7 @@
         function ingestParsedRows(rows) {
             if (!rows || rows.length < 2) {
                 logToTerminal(`[Import] Failed: File contains insufficient rows.`, "error");
-                alert(`❌ Ingestion Failed: File has no data or has too few rows.`);
+                alert(`Ã¢ÂÅ’ Ingestion Failed: File has no data or has too few rows.`);
                 return;
             }
 
@@ -2993,12 +2436,12 @@
                 }
 
                 const software = [
-                    { name: "Active Directory (AD) Enrollment", key: "ad", ...getAgentStatus(adIdx, "AD Enrollment") },
-                    { name: "BitLocker Drive Encryption", key: "bitlocker", ...getAgentStatus(bitlockerIdx, "BitLocker") },
-                    { name: "Zscaler Client Connector", key: "zscaler", ...getAgentStatus(zscalerIdx, "Zscaler Client Connector") },
-                    { name: "Nessus Vulnerability Agent", key: "nessus", ...getAgentStatus(nessusIdx, "Nessus Vulnerability Agent") },
-                    { name: "SentinelOne Endpoint Protection", key: "sentinelone", ...getAgentStatus(s1Idx, "SentinelOne Endpoint Protection") },
-                    { name: "SCCM Management Agent", key: "sccm", ...getAgentStatus(sccmIdx, "SCCM Management Agent") }
+                    { name: "Active Directory", key: "ad", ...getAgentStatus(adIdx, "Active Directory") },
+                    { name: "BitLocker", key: "bitlocker", ...getAgentStatus(bitlockerIdx, "BitLocker") },
+                    { name: "Zscaler", key: "zscaler", ...getAgentStatus(zscalerIdx, "Zscaler") },
+                    { name: "Nessus", key: "nessus", ...getAgentStatus(nessusIdx, "Nessus") },
+                    { name: "SentinelOne", key: "sentinelone", ...getAgentStatus(s1Idx, "SentinelOne") },
+                    { name: "SCCM", key: "sccm", ...getAgentStatus(sccmIdx, "SCCM") }
                 ];
 
                 const custom_properties = {};
@@ -3034,7 +2477,7 @@
             filteredDataset = [...fleetDataset];
             selectedDevice = null;
 
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+            activeTableHeaders = ["Device ID", "Name", "User", "Last Login", "Location", "Group", "Condition"];
             activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
             const importedKeys = new Set();
@@ -3078,7 +2521,7 @@
             selectedDevice = null;
 
             // Reset headers
-            activeTableHeaders = ["Device ID", "Canonical Name", "Assigned User", "Last Login", "Location", "Loc Group", "Condition"];
+            activeTableHeaders = ["Device ID", "Name", "User", "Last Login", "Location", "Group", "Condition"];
             activeTableKeys = ["id", "canonical_name", "user_assigned", "last_login", "location", "location_group", "condition"];
 
             // Clear spreadsheet reconciler cache and workspace data
@@ -3113,7 +2556,7 @@
 
             // Update all views, metrics, and render states
             renderReconcilerQueue();
-            // Guard currentReconTab — may be undefined if reconciler was never opened
+            // Guard currentReconTab Ã¢â‚¬â€ may be undefined if reconciler was never opened
             if (currentReconTab) switchReconTab(currentReconTab);
             updateFleetWideMetrics();
             handleFleetQueryChange();
@@ -3143,7 +2586,7 @@
             const hasQuery = query.length > 0;
             const hasFilters = conditionFilter !== "ALL" || locGroupFilter !== "ALL" || policyFilter !== "ALL";
 
-            // Fast path: no search query and no filters — show full dataset instantly
+            // Fast path: no search query and no filters Ã¢â‚¬â€ show full dataset instantly
             if (!hasQuery && !hasFilters) {
                 filteredDataset = fleetDataset;
                 currentPage = 1;
@@ -3303,19 +2746,7 @@
             const customSection = document.getElementById("det-custom-params-section");
             const customTbody = document.getElementById("det-custom-params-tbody");
 
-            if (dev.custom_properties && Object.keys(dev.custom_properties).length > 0) {
-                customSection.style.display = "block";
-                customTbody.innerHTML = "";
-
-                Object.entries(dev.custom_properties).forEach(([key, val]) => {
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = `
-                        <td><strong>${escapeHTML(key)}</strong></td>
-                        <td style="font-family: var(--font-mono); color: var(--text-primary);">${escapeHTML(val)}</td>
-                    `;
-                    customTbody.appendChild(tr);
-                });
-            } else {
+            if (customSection) {
                 customSection.style.display = "none";
             }
 
@@ -3406,7 +2837,7 @@
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
                 const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
-                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
+                const isApplicable = !["Active Directory", "BitLocker", "SCCM"].includes(name) || isWindows;
                 if (!isApplicable) continue;
 
                 if (!name.startsWith('[')) {
@@ -3665,12 +3096,12 @@
             if (!grid) return;
 
             const corePolicies = [
-                "Active Directory (AD) Enrollment",
-                "BitLocker Drive Encryption",
-                "Zscaler Client Connector",
-                "Nessus Vulnerability Agent",
-                "SentinelOne Endpoint Protection",
-                "SCCM Management Agent"
+                "Active Directory",
+                "BitLocker",
+                "Zscaler",
+                "Nessus",
+                "SentinelOne",
+                "SCCM"
             ];
 
             const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
@@ -3984,7 +3415,7 @@
                 else { riskLabel.innerText = "FULLY COMPLIANT FLEET"; riskLabel.style.color = "#15803d"; }
             }
 
-            // Defer chart renders to next animation frame — avoids blocking the main thread during data load
+            // Defer chart renders to next animation frame Ã¢â‚¬â€ avoids blocking the main thread during data load
             requestAnimationFrame(() => {
                 renderActiveTrendChart();
                 renderActiveRiskChart();
@@ -4908,7 +4339,7 @@
                 // Set default nav to hub if no section is active
                 const activeItem = document.querySelector(".sidebar-menu .menu-item.active");
                 if (!activeItem) {
-                    switchNavSection("hub");
+                    switchNavSection("compliance");
                 }
 
                 // Initialize default template for SIEM & load assessments
@@ -5063,7 +4494,7 @@
             initSessionUI();
 
             // Switch to overview view
-            switchNavSection("hub");
+            switchNavSection("compliance");
             logToTerminal(`[Session Active] Successfully logged in. Session established for tenant: "${tenant}"`, "info");
         }
 
@@ -5133,7 +4564,7 @@
 
                 enforceRoleBasedControls();
                 initSessionUI();
-                switchNavSection("hub");
+                switchNavSection("compliance");
                 logToTerminal(`[OAuth SSO] Authentication lease established via ${provider.toUpperCase()}: ${res.username}`, "info");
                 alert(`Welcome back! Successfully authenticated via ${provider.toUpperCase()} SSO.`);
             } else {
@@ -5256,7 +4687,7 @@
                     currentSession.roleLabel = roleLabels[newRole] || "Enterprise Compliance User";
                     enforceRoleBasedControls();
                     if (newRole !== 'admin' && newRole !== 'developer') {
-                        switchNavSection("hub");
+                        switchNavSection("compliance");
                     }
                 }
             } else {
@@ -5325,7 +4756,7 @@
             logToTerminal("[Settings] Configuration successfully committed and replicated to downstream gateway.", "info");
 
             // Switch back to gateway hub as active view
-            switchNavSection("hub");
+            switchNavSection("compliance");
         }
 
         async function apiGet(endpoint) {
@@ -6304,12 +5735,12 @@
 
         function getAvailablePolicies() {
             const list = [
-                "Active Directory (AD) Enrollment",
-                "BitLocker Drive Encryption",
-                "Zscaler Client Connector",
-                "Nessus Vulnerability Agent",
-                "SentinelOne Endpoint Protection",
-                "SCCM Management Agent"
+                "Active Directory",
+                "BitLocker",
+                "Zscaler",
+                "Nessus",
+                "SentinelOne",
+                "SCCM"
             ];
 
             // Gather all custom properties from fleetDataset that represent spreadsheet compliance columns
@@ -6404,12 +5835,12 @@
             if (!tableHead || !tbody) return;
 
             const policies = [
-                "Active Directory (AD) Enrollment",
-                "BitLocker Drive Encryption",
-                "Zscaler Client Connector",
-                "Nessus Vulnerability Agent",
-                "SentinelOne Endpoint Protection",
-                "SCCM Management Agent"
+                "Active Directory",
+                "BitLocker",
+                "Zscaler",
+                "Nessus",
+                "SentinelOne",
+                "SCCM"
             ];
 
             let headHtml = `
@@ -6491,7 +5922,7 @@
             document.getElementById("reporting-pag-total").innerText = total.toLocaleString();
         }
 
-        // Per-render cache for getPolicyStats — avoids re-scanning 14k rows multiple times per render
+        // Per-render cache for getPolicyStats Ã¢â‚¬â€ avoids re-scanning 14k rows multiple times per render
         var _policyStatsCache = null;
         var _policyStatsCacheFilter = null;
 
@@ -6511,16 +5942,16 @@
                 _policyStatsCache = {};
                 _policyStatsCacheFilter = conditionFilter;
 
-                // Single pass over fleetDataset — compute stats for ALL core policies at once
+                // Single pass over fleetDataset Ã¢â‚¬â€ compute stats for ALL core policies at once
                 const corePolicyNames = [
-                    "Active Directory (AD) Enrollment",
-                    "BitLocker Drive Encryption",
-                    "Zscaler Client Connector",
-                    "Nessus Vulnerability Agent",
-                    "SentinelOne Endpoint Protection",
-                    "SCCM Management Agent"
+                    "Active Directory",
+                    "BitLocker",
+                    "Zscaler",
+                    "Nessus",
+                    "SentinelOne",
+                    "SCCM"
                 ];
-                const windowsOnlyPolicies = new Set(["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"]);
+                const windowsOnlyPolicies = new Set(["Active Directory", "BitLocker", "SCCM"]);
 
                 // Initialize accumulators for core policies
                 corePolicyNames.forEach(n => {
@@ -6600,7 +6031,7 @@
                 };
             }
 
-            // Custom/Excel policy — compute inline (not cached, typically fewer rows)
+            // Custom/Excel policy Ã¢â‚¬â€ compute inline (not cached, typically fewer rows)
             const hasProperty = fleetDataset.some(dev => dev.custom_properties && dev.custom_properties[name] !== undefined);
             if (!hasProperty) {
                 return {
@@ -6878,12 +6309,12 @@
             if (dev.is_rogue) return false;
 
             const corePolicies = [
-                "Active Directory (AD) Enrollment",
-                "BitLocker Drive Encryption",
-                "Zscaler Client Connector",
-                "Nessus Vulnerability Agent",
-                "SentinelOne Endpoint Protection",
-                "SCCM Management Agent"
+                "Active Directory",
+                "BitLocker",
+                "Zscaler",
+                "Nessus",
+                "SentinelOne",
+                "SCCM"
             ];
 
             let hasNonCompliant = false;
@@ -6893,7 +6324,7 @@
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
                 const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
-                const isApplicable = !["Active Directory (AD) Enrollment", "BitLocker Drive Encryption", "SCCM Management Agent"].includes(name) || isWindows;
+                const isApplicable = !["Active Directory", "BitLocker", "SCCM"].includes(name) || isWindows;
                 if (!isApplicable) continue;
 
                 const sw = dev.software && dev.software.find(s => s.name === name);
@@ -6956,7 +6387,7 @@
                             </p>
                             <div style="display: flex; gap: 0.75rem; margin-top: 0.25rem;">
                                 <span class="badge" style="background: ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border: 1px solid ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.3)' : 'rgba(220, 53, 69, 0.3)'}; color: ${compliantPct >= 85 ? 'var(--status-low)' : 'var(--status-critical)'}; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.35rem;">
-                                    ${compliantPct >= 85 ? 'COMPLIANT ▲' : 'VIOLATION ▼'}
+                                    ${compliantPct >= 85 ? 'COMPLIANT Ã¢â€“Â²' : 'VIOLATION Ã¢â€“Â¼'}
                                 </span>
                             </div>
                         </div>
@@ -6991,12 +6422,12 @@
             `;
 
             const policies = [
-                "Active Directory (AD) Enrollment",
-                "BitLocker Drive Encryption",
-                "Zscaler Client Connector",
-                "Nessus Vulnerability Agent",
-                "SentinelOne Endpoint Protection",
-                "SCCM Management Agent"
+                "Active Directory",
+                "BitLocker",
+                "Zscaler",
+                "Nessus",
+                "SentinelOne",
+                "SCCM"
             ];
             let controlRowsHtml = "";
 
@@ -7392,7 +6823,7 @@
             });
         }
 
-        // Placeholder — the uploaded software list is stable per session;
+        // Placeholder Ã¢â‚¬â€ the uploaded software list is stable per session;
         // this is called to pair with cache invalidation patterns in the filter pipeline.
         function invalidateUploadedSoftwareCache() {
             // Invalidate policyStats cache too since uploaded state may affect results
@@ -7697,7 +7128,7 @@
                                         renderReconcilerQueue();
                                     } else {
                                         logToTerminal(`[Reconciler] Python validation failed for "${file.name}": ${data.message}`, "error");
-                                        alert(`❌ Python Validation Failed: ${data.message}`);
+                                        alert(`Ã¢ÂÅ’ Python Validation Failed: ${data.message}`);
                                     }
                                 })
                                 .catch(err => {
@@ -7743,7 +7174,7 @@
                         if (typeof XLSX === "undefined") {
                             const cdnError = "SheetJS library (XLSX) could not be loaded from the network. Please connect to the internet or convert the file to CSV.";
                             logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${cdnError}`, "error");
-                            alert(`❌ Excel Ingestion Failed:\n\n${cdnError}`);
+                            alert(`Ã¢ÂÅ’ Excel Ingestion Failed:\n\n${cdnError}`);
                             return;
                         }
 
@@ -7756,7 +7187,7 @@
 
                     if (!rows || rows.length < 2) {
                         logToTerminal(`[Reconciler] Failed: "${file.name}" contains insufficient rows.`, "error");
-                        alert(`❌ Ingestion Failed: "${file.name}" has no data or has too few rows.`);
+                        alert(`Ã¢ÂÅ’ Ingestion Failed: "${file.name}" has no data or has too few rows.`);
                         return;
                     }
 
@@ -7780,7 +7211,7 @@
 
                 } catch (err) {
                     logToTerminal(`[Reconciler] Ingestion failed for "${file.name}": ${err.message}`, "error");
-                    alert(`❌ File Import Error: ${err.message}`);
+                    alert(`Ã¢ÂÅ’ File Import Error: ${err.message}`);
                 }
             };
 
@@ -7925,7 +7356,7 @@
                             renderReconciliationUI();
                         } else {
                             logToTerminal(`[Reconciler] Python Reconciliation failed: ${data.message}`, "error");
-                            alert(`❌ Reconciliation Failed: ${data.message}`);
+                            alert(`Ã¢ÂÅ’ Reconciliation Failed: ${data.message}`);
                         }
                     })
                     .catch(err => {
@@ -8418,7 +7849,7 @@
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
 
                 if (rowsToRender.length === 0) {
-                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 Stellar Alignment! Zero gaps detected.</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">Ã°Å¸Å½â€° Stellar Alignment! Zero gaps detected.</td></tr>`;
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
@@ -8483,7 +7914,7 @@
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${item.name.toUpperCase()}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
-                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">🟢 Aligned</td>
+                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">Ã°Å¸Å¸Â¢ Aligned</td>
                             <td style="vertical-align: middle; padding: 0.75rem 0;">
                                 <div style="display: flex; flex-wrap: wrap; max-width: 750px;">
                                     ${propertiesHtml}
@@ -9013,7 +8444,7 @@
                 }
             }
 
-            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
+            const confirmMerge = confirm(`Ã¢Å¡Â¡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
             if (!confirmMerge) return;
 
             registerMergedSoftwareAgents();
@@ -9046,7 +8477,9 @@
 
                 const customProps = { "Reconciliation Match": "SUCCESS" };
                 item.mergedProperties.forEach(p => {
-                    customProps[`[${p.source}] ${p.property}`] = p.value;
+                    if (p.sheetRole && p.sheetRole.toLowerCase() === "primary") {
+                        customProps[p.property] = p.value;
+                    }
                 });
 
                 if (existing) {
@@ -9137,7 +8570,9 @@
                     "Missing Telemetries": item.missingInSheets.join(", ")
                 };
                 item.mergedProperties.forEach(p => {
-                    customProps[`[${p.source}] ${p.property}`] = p.value;
+                    if (p.sheetRole && p.sheetRole.toLowerCase() === "primary") {
+                        customProps[p.property] = p.value;
+                    }
                 });
 
                 if (existing) {
@@ -9731,3 +9166,4 @@
 </body>
 
 </html>
+

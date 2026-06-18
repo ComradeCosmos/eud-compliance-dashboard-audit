@@ -86,7 +86,7 @@ createMockElement('recon-table-body');
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -159,12 +159,12 @@ try {
                 location_group: "Sift",
                 is_isolated: false,
                 software: [
-                    { name: "Active Directory (AD) Enrollment", key: "ad", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "BitLocker Drive Encryption", key: "bitlocker", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "Zscaler Client Connector", key: "zscaler", installed: "MISSING", required: "REQUIRED", status: "NON_COMPLIANT" },
-                    { name: "Nessus Vulnerability Agent", key: "nessus", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "SentinelOne Endpoint Protection", key: "sentinelone", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "SCCM Management Agent", key: "sccm", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" }
+                    { name: "Active Directory", key: "ad", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "BitLocker", key: "bitlocker", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "Zscaler", key: "zscaler", installed: "MISSING", required: "REQUIRED", status: "NON_COMPLIANT" },
+                    { name: "Nessus", key: "nessus", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "SentinelOne", key: "sentinelone", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "SCCM", key: "sccm", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" }
                 ],
                 custom_properties: {}
             }
@@ -287,8 +287,8 @@ try {
         }
         
         // Check policy statistics unreported states
-        const bitlockerStats = getPolicyStats("BitLocker Drive Encryption");
-        const zscalerStats = getPolicyStats("Zscaler Client Connector");
+        const bitlockerStats = getPolicyStats("BitLocker");
+        const zscalerStats = getPolicyStats("Zscaler");
         
         console.log('BitLocker Stats isUnreported:', bitlockerStats.isUnreported);
         console.log('Zscaler Stats isUnreported:', zscalerStats.isUnreported);
@@ -381,8 +381,8 @@ try {
         }
         
         // Verify stats for both policies are active and evaluated!
-        const checkZscalerStats = getPolicyStats("Zscaler Client Connector");
-        const checkBitLockerStats = getPolicyStats("BitLocker Drive Encryption");
+        const checkZscalerStats = getPolicyStats("Zscaler");
+        const checkBitLockerStats = getPolicyStats("BitLocker");
         
         console.log('Zscaler Stats isUnreported after second merge:', checkZscalerStats.isUnreported, checkZscalerStats.compliantCount, '/', checkZscalerStats.totalCount);
         console.log('BitLocker Stats isUnreported after second merge:', checkBitLockerStats.isUnreported, checkBitLockerStats.compliantCount, '/', checkBitLockerStats.totalCount);

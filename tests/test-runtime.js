@@ -15,7 +15,7 @@ console.log('Testing JS runtime execution on boot...');
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},

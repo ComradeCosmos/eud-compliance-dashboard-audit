@@ -17,7 +17,7 @@ const jsCode = match[1];
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -69,39 +69,39 @@ vm.runInContext(`
             canonical_name: "win-1",
             os_family: "Windows",
             condition: "IN_USE",
-            software: [{ name: "Active Directory (AD) Enrollment", status: "COMPLIANT", installed: "INSTALLED" }]
+            software: [{ name: "Active Directory", status: "COMPLIANT", installed: "INSTALLED" }]
         },
         {
             id: "dev-win-2",
             canonical_name: "win-2",
             os_family: "Windows",
             condition: "IN_USE",
-            software: [{ name: "Active Directory (AD) Enrollment", status: "NON_COMPLIANT", installed: "MISSING" }]
+            software: [{ name: "Active Directory", status: "NON_COMPLIANT", installed: "MISSING" }]
         },
         {
             id: "dev-win-3",
             canonical_name: "win-3",
             os_family: "Windows",
             condition: "EXPIRED",
-            software: [{ name: "Active Directory (AD) Enrollment", status: "COMPLIANT", installed: "INSTALLED" }]
+            software: [{ name: "Active Directory", status: "COMPLIANT", installed: "INSTALLED" }]
         },
         {
             id: "dev-mac-1",
             canonical_name: "mac-1",
             os_family: "macOS",
             condition: "IN_USE",
-            software: [{ name: "Active Directory (AD) Enrollment", status: "NON_COMPLIANT", installed: "MISSING" }]
+            software: [{ name: "Active Directory", status: "NON_COMPLIANT", installed: "MISSING" }]
         }
     ];
     filteredDataset = [...fleetDataset];
 
-    const allStats = getPolicyStats("Active Directory (AD) Enrollment", "ALL");
+    const allStats = getPolicyStats("Active Directory", "ALL");
     console.log("conditionFilter=ALL:");
     console.log("  Compliant Count:  ", allStats.compliantCount);
     console.log("  Total Count:      ", allStats.totalCount);
     console.log("  Pass Rate:        ", (allStats.totalCount > 0 ? (allStats.compliantCount / allStats.totalCount * 100).toFixed(2) : 0) + "%");
 
-    const inUseStats = getPolicyStats("Active Directory (AD) Enrollment", "IN_USE");
+    const inUseStats = getPolicyStats("Active Directory", "IN_USE");
     console.log("conditionFilter=IN_USE:");
     console.log("  Compliant Count:  ", inUseStats.compliantCount);
     console.log("  Total Count:      ", inUseStats.totalCount);

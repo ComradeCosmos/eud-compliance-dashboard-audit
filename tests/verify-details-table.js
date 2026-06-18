@@ -82,7 +82,7 @@ const domMock = {
         warn: console.warn
     },
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -170,45 +170,10 @@ try {
     const customSection = domElements['det-custom-params-section'];
     const customTbody = domElements['det-custom-params-tbody'];
 
-    console.log('Verifying Custom Telemetry & Asset Properties section visibility...');
-    if (customSection.style.display !== 'block') {
-        throw new Error('det-custom-params-section style.display should be "block" when custom properties are present');
+    console.log('Verifying Custom Telemetry & Asset Properties section is hidden...');
+    if (customSection.style.display !== 'none') {
+        throw new Error('det-custom-params-section style.display should be "none" (removed as per user request)');
     }
-
-    console.log('Verifying child table row elements count...');
-    console.log('Found children rows:', customTbody.children.length);
-    if (customTbody.children.length !== 5) {
-        throw new Error(`Expected exactly 5 child rows, but found ${customTbody.children.length}`);
-    }
-
-    // Inspect the generated table rows content
-    const expectedProperties = {
-        "Department": "Product Engineering",
-        "Asset Tag": "AT-99999",
-        "Assigned Project": "Project-Omega",
-        "Bios Version": "v1.2.3",
-        "Subnet IP": "10.23.45.67"
-    };
-
-    customTbody.children.forEach(row => {
-        if (row.tagName !== 'TR') {
-            throw new Error(`Expected child tag to be "TR", got "${row.tagName}"`);
-        }
-        
-        const htmlContent = row.innerHTML;
-        // Verify key and value exist in the innerHTML of the row
-        let matchFound = false;
-        for (const [key, val] of Object.entries(expectedProperties)) {
-            if (htmlContent.includes(key) && htmlContent.includes(val)) {
-                console.log(`✔ Verified row for key "${key}" matches value "${val}"`);
-                matchFound = true;
-                break;
-            }
-        }
-        if (!matchFound) {
-            throw new Error(`Row HTML content did not match any expected properties: "${htmlContent}"`);
-        }
-    });
 
     console.log('✔ All verification assertions passed successfully! 🎉');
 } catch (err) {

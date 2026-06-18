@@ -87,7 +87,7 @@ const domMock = {
         warn: console.warn
     },
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -150,12 +150,12 @@ try {
                 condition: "IN_USE",
                 level: "NON_COMPLIANT", // Non-compliant in main workspace because of custom policy
                 software: [
-                    { name: "Active Directory (AD) Enrollment", key: "ad", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "BitLocker Drive Encryption", key: "bitlocker", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "Zscaler Client Connector", key: "zscaler", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "Nessus Vulnerability Agent", key: "nessus", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "SentinelOne Endpoint Protection", key: "sentinelone", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
-                    { name: "SCCM Management Agent", key: "sccm", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" }
+                    { name: "Active Directory", key: "ad", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "BitLocker", key: "bitlocker", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "Zscaler", key: "zscaler", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "Nessus", key: "nessus", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "SentinelOne", key: "sentinelone", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" },
+                    { name: "SCCM", key: "sccm", installed: "INSTALLED", required: "REQUIRED", status: "COMPLIANT" }
                 ],
                 user_assigned: "test.user",
                 last_login: "2026-06-04 10:00",
@@ -183,12 +183,12 @@ try {
         console.log('dev.is_rogue:', dev.is_rogue);
         
         const corePolicies = [
-            "Active Directory (AD) Enrollment",
-            "BitLocker Drive Encryption",
-            "Zscaler Client Connector",
-            "Nessus Vulnerability Agent",
-            "SentinelOne Endpoint Protection",
-            "SCCM Management Agent"
+            "Active Directory",
+            "BitLocker",
+            "Zscaler",
+            "Nessus",
+            "SentinelOne",
+            "SCCM"
         ];
         
         for (let name of corePolicies) {

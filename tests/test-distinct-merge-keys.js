@@ -80,7 +80,7 @@ createMockElement('btn-recon-pag-next');
 const domMock = {
     console: console,
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
@@ -178,6 +178,7 @@ vm.runInContext(`
             name: "SN-999-ABC",
             normalized: "sn999abc",
             mergedProperties: [
+                { source: "corporate_directory.xlsx", sheetRole: "Primary", property: "Department", value: "Finance" },
                 { source: "zscaler_report.csv", sheetRole: "Secondary", property: "Zscaler Status", value: "ACTIVE" },
                 { source: "zscaler_report.csv", sheetRole: "Secondary", property: "Client Version", value: "5.2.1" }
             ],
@@ -212,8 +213,8 @@ vm.runInContext(`
     const device = fleetDataset[0];
     console.log('Merged custom properties:', device.custom_properties);
 
-    if (!device.custom_properties || device.custom_properties["[zscaler_report.csv] Zscaler Status"] !== "ACTIVE") {
-        throw new Error("FAIL: Custom properties from secondary sheet were not successfully merged!");
+    if (!device.custom_properties || device.custom_properties["Department"] !== "Finance" || device.custom_properties["[zscaler_report.csv] Zscaler Status"] !== undefined) {
+        throw new Error("FAIL: Custom properties from primary sheet were not successfully merged or secondary properties were not filtered out!");
     }
 
     console.log("✔ Multi-attribute identity resolution test passed cleanly! No duplicate entries created. 🎉");

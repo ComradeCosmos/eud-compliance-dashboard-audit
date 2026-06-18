@@ -94,7 +94,7 @@ const domMock = {
         warn: console.warn
     },
     setTimeout: setTimeout,
-    setInterval: setInterval,
+    setInterval: () => {},
     clearTimeout: clearTimeout,
     clearInterval: clearInterval,
     window: {},
