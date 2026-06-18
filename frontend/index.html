@@ -4,19 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EUD Compliance Dashboard - Executive Console</title>
+    <title>AM/NS Security Dashboard - Executive Console</title>
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <style>
         /* Dark Sidebar Overrides for high fidelity styling matching 2nd image */
         .sidebar {
-            background-color: #090e17 !important; /* Elegant slate-950 tone */
+            background-color: #090e17 !important;
+            /* Elegant slate-950 tone */
             border-right: 1px solid #1e293b !important;
             box-shadow: inset -1px 0 0 0 #1e293b !important;
         }
+
         .sidebar-menu .menu-item {
             color: #94a3b8 !important;
             font-size: 0.85rem !important;
@@ -26,17 +30,21 @@
             margin-bottom: 0.25rem !important;
             transition: all 0.2s ease !important;
         }
+
         .sidebar-menu .menu-item:hover {
             color: #ffffff !important;
             background-color: #1e293b !important;
         }
+
         .sidebar-menu .menu-item.active {
             color: #ffffff !important;
-            background-color: #2e080c !important; /* Softer, highly professional burgundy */
-            border-left: 3px solid #ef4444 !important; /* Vibrant brand red */
+            background-color: #2e080c !important;
+            /* Softer, highly professional burgundy */
+            border-left: 3px solid #ef4444 !important;
+            /* Vibrant brand red */
             border-radius: 0 4px 4px 0 !important;
         }
-        
+
         /* Dark Theme Gateway Hub Layout matching 1st image */
         .gateway-container {
             width: 100%;
@@ -47,8 +55,10 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); /* Sophisticated dark slate gradient */
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            /* Sophisticated dark slate gradient */
         }
+
         .gateway-title {
             font-size: 2.5rem !important;
             font-weight: 900 !important;
@@ -61,6 +71,7 @@
             border: none !important;
             padding: 0 !important;
         }
+
         .gateway-subtitle {
             color: #94a3b8 !important;
             font-size: 0.85rem !important;
@@ -70,6 +81,7 @@
             text-align: center;
             margin-bottom: 3.5rem !important;
         }
+
         .gateway-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -78,9 +90,12 @@
             width: 100%;
             box-sizing: border-box;
         }
+
         .gateway-card {
-            background: #1e293b !important; /* Premium Slate-800 Card Background */
-            border: 1px solid #334155 !important; /* Slate-700 Border */
+            background: #1e293b !important;
+            /* Premium Slate-800 Card Background */
+            border: 1px solid #334155 !important;
+            /* Slate-700 Border */
             border-radius: 6px !important;
             padding: 2.5rem !important;
             cursor: pointer;
@@ -89,14 +104,17 @@
             flex-direction: column;
             justify-content: space-between;
             min-height: 270px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
             box-sizing: border-box;
         }
+
         .gateway-card:hover {
             transform: translateY(-5px) !important;
-            border-color: #ef4444 !important; /* Hover highlight to vibrant red */
+            border-color: #ef4444 !important;
+            /* Hover highlight to vibrant red */
             box-shadow: 0 15px 35px rgba(239, 68, 68, 0.12) !important;
         }
+
         .gateway-card-btn {
             border: 1px solid #475569 !important;
             background: transparent !important;
@@ -111,15 +129,19 @@
             width: 100%;
             margin-top: 1.5rem;
         }
+
         .gateway-card:hover .gateway-card-btn {
             background: #ef4444 !important;
             border-color: #ef4444 !important;
             color: #ffffff !important;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
         }
+
         .gateway-badge {
-            background: #334155 !important; /* Slate badge bg */
-            color: #f87171 !important; /* Professional light red text */
+            background: #334155 !important;
+            /* Slate badge bg */
+            color: #f87171 !important;
+            /* Professional light red text */
             border: 1px solid #475569 !important;
             font-family: var(--font-mono) !important;
             font-size: 0.65rem !important;
@@ -129,7 +151,7 @@
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
         }
-        
+
         /* Interactive SIEM Controls styling */
         .siem-grid {
             display: grid;
@@ -137,12 +159,13 @@
             gap: 2rem;
             width: 100%;
         }
+
         @media (max-width: 1024px) {
             .siem-grid {
                 grid-template-columns: 1fr;
             }
         }
- 
+
         /* Collapsible Sidebar Groups */
         .sidebar-group-header {
             color: #94a3b8 !important;
@@ -158,20 +181,24 @@
             display: flex;
             align-items: center;
         }
+
         .sidebar-group-header:hover {
             color: #ffffff !important;
             background-color: #1e293b !important;
         }
+
         .sidebar-group-header.active {
             color: #ffffff !important;
             background-color: #1e293b !important;
         }
+
         .sidebar-submenu {
             list-style: none !important;
             padding-left: 1.25rem !important;
             margin: 0 !important;
             transition: all 0.3s ease !important;
         }
+
         .sidebar-submenu .menu-item {
             font-size: 0.78rem !important;
             font-weight: 500 !important;
@@ -182,14 +209,18 @@
             background: transparent !important;
             border-left: none !important;
         }
+
         .sidebar-submenu .menu-item:hover {
             color: #ffffff !important;
             background-color: #1e293b !important;
         }
+
         .sidebar-submenu .menu-item.active {
             color: #ffffff !important;
-            background-color: #2e080c !important; /* Burgundy highlight */
-            border-left: 2px solid #ef4444 !important; /* Brand red accent line */
+            background-color: #2e080c !important;
+            /* Burgundy highlight */
+            border-left: 2px solid #ef4444 !important;
+            /* Brand red accent line */
             border-radius: 0 3px 3px 0 !important;
         }
     </style>
@@ -198,9 +229,14 @@
 
 <body>
     <!-- Global background floating decorative spheres for investor appeal -->
-    <div class="global-bg-spheres" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; z-index: -1; pointer-events: none;">
-        <div style="position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, rgba(185, 28, 28, 0) 70%); border-radius: 50%; top: -100px; left: -100px; filter: blur(40px); animation: drift1 25s infinite alternate ease-in-out;"></div>
-        <div style="position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0) 70%); border-radius: 50%; bottom: -150px; right: -150px; filter: blur(50px); animation: drift2 30s infinite alternate ease-in-out;"></div>
+    <div class="global-bg-spheres"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; z-index: -1; pointer-events: none;">
+        <div
+            style="position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, rgba(185, 28, 28, 0) 70%); border-radius: 50%; top: -100px; left: -100px; filter: blur(40px); animation: drift1 25s infinite alternate ease-in-out;">
+        </div>
+        <div
+            style="position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0) 70%); border-radius: 50%; bottom: -150px; right: -150px; filter: blur(50px); animation: drift2 30s infinite alternate ease-in-out;">
+        </div>
     </div>
 
     <!-- Full-Screen Dedicated portal login gateway -->
@@ -208,19 +244,18 @@
         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, rgba(51, 65, 85, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 99999;">
         <div class="card"
             style="width: 460px; padding: 2.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-radius: 4px; position: relative;">
-            
+
             <!-- Close Button -->
             <button onclick="document.getElementById('login-screen-canvas').style.display = 'none';"
                 style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">✕</button>
 
             <div
                 style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
-                <img src="logo.png" alt="AM/NS India EUD Logo"
-                    style="height: 54px;">
+                <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 54px;">
                 <div>
                     <div
                         style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
-                        AM/NS <span style="color: var(--color-accent);">EUD</span>
+                        AM/NS <span style="color: var(--color-accent);">Dashboard</span>
                     </div>
                     <p
                         style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
@@ -230,8 +265,10 @@
 
             <!-- Tab Selectors -->
             <div style="display: flex; border-bottom: 1px solid var(--border-clean); margin-bottom: 0.5rem;">
-                <button id="auth-tab-login" onclick="showAuthModal('login')" class="tab-btn active" style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Log In</button>
-                <button id="auth-tab-signup" onclick="showAuthModal('signup')" class="tab-btn" style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Sign Up</button>
+                <button id="auth-tab-login" onclick="showAuthModal('login')" class="tab-btn active"
+                    style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Log In</button>
+                <button id="auth-tab-signup" onclick="showAuthModal('signup')" class="tab-btn"
+                    style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Sign Up</button>
             </div>
 
             <div id="portal-login-error-msg"
@@ -251,13 +288,15 @@
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.5rem;">
-                        <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
+                        <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
+                            PIN</label>
                         <input type="password" id="portal-login-passcode" placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
 
                     <button type="submit" class="btn"
-                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate Session Lease</button>
+                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate
+                        Session Lease</button>
                 </form>
             </div>
 
@@ -271,13 +310,15 @@
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.25rem;">
-                        <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault PIN</label>
+                        <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
+                            PIN</label>
                         <input type="password" id="portal-signup-passcode" placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.5rem;">
                         <label for="portal-signup-role" style="color: var(--text-secondary);">Access Role</label>
-                        <select id="portal-signup-role" style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                        <select id="portal-signup-role"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                             <option value="analyst">Analyst</option>
                             <option value="operator">Operator</option>
                             <option value="auditor">Auditor</option>
@@ -286,18 +327,23 @@
                     </div>
 
                     <button type="submit" class="btn"
-                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Create Account</button>
+                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Create
+                        Account</button>
                 </form>
             </div>
 
             <!-- Corporate SSO Gateways -->
             <div style="border-top: 1px solid var(--border-clean); margin-top: 0.5rem; padding-top: 0.75rem;">
-                <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); text-align: center; margin-bottom: 0.5rem;">Corporate SSO Gateways</div>
+                <div
+                    style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); text-align: center; margin-bottom: 0.5rem;">
+                    Corporate SSO Gateways</div>
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="btn btn-secondary" onclick="triggerOAuth('google')" style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                    <button class="btn btn-secondary" onclick="triggerOAuth('google')"
+                        style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                         Google SSO
                     </button>
-                    <button class="btn btn-secondary" onclick="triggerOAuth('github')" style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                    <button class="btn btn-secondary" onclick="triggerOAuth('github')"
+                        style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                         GitHub SSO
                     </button>
                 </div>
@@ -308,180 +354,281 @@
     </div>
 
     <!-- Beautiful Landing Page -->
-    <div id="section-landing" style="display: none; min-height: 100vh; background-color: transparent; font-family: var(--font-sans); color: var(--text-primary); position: relative; overflow: hidden;">
+    <div id="section-landing"
+        style="display: none; min-height: 100vh; background-color: transparent; font-family: var(--font-sans); color: var(--text-primary); position: relative; overflow: hidden;">
 
         <!-- Top Navigation -->
-        <header style="background: var(--bg-card); border-bottom: 1px solid var(--border-clean); padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;">
+        <header
+            style="background: var(--bg-card); border-bottom: 1px solid var(--border-clean); padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                 <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 40px;">
                 <div>
-                    <span style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: -0.04em;">AM/NS <span style="color: var(--color-accent);">Compliance</span></span>
-                    <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: -0.1rem;">Endpoint Security Gateway</div>
+                    <span
+                        style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: -0.04em;">AM/NS
+                        <span style="color: var(--color-accent);">Compliance</span></span>
+                    <div
+                        style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: -0.1rem;">
+                        Endpoint Security Gateway</div>
                 </div>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
-                <button class="btn btn-secondary" onclick="showAuthModal('login')" style="font-size: 0.8rem; padding: 0.5rem 1.25rem;">Log In</button>
-                <button class="btn" onclick="showAuthModal('signup')" style="font-size: 0.8rem; padding: 0.5rem 1.25rem; background: var(--color-accent); border-color: var(--color-accent);">Sign Up</button>
+                <button class="btn btn-secondary" onclick="showAuthModal('login')"
+                    style="font-size: 0.8rem; padding: 0.5rem 1.25rem;">Log In</button>
+                <button class="btn" onclick="showAuthModal('signup')"
+                    style="font-size: 0.8rem; padding: 0.5rem 1.25rem; background: var(--color-accent); border-color: var(--color-accent);">Sign
+                    Up</button>
             </div>
         </header>
 
         <!-- Hero Section -->
-        <section style="max-width: 1200px; margin: 4rem auto; padding: 0 2rem; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1;">
+        <section
+            style="max-width: 1200px; margin: 4rem auto; padding: 0 2rem; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1;">
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <span style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-accent); letter-spacing: 0.1em; border: 1px solid var(--color-accent-border); background: var(--color-accent-light); padding: 0.35rem 0.75rem; border-radius: 4px; align-self: flex-start;">NIST CSF 2.0 Compliant</span>
-                <h1 style="font-size: 3rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; text-transform: uppercase;">Zero-Trust Fleet <span style="color: var(--color-accent);">Compliance</span> & Security</h1>
+                <span
+                    style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-accent); letter-spacing: 0.1em; border: 1px solid var(--color-accent-border); background: var(--color-accent-light); padding: 0.35rem 0.75rem; border-radius: 4px; align-self: flex-start;">NIST
+                    CSF 2.0 Compliant</span>
+                <h1
+                    style="font-size: 3rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; text-transform: uppercase;">
+                    Zero-Trust Fleet <span style="color: var(--color-accent);">Compliance</span> & Security</h1>
                 <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6;">
-                    ArcelorMittal Nippon Steel India's unified compliance and risk governance dashboard. Reconcile enterprise inventory systems, run deep policy audits, and remediate endpoint anomalies in real-time.
+                    ArcelorMittal Nippon Steel India's unified compliance and risk governance dashboard. Reconcile
+                    enterprise inventory systems, run deep policy audits, and remediate endpoint anomalies in real-time.
                 </p>
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button class="btn" onclick="showAuthModal('login')" style="padding: 0.85rem 2rem; font-size: 0.9rem; background: var(--text-primary); border-color: var(--text-primary); color: var(--bg-main);">Launch EUD Console</button>
-                    <button class="btn btn-secondary" onclick="document.getElementById('features-target').scrollIntoView({ behavior: 'smooth' })" style="padding: 0.85rem 2rem; font-size: 0.9rem;">Explore Features</button>
+                    <button class="btn" onclick="showAuthModal('login')"
+                        style="padding: 0.85rem 2rem; font-size: 0.9rem; background: var(--text-primary); border-color: var(--text-primary); color: var(--bg-main);">Launch
+                        EUD Console</button>
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('features-target').scrollIntoView({ behavior: 'smooth' })"
+                        style="padding: 0.85rem 2rem; font-size: 0.9rem;">Explore Features</button>
                 </div>
             </div>
-            
+
             <!-- Quick Features Visual Card Slider -->
-            <div class="card" id="hero-interactive-card" style="border: 1px solid var(--border-clean); border-radius: 6px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); background: var(--bg-card); display: flex; flex-direction: column; gap: 1rem; overflow: hidden; position: relative; width: 480px; height: 380px; user-select: none; padding: 0 !important;">
+            <div class="card" id="hero-interactive-card"
+                style="border: 1px solid var(--border-clean); border-radius: 6px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); background: var(--bg-card); display: flex; flex-direction: column; gap: 1rem; overflow: hidden; position: relative; width: 480px; height: 380px; user-select: none; padding: 0 !important;">
                 <!-- Slider Wrapper -->
-                <div id="hero-slider-wrapper" style="display: flex; width: 300%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
+                <div id="hero-slider-wrapper"
+                    style="display: flex; width: 300%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
                     <!-- Slide 1: Fleet Coverage Ledger -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
-                        <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">Corporate Directory Status</h3>
-                                <p style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">Operational Security Ledger</p>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    Corporate Directory Status</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Operational Security Ledger</p>
                             </div>
                             <span class="badge risk-low">ACTIVE</span>
                         </div>
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Fleet Scale</span>
-                                <div id="hero-fleet-scale" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">10,029</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Fleet
+                                    Scale</span>
+                                <div id="hero-fleet-scale"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    10,029</div>
                             </div>
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Avg Compliance</span>
-                                <div id="hero-avg-compliance" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">94.2%</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Avg
+                                    Compliance</span>
+                                <div id="hero-avg-compliance"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">
+                                    94.2%</div>
                             </div>
                         </div>
-                        
+
                         <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>AD Directory Enrollment</span>
-                                     <strong id="hero-ad-val" style="color: var(--status-low);">98.4% Compliant</strong>
+                                    <span>AD Directory Enrollment</span>
+                                    <strong id="hero-ad-val" style="color: var(--status-low);">98.4% Compliant</strong>
                                 </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-ad-bar" style="width: 98.4%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>BitLocker Full-Disk Encryption</span>
-                                     <strong id="hero-bitlocker-val" style="color: var(--status-medium);">91.2% Audited</strong>
-                                </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-bitlocker-bar" style="width: 91.2%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;"></div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-ad-bar"
+                                        style="width: 98.4%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
                                 </div>
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>SentinelOne EDR Agent Status</span>
-                                     <strong id="hero-s1-val" style="color: var(--status-low);">97.1% Active</strong>
+                                    <span>BitLocker Full-Disk Encryption</span>
+                                    <strong id="hero-bitlocker-val" style="color: var(--status-medium);">91.2%
+                                        Audited</strong>
                                 </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-s1-bar" style="width: 97.1%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-bitlocker-bar"
+                                        style="width: 91.2%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>SentinelOne EDR Agent Status</span>
+                                    <strong id="hero-s1-val" style="color: var(--status-low);">97.1% Active</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-s1-bar"
+                                        style="width: 97.1%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
- 
+
                     <!-- Slide 2: Real-time Compliance Metrics -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
-                        <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">Risk Engine Monitor</h3>
-                                <p style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">Live Compliance Metrics</p>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    Risk Engine Monitor</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Live Compliance Metrics</p>
                             </div>
-                            <span class="badge" style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;">SECURE</span>
+                            <span class="badge"
+                                style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;">SECURE</span>
                         </div>
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Risk Classification</span>
-                                <div id="hero-risk-class" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">LOW</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Risk
+                                    Classification</span>
+                                <div id="hero-risk-class"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">
+                                    LOW</div>
                             </div>
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Mandates Tracked</span>
-                                <div id="hero-mandates-val" style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">6 / 6</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Mandates
+                                    Tracked</span>
+                                <div id="hero-mandates-val"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    6 / 6</div>
                             </div>
                         </div>
-                        
+
                         <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>Zscaler Network Access</span>
-                                     <strong id="hero-zscaler-val" style="color: var(--status-medium);">88.5% Encrypted</strong>
+                                    <span>Zscaler Network Access</span>
+                                    <strong id="hero-zscaler-val" style="color: var(--status-medium);">88.5%
+                                        Encrypted</strong>
                                 </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-zscaler-bar" style="width: 88.5%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;"></div>
-                                </div>
-                            </div>
-                            <div>
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>Nessus Vulnerability Scan</span>
-                                     <strong id="hero-nessus-val" style="color: var(--status-low);">94.0% Inspected</strong>
-                                </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-nessus-bar" style="width: 94.0%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-zscaler-bar"
+                                        style="width: 88.5%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
                                 </div>
                             </div>
                             <div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                     <span>SCCM Config Agent</span>
-                                     <strong id="hero-sccm-val" style="color: var(--status-low);">95.6% Active</strong>
+                                    <span>Nessus Vulnerability Scan</span>
+                                    <strong id="hero-nessus-val" style="color: var(--status-low);">94.0%
+                                        Inspected</strong>
                                 </div>
-                                <div style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                                     <div id="hero-sccm-bar" style="width: 95.6%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;"></div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-nessus-bar"
+                                        style="width: 94.0%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>SCCM Config Agent</span>
+                                    <strong id="hero-sccm-val" style="color: var(--status-low);">95.6% Active</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-sccm-bar"
+                                        style="width: 95.6%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
- 
+
                     <!-- Slide 3: SIEM Ingestion Logs Simulator -->
-                    <div class="hero-slide" style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem; background: #ffffff;">
-                        <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
                             <div>
-                                <h3 style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">SIEM Ingest Stream</h3>
-                                <p style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">Live Logging Pipeline</p>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    SIEM Ingest Stream</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Live Logging Pipeline</p>
                             </div>
-                            <span class="badge risk-critical" style="animation: pulse-glow 1.5s infinite alternate;">INGESTING</span>
+                            <span class="badge risk-critical"
+                                style="animation: pulse-glow 1.5s infinite alternate;">INGESTING</span>
                         </div>
-                        
+
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Active Developer Keys</span>
-                                <div id="hero-active-keys" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">24</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Active
+                                    Developer Keys</span>
+                                <div id="hero-active-keys"
+                                    style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    24</div>
                             </div>
-                            <div style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
-                                <span style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Throughput rate</span>
-                                <div id="hero-throughput" style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--color-accent); margin-top: 0.15rem;">1,280 ev/s</div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Throughput
+                                    rate</span>
+                                <div id="hero-throughput"
+                                    style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--color-accent); margin-top: 0.15rem;">
+                                    1,280 ev/s</div>
                             </div>
                         </div>
 
                         <!-- Mini terminal console -->
-                        <div id="hero-mini-terminal" style="flex-grow: 1; background: var(--text-primary); border-radius: 4px; padding: 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.65rem; color: #38bdf8; overflow-y: hidden; display: flex; flex-direction: column; gap: 0.25rem; border: 1px solid var(--border-focus); height: 130px;">
-                            <div style="color: var(--text-muted);">[21:18:01] SEC: Leased vault secrets credentials...</div>
-                            <div style="color: #4ade80;">[21:18:03] INGEST: corporate_directory.csv uploaded (10,029 devices)</div>
-                            <div style="color: #fb7185;">[21:18:05] ALERT: Nessus audit gap detected for host "dev-9883"</div>
-                            <div style="color: #38bdf8;">[21:18:06] INGEST: zscaler.csv merged successfully (2 new items)</div>
+                        <div id="hero-mini-terminal"
+                            style="flex-grow: 1; background: var(--text-primary); border-radius: 4px; padding: 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.65rem; color: #38bdf8; overflow-y: hidden; display: flex; flex-direction: column; gap: 0.25rem; border: 1px solid var(--border-focus); height: 130px;">
+                            <div style="color: var(--text-muted);">[21:18:01] SEC: Leased vault secrets credentials...
+                            </div>
+                            <div style="color: #4ade80;">[21:18:03] INGEST: corporate_directory.csv uploaded (10,029
+                                devices)</div>
+                            <div style="color: #fb7185;">[21:18:05] ALERT: Nessus audit gap detected for host "dev-9883"
+                            </div>
+                            <div style="color: #38bdf8;">[21:18:06] INGEST: zscaler.csv merged successfully (2 new
+                                items)</div>
                         </div>
                     </div>
                 </div>
                 <!-- Navigation Dot Indicators -->
-                <div style="position: absolute; bottom: 0.75rem; left: 0; right: 0; display: flex; justify-content: center; gap: 0.5rem; z-index: 10;">
-                    <span class="slide-dot active" onclick="gotoHeroSlide(0)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); cursor: pointer; transition: background 0.3s;"></span>
-                    <span class="slide-dot" onclick="gotoHeroSlide(1)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
-                    <span class="slide-dot" onclick="gotoHeroSlide(2)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
+                <div
+                    style="position: absolute; bottom: 0.75rem; left: 0; right: 0; display: flex; justify-content: center; gap: 0.5rem; z-index: 10;">
+                    <span class="slide-dot active" onclick="gotoHeroSlide(0)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); cursor: pointer; transition: background 0.3s;"></span>
+                    <span class="slide-dot" onclick="gotoHeroSlide(1)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
+                    <span class="slide-dot" onclick="gotoHeroSlide(2)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
                 </div>
             </div>
         </section>
@@ -489,37 +636,54 @@
         <!-- Detailed Features Section -->
         <section id="features-target" style="max-width: 1200px; margin: 6rem auto; padding: 0 2rem;">
             <div style="text-align: center; margin-bottom: 4rem;">
-                <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em;">Key System Capabilities</h2>
-                <p style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0 auto; font-size: 0.95rem;">
-                    Explore the critical security controls and asset integrity subsystems powering the AM/NS compliance platform.
+                <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em;">Key
+                    System Capabilities</h2>
+                <p
+                    style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0 auto; font-size: 0.95rem;">
+                    Explore the critical security controls and asset integrity subsystems powering the AM/NS compliance
+                    platform.
                 </p>
             </div>
-            
+
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
-                    <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Multi-Sheet Reconciler</h3>
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Multi-Sheet Reconciler</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                        Seamlessly import telemetry datasets from Active Directory, SCCM, Nessus, and Zscaler. Align reports automatically by Device ID/Hostname to identify coverage gaps and unmanaged assets.
+                        Seamlessly import telemetry datasets from Active Directory, SCCM, Nessus, and Zscaler. Align
+                        reports automatically by Device ID/Hostname to identify coverage gaps and unmanaged assets.
                     </p>
                 </div>
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
-                    <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Risk Engine & Controls</h3>
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Risk Engine & Controls</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                        Customize compliance mandate policies. Enable/disable specific checks like BitLocker or Zscaler dynamically and recalculate compliance indices and risk classifications at run-time.
+                        Customize compliance mandate policies. Enable/disable specific checks like BitLocker or Zscaler
+                        dynamically and recalculate compliance indices and risk classifications at run-time.
                     </p>
                 </div>
-                <div class="card" style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
-                    <h3 style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Audit & Developer APIs</h3>
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Audit & Developer APIs</h3>
                     <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                        Export detailed audit logs as Excel-compatible CSVs. Leverage the Developer Console to manage users, configure roles, issue API Keys, and track programmatic query volume.
+                        Export detailed audit logs as Excel-compatible CSVs. Leverage the Developer Console to manage
+                        users, configure roles, issue API Keys, and track programmatic query volume.
                     </p>
                 </div>
             </div>
         </section>
 
         <!-- Footer -->
-        <footer style="border-top: 1px solid var(--border-clean); padding: 3rem 2rem; background: var(--bg-card); text-align: center;">
-            <p style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+        <footer
+            style="border-top: 1px solid var(--border-clean); padding: 3rem 2rem; background: var(--bg-card); text-align: center;">
+            <p
+                style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                 ArcelorMittal Nippon Steel India © 2026. All Rights Reserved.
             </p>
             <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
@@ -531,18 +695,26 @@
     <div class="app-container" id="main-app-container" style="display: flex;">
         <!-- Sidebar Navigation matching Aethelred Corp style -->
         <aside class="sidebar">
-            <div class="brand-section" style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;" onclick="switchNavSection('hub')">
+            <div class="brand-section"
+                style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;"
+                onclick="switchNavSection('hub')">
                 <div style="display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap;">
-                    <div style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; white-space: nowrap;">
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; white-space: nowrap;">
                         AM/NS
                     </div>
-                    <div style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; margin-top: -0.25rem; white-space: nowrap;">
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; margin-top: -0.25rem; white-space: nowrap;">
                         INDIA
                     </div>
                 </div>
-                <div style="border-left: 2px solid #374151; height: 36px; padding-left: 0.5rem; display: flex; flex-direction: column; justify-content: center; line-height: 1.1; white-space: nowrap;">
-                    <div style="font-family: var(--font-display) !important; font-size: 1.05rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; white-space: nowrap;">EUD</div>
-                    <p style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin: 0; white-space: nowrap;">
+                <div
+                    style="border-left: 2px solid #374151; height: 36px; padding-left: 0.5rem; display: flex; flex-direction: column; justify-content: center; line-height: 1.1; white-space: nowrap;">
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.05rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; white-space: nowrap;">
+                        Dashboard</div>
+                    <p
+                        style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin: 0; white-space: nowrap;">
                         Security & Compliance</p>
                 </div>
             </div>
@@ -586,7 +758,8 @@
                     </ul>
 
                     <!-- Group: EUD Asset Reconciler -->
-                    <li class="sidebar-group-header" id="group-header-reconciler" onclick="toggleSidebarGroup('reconciler')">
+                    <li class="sidebar-group-header" id="group-header-reconciler"
+                        onclick="toggleSidebarGroup('reconciler')">
                         EUD Asset Reconciler
                     </li>
                     <ul class="sidebar-submenu" id="submenu-reconciler" style="display: none;">
@@ -620,7 +793,8 @@
                     <ul class="sidebar-menu">
                         <li class="menu-item" id="menu-profile" onclick="switchNavSection('profile')">User Profile</li>
                         <li class="menu-item" id="menu-settings" onclick="switchNavSection('settings')">Settings</li>
-                        <li class="menu-item" id="menu-logout" onclick="terminateSessionLease()" style="color: var(--status-critical);">Log Out</li>
+                        <li class="menu-item" id="menu-logout" onclick="terminateSessionLease()"
+                            style="color: var(--status-critical);">Log Out</li>
                     </ul>
                 </nav>
             </div>
@@ -654,19 +828,22 @@
                 <div class="gateway-container">
                     <h2 class="gateway-title">Unified Gateway Portal</h2>
                     <p class="gateway-subtitle">Select an Operational Module to Launch</p>
-                    
+
                     <div class="gateway-grid">
                         <!-- Card 1: SIEM Ingest Stream -->
                         <div class="gateway-card" onclick="switchNavSection('siem')">
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
                                     <span class="gateway-badge">Module 01</span>
                                 </div>
-                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
                                     SIEM Ingest Stream
                                 </h3>
                                 <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Ingest, hash, and cryptographically verify live system event logs from Active Directory, Nessus, EDR, and network gateways.
+                                    Ingest, hash, and cryptographically verify live system event logs from Active
+                                    Directory, Nessus, EDR, and network gateways.
                                 </p>
                             </div>
                             <button class="gateway-card-btn">Launch Console</button>
@@ -675,14 +852,17 @@
                         <!-- Card 2: Centralized Risk Engine -->
                         <div class="gateway-card" onclick="switchNavSection('risk-engine')">
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
                                     <span class="gateway-badge">Module 02</span>
                                 </div>
-                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
                                     Centralized Risk Engine
                                 </h3>
                                 <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Calculate and fine-tune environment-aware risk index ratings, configure scoring policies, and simulate threat modifiers.
+                                    Calculate and fine-tune environment-aware risk index ratings, configure scoring
+                                    policies, and simulate threat modifiers.
                                 </p>
                             </div>
                             <button class="gateway-card-btn">Open Controls</button>
@@ -691,14 +871,17 @@
                         <!-- Card 3: SAMP Core Auditing -->
                         <div class="gateway-card" onclick="switchNavSection('samp-auditor')">
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
                                     <span class="gateway-badge">Module 03</span>
                                 </div>
-                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
                                     SAMP Core Auditing
                                 </h3>
                                 <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Audit enterprise device fleet metrics, log manual verification overrides, and evaluate NIST compliance controls.
+                                    Audit enterprise device fleet metrics, log manual verification overrides, and
+                                    evaluate NIST compliance controls.
                                 </p>
                             </div>
                             <button class="gateway-card-btn">Start Audit</button>
@@ -707,14 +890,17 @@
                         <!-- Card 4: EUD Asset Reconciler -->
                         <div class="gateway-card" onclick="switchNavSection('reconciler')">
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
                                     <span class="gateway-badge">Module 04</span>
                                 </div>
-                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
                                     EUD Asset Reconciler
                                 </h3>
                                 <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
-                                    Reconcile multi-sheet telemetry from Active Directory, EDR agents, and vulnerability scanners to identify coverage gaps.
+                                    Reconcile multi-sheet telemetry from Active Directory, EDR agents, and vulnerability
+                                    scanners to identify coverage gaps.
                                 </p>
                             </div>
                             <button class="gateway-card-btn">Reconcile Sheets</button>
@@ -726,12 +912,15 @@
             <!-- Section: SIEM Ingest Console -->
             <div id="section-siem" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
                             SIEM Ingest Stream Console
                         </h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Real-time security auditing logging feed. Any raw log ingestions, database operations, compliance calculations, or cryptographic integrity assertions will log here dynamically.
+                            Real-time security auditing logging feed. Any raw log ingestions, database operations,
+                            compliance calculations, or cryptographic integrity assertions will log here dynamically.
                         </p>
                     </div>
 
@@ -739,8 +928,12 @@
                         <!-- Left Panel: Ingest Controls -->
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <div>
-                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Log Source Type</label>
-                                <select id="siem-source-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;" onchange="handleSiemSourceChange()">
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Log
+                                    Source Type</label>
+                                <select id="siem-source-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
+                                    onchange="handleSiemSourceChange()">
                                     <option value="AD">Active Directory (AD)</option>
                                     <option value="Nessus">Nessus Vulnerability Scanner</option>
                                     <option value="EDR">EDR Security Agent</option>
@@ -749,39 +942,60 @@
                             </div>
 
                             <div>
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <label style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin: 0;">Log Payload (JSON / Text)</label>
-                                    <button class="btn" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; height: auto; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-secondary);" onclick="loadSiemDefaultTemplate()">Load Default Template</button>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label
+                                        style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin: 0;">Log
+                                        Payload (JSON / Text)</label>
+                                    <button class="btn"
+                                        style="font-size: 0.7rem; padding: 0.25rem 0.6rem; height: auto; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-secondary);"
+                                        onclick="loadSiemDefaultTemplate()">Load Default Template</button>
                                 </div>
-                                <textarea id="siem-payload-input" rows="8" style="width: 100%; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.75rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                                <textarea id="siem-payload-input" rows="8"
+                                    style="width: 100%; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.75rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
                             </div>
 
                             <div style="display: flex; gap: 1rem;">
-                                <button class="btn" id="btn-siem-ingest" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="executeManualSiemIngest()">
+                                <button class="btn" id="btn-siem-ingest"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                    onclick="executeManualSiemIngest()">
                                     Sign & Ingest Log
                                 </button>
-                                <button class="btn" id="btn-siem-verify" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="verifyAllSiemEvidence()">
+                                <button class="btn" id="btn-siem-verify"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="verifyAllSiemEvidence()">
                                     Verify Hashes
                                 </button>
                             </div>
 
-                            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
-                                <button class="btn" id="btn-siem-export" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSiemLogs()">
+                            <div
+                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-siem-export"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="exportSiemLogs()">
                                     Export Logs (JSON)
                                 </button>
-                                <label for="siem-import-file" class="btn" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                <label for="siem-import-file" class="btn"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
                                     Import Logs (JSON)
                                 </label>
-                                <input type="file" id="siem-import-file" accept=".json" style="display: none;" onchange="importSiemLogs(event)">
+                                <input type="file" id="siem-import-file" accept=".json" style="display: none;"
+                                    onchange="importSiemLogs(event)">
                             </div>
 
-                            <div style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                            <div
+                                style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
                                 <div>
-                                    <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Background Stream Simulation</h4>
-                                    <p style="margin: 0.1rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">Simulate dynamic log ingestion periodically</p>
+                                    <h4
+                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
+                                        Background Stream Simulation</h4>
+                                    <p style="margin: 0.1rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">
+                                        Simulate dynamic log ingestion periodically</p>
                                 </div>
                                 <div>
-                                    <button class="btn" id="btn-siem-simulate" style="font-size: 0.78rem; padding: 0.5rem 1rem; background: #15803d; border-color: #15803d; color: #ffffff;" onclick="toggleSiemSimulation(event)">
+                                    <button class="btn" id="btn-siem-simulate"
+                                        style="font-size: 0.78rem; padding: 0.5rem 1rem; background: #15803d; border-color: #15803d; color: #ffffff;"
+                                        onclick="toggleSiemSimulation(event)">
                                         Start Simulation
                                     </button>
                                 </div>
@@ -790,9 +1004,13 @@
 
                         <!-- Right Panel: Terminal logs -->
                         <div style="display: flex; flex-direction: column;">
-                            <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit Terminal Logs</label>
-                            <div id="audit-terminal" class="terminal-console" style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 430px; max-height: 430px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; box-sizing: border-box;">
-                                <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] SIEM Terminal Console initialized. Standing by for ingestion streams...</div>
+                            <label
+                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
+                                Terminal Logs</label>
+                            <div id="audit-terminal" class="terminal-console"
+                                style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 430px; max-height: 430px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; box-sizing: border-box;">
+                                <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] SIEM Terminal Console
+                                    initialized. Standing by for ingestion streams...</div>
                             </div>
                         </div>
                     </div>
@@ -802,8 +1020,10 @@
             <!-- Section: Centralized Risk Engine -->
             <div id="section-risk-engine" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
                             Centralized Risk Engine
                         </h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
@@ -815,15 +1035,22 @@
                         <!-- Left Panel: Calculation Inputs -->
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <div>
-                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Select Audit Assessment</label>
-                                <select id="risk-assessment-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;" onchange="handleRiskAssessmentChange()">
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Select
+                                    Audit Assessment</label>
+                                <select id="risk-assessment-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
+                                    onchange="handleRiskAssessmentChange()">
                                     <!-- Dynamic options -->
                                 </select>
                             </div>
 
                             <div>
-                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit Environment Context</label>
-                                <select id="risk-env-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
+                                    Environment Context</label>
+                                <select id="risk-env-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
                                     <option value="Production">Production (Full Severity)</option>
                                     <option value="UAT">UAT/QA (Downgrade Severity by 1 level)</option>
                                     <option value="Development">Development (Downgrade Severity by 2 levels)</option>
@@ -831,54 +1058,74 @@
                             </div>
 
                             <div>
-                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Core Severity Weights</label>
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Core
+                                    Severity Weights</label>
                                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
                                     <div>
                                         <span style="font-size: 0.7rem; color: var(--text-secondary);">HIGH</span>
-                                        <input type="number" id="weight-high" value="10" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                        <input type="number" id="weight-high" value="10" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
                                     </div>
                                     <div>
                                         <span style="font-size: 0.7rem; color: var(--text-secondary);">MEDIUM</span>
-                                        <input type="number" id="weight-medium" value="5" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                        <input type="number" id="weight-medium" value="5" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
                                     </div>
                                     <div>
                                         <span style="font-size: 0.7rem; color: var(--text-secondary);">LOW</span>
-                                        <input type="number" id="weight-low" value="2" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                        <input type="number" id="weight-low" value="2" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
                                     </div>
                                 </div>
                             </div>
 
-                            <button class="btn" style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;" onclick="triggerRiskCalculation()">
+                            <button class="btn"
+                                style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;"
+                                onclick="triggerRiskCalculation()">
                                 Calculate Risk Score
                             </button>
 
-                            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
-                                <button class="btn" id="btn-risk-export" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportRiskConfig()">
+                            <div
+                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-risk-export"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="exportRiskConfig()">
                                     Export Config
                                 </button>
-                                <label for="risk-import-file" class="btn" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                <label for="risk-import-file" class="btn"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
                                     Import Config
                                 </label>
-                                <input type="file" id="risk-import-file" accept=".json" style="display: none;" onchange="importRiskConfig(event)">
+                                <input type="file" id="risk-import-file" accept=".json" style="display: none;"
+                                    onchange="importRiskConfig(event)">
                             </div>
                         </div>
 
                         <!-- Right Panel: Results & Findings Breakdown -->
                         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                             <!-- Score Display Card -->
-                            <div class="card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+                            <div class="card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
                                 <div>
-                                    <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Composite Score</h4>
-                                    <div id="risk-rating-label" style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--status-low);">LOW COMPLIANCE RISK</div>
+                                    <h4
+                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+                                        Composite Score</h4>
+                                    <div id="risk-rating-label"
+                                        style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--status-low);">
+                                        LOW COMPLIANCE RISK</div>
                                 </div>
-                                <div id="risk-score-value" style="font-size: 2.25rem; font-weight: 900; color: var(--text-primary); font-family: var(--font-display);">
+                                <div id="risk-score-value"
+                                    style="font-size: 2.25rem; font-weight: 900; color: var(--text-primary); font-family: var(--font-display);">
                                     --
                                 </div>
                             </div>
 
                             <!-- Findings Table -->
                             <div>
-                                <h4 style="margin: 0 0 0.75rem 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">Active Findings Severity Mappings</h4>
+                                <h4
+                                    style="margin: 0 0 0.75rem 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">
+                                    Active Findings Severity Mappings</h4>
                                 <div class="fleet-table-container" style="max-height: 280px; overflow-y: auto;">
                                     <table class="fleet-table" style="width: 100%; font-size: 0.8rem;">
                                         <thead>
@@ -892,7 +1139,9 @@
                                         </thead>
                                         <tbody id="risk-findings-tbody">
                                             <tr>
-                                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">Select an assessment session.</td>
+                                                <td colspan="5"
+                                                    style="text-align: center; color: var(--text-secondary);">Select an
+                                                    assessment session.</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -906,94 +1155,151 @@
             <!-- Section: SAMP Core Auditing / SAMP Auditor -->
             <div id="section-samp-auditor" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
                             SAMP Core Auditor Board
                         </h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Audit governance dashboard to verify and override manual compliance checks and sign cryptographic evidence.
+                            Audit governance dashboard to verify and override manual compliance checks and sign
+                            cryptographic evidence.
                         </p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
                         <!-- Left Panel: Manual Checklist Controls -->
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
-                            <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
+                            <div
+                                style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
                                 <div style="flex: 1.5; display: flex; gap: 0.75rem; align-items: flex-end;">
                                     <div style="flex: 1;">
-                                        <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select Audit Assessment</label>
-                                        <select id="samp-assessment-select" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;" onchange="handleSampAssessmentChange()">
+                                        <label
+                                            style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select
+                                            Audit Assessment</label>
+                                        <select id="samp-assessment-select"
+                                            style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;"
+                                            onchange="handleSampAssessmentChange()">
                                             <!-- Dynamic options -->
                                         </select>
                                     </div>
-                                    <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampFindingsData()">
+                                    <button class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampFindingsData()">
                                         Export Data
                                     </button>
-                                    <label for="samp-import-file" class="btn" style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; box-sizing: border-box;">
+                                    <label for="samp-import-file" class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; box-sizing: border-box;">
                                         Import Data
                                     </label>
-                                    <input type="file" id="samp-import-file" accept=".json" style="display: none;" onchange="importSampFindingsData(event)">
+                                    <input type="file" id="samp-import-file" accept=".json" style="display: none;"
+                                        onchange="importSampFindingsData(event)">
                                 </div>
                                 <div style="text-align: right; flex: 0.8;">
-                                    <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Auditing Progress</div>
-                                    <div id="samp-progress-label" style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5 Controls</div>
+                                    <div
+                                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">
+                                        Auditing Progress</div>
+                                    <div id="samp-progress-label"
+                                        style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5
+                                        Controls</div>
                                 </div>
                             </div>
 
                             <!-- The active manual control form -->
-                            <div class="card" id="samp-control-card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                                    <span id="samp-ctrl-code" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">CTRL-011</span>
-                                    <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">MANUAL CONTROL</span>
+                            <div class="card" id="samp-control-card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span id="samp-ctrl-code"
+                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">CTRL-011</span>
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">MANUAL
+                                        CONTROL</span>
                                 </div>
-                                <h3 id="samp-ctrl-title" style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">Role-Based Access Control</h3>
-                                <p id="samp-ctrl-desc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                <h3 id="samp-ctrl-title"
+                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
+                                    Role-Based Access Control</h3>
+                                <p id="samp-ctrl-desc"
+                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
                                     Auditors verify RBAC authorization checks are enforced on endpoints.
                                 </p>
 
-                                <div style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                <div
+                                    style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
                                     <div>
-                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Evaluation Status</label>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Evaluation
+                                            Status</label>
                                         <div style="display: flex; gap: 0.75rem;">
-                                            <button class="btn" id="btn-samp-pass" style="flex: 1; padding: 0.45rem; background: transparent; border-color: #16a34a; color: #16a34a;" onclick="setSampControlStatus('PASS')">PASS</button>
-                                            <button class="btn" id="btn-samp-fail" style="flex: 1; padding: 0.45rem; background: transparent; border-color: #dc2626; color: #dc2626;" onclick="setSampControlStatus('FAIL')">FAIL</button>
+                                            <button class="btn" id="btn-samp-pass"
+                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #16a34a; color: #16a34a;"
+                                                onclick="setSampControlStatus('PASS')">PASS</button>
+                                            <button class="btn" id="btn-samp-fail"
+                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #dc2626; color: #dc2626;"
+                                                onclick="setSampControlStatus('FAIL')">FAIL</button>
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Audit Findings & Evidence Notes</label>
-                                        <textarea id="samp-ctrl-notes" rows="3" placeholder="Enter manual audit findings, LDAP queries verified, endpoint tests conducted, etc..." style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Audit
+                                            Findings & Evidence Notes</label>
+                                        <textarea id="samp-ctrl-notes" rows="3"
+                                            placeholder="Enter manual audit findings, LDAP queries verified, endpoint tests conducted, etc..."
+                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
                                     </div>
 
                                     <div style="display: flex; gap: 0.75rem;">
-                                        <button class="btn" id="btn-samp-save" style="flex: 1.3; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="saveSampControlOverride()">Save Finding Override</button>
-                                        <button class="btn" id="btn-samp-sign" style="flex: 1; font-size: 0.78rem; padding: 0.55rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="signSampControlEvidence()">Sign Evidence</button>
+                                        <button class="btn" id="btn-samp-save"
+                                            style="flex: 1.3; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                            onclick="saveSampControlOverride()">Save Finding Override</button>
+                                        <button class="btn" id="btn-samp-sign"
+                                            style="flex: 1; font-size: 0.78rem; padding: 0.55rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                            onclick="signSampControlEvidence()">Sign Evidence</button>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- ZAP Vulnerability Scanner Card -->
-                            <div class="card" id="zap-scanner-card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; margin-top: 0.5rem;">
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
-                                    <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">ZAP SCANNER</span>
-                                    <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">AUTOMATED SECURITY SCAN</span>
+                            <div class="card" id="zap-scanner-card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; margin-top: 0.5rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">ZAP
+                                        SCANNER</span>
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">AUTOMATED
+                                        SECURITY SCAN</span>
                                 </div>
-                                <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">Automated Web Scans</h3>
-                                <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                <h3
+                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
+                                    Automated Web Scans</h3>
+                                <p
+                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
                                     Run active OWASP ZAP and HTTP security header compliance audits on target URLs.
                                 </p>
                                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                                     <div>
-                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Target URL</label>
-                                        <input type="text" id="zap-target-url" value="http://127.0.0.1:8080" style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); box-sizing: border-box;">
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Target
+                                            URL</label>
+                                        <input type="text" id="zap-target-url" value="http://127.0.0.1:8080"
+                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); box-sizing: border-box;">
                                     </div>
-                                    <button class="btn" id="btn-run-zap" style="width: 100%; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="runSampZapScan()">
+                                    <button class="btn" id="btn-run-zap"
+                                        style="width: 100%; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                        onclick="runSampZapScan()">
                                         Run Security Audit Scan
                                     </button>
                                     <div>
-                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Scan Output Logs</label>
-                                        <div id="zap-terminal" style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 180px; max-height: 180px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem; box-sizing: border-box;">
-                                            <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Scanner ready. Standing by...</div>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Scan
+                                            Output Logs</label>
+                                        <div id="zap-terminal"
+                                            style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 180px; max-height: 180px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem; box-sizing: border-box;">
+                                            <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Scanner
+                                                ready. Standing by...</div>
                                         </div>
                                     </div>
                                 </div>
@@ -1002,21 +1308,33 @@
 
                         <!-- Right Panel: Checklist Selector List -->
                         <div style="display: flex; flex-direction: column;">
-                            <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual Controls Checklist</label>
-                            <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="samp-checklist-items-container">
+                            <label
+                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual
+                                Controls Checklist</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;"
+                                id="samp-checklist-items-container">
                                 <!-- Dynamic check items click to edit -->
                             </div>
 
-                            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
-                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Export Compliance Reports</label>
+                            <div
+                                style="margin-top: 1.5rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Export
+                                    Compliance Reports</label>
                                 <div style="display: flex; gap: 0.5rem;">
-                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('html')">
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('html')">
                                         Export HTML
                                     </button>
-                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('pdf')">
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('pdf')">
                                         Export PDF
                                     </button>
-                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('json')">
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('json')">
                                         Export JSON
                                     </button>
                                 </div>
@@ -1610,18 +1928,25 @@
             <!-- Section: Developer Console -->
             <div id="section-dev-db" class="section-view" style="display: none;">
                 <div class="card" style="padding: 2rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Developer Console & Database Management</h2>
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Developer Console & Database Management</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Direct read/write access to the compliance user directory and generated API credentials. Configure roles, revoke API keys, and track programmatic ingestion rates.
+                            Direct read/write access to the compliance user directory and generated API credentials.
+                            Configure roles, revoke API keys, and track programmatic ingestion rates.
                         </p>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem; align-items: start;">
                         <!-- Column 1: User Directory -->
-                        <div class="card" style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
-                            <h3 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">Compliance User Directory</h3>
-                            
+                        <div class="card"
+                            style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <h3
+                                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                                Compliance User Directory</h3>
+
                             <div class="fleet-table-container" style="max-height: 400px; overflow-y: auto;">
                                 <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
                                     <thead>
@@ -1641,12 +1966,18 @@
                         </div>
 
                         <!-- Column 2: API Keys Registry -->
-                        <div class="card" style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; margin-bottom: 1rem;">
-                                <h3 style="margin: 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">API Key Credentials</h3>
-                                <button class="btn" onclick="triggerGenerateApiKeyModal()" style="font-size: 0.75rem; padding: 0.4rem 0.85rem; background: var(--color-accent); border-color: var(--color-accent);">Issue Key</button>
+                        <div class="card"
+                            style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                <h3
+                                    style="margin: 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    API Key Credentials</h3>
+                                <button class="btn" onclick="triggerGenerateApiKeyModal()"
+                                    style="font-size: 0.75rem; padding: 0.4rem 0.85rem; background: var(--color-accent); border-color: var(--color-accent);">Issue
+                                    Key</button>
                             </div>
-                            
+
                             <div class="fleet-table-container" style="max-height: 400px; overflow-y: auto;">
                                 <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
                                     <thead>
@@ -1674,8 +2005,12 @@
     <div id="process-loading-overlay"
         style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000000; flex-direction: column; gap: 1.5rem; font-family: var(--font-sans); color: #ffffff; transition: all 0.3s ease;">
         <div style="position: relative; width: 64px; height: 64px;">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid rgba(255, 255, 255, 0.1); border-radius: 50%;"></div>
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid transparent; border-top-color: var(--color-accent); border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;"></div>
+            <div
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid rgba(255, 255, 255, 0.1); border-radius: 50%;">
+            </div>
+            <div
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid transparent; border-top-color: var(--color-accent); border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;">
+            </div>
         </div>
         <div id="process-loading-text"
             style="font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; text-align: center; max-width: 380px; line-height: 1.5; color: #ffffff;">
@@ -2139,7 +2474,7 @@
             const sidebar = document.querySelector(".sidebar");
             const mainContent = document.querySelector(".main-content");
             const header = document.querySelector(".main-content > header");
-            
+
             const menuHub = document.getElementById("menu-hub");
             if (target === 'hub') {
                 if (sidebar) sidebar.style.display = "none";
@@ -2296,7 +2631,7 @@
                 const header = activeTableHeaders[idx];
                 const isCustom = key.startsWith("custom:") || (!standardKeys.includes(key) && !complianceKeys.includes(key) && !key.startsWith("compliance:"));
                 const isCompliance = key.startsWith("compliance:") || complianceKeys.includes(key);
-                
+
                 const isStandard = standardKeys.includes(key) && !isCustom && !isCompliance;
                 const isLocked = key === "id" || key === "canonical_name";
 
@@ -2401,7 +2736,7 @@
 
                     // Generate CSV content
                     let csvLines = [];
-                    
+
                     // Header row
                     const headerLine = selectedCols.map(c => `"${sanitizeCSVCell(c.header)}"`).join(",");
                     csvLines.push(headerLine);
@@ -4209,7 +4544,7 @@
             memoryUsers: null,
             memoryKeys: null,
             memoryEvidence: null,
-            init: function() {
+            init: function () {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
                     if (!localStorage.getItem("db_users")) {
@@ -4246,7 +4581,7 @@
                     }
                 }
             },
-            getUsers: function() {
+            getUsers: function () {
                 this.init();
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
@@ -4254,7 +4589,7 @@
                 }
                 return this.memoryUsers;
             },
-            saveUsers: function(users) {
+            saveUsers: function (users) {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
                     localStorage.setItem("db_users", JSON.stringify(users));
@@ -4262,7 +4597,7 @@
                     this.memoryUsers = users;
                 }
             },
-            getKeys: function() {
+            getKeys: function () {
                 this.init();
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
@@ -4270,7 +4605,7 @@
                 }
                 return this.memoryKeys;
             },
-            saveKeys: function(keys) {
+            saveKeys: function (keys) {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
                     localStorage.setItem("db_api_keys", JSON.stringify(keys));
@@ -4278,7 +4613,7 @@
                     this.memoryKeys = keys;
                 }
             },
-            getEvidence: function() {
+            getEvidence: function () {
                 this.init();
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
@@ -4286,7 +4621,7 @@
                 }
                 return this.memoryEvidence || [];
             },
-            saveEvidence: function(evidence) {
+            saveEvidence: function (evidence) {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
                     localStorage.setItem("db_evidence", JSON.stringify(evidence));
@@ -4294,7 +4629,7 @@
                     this.memoryEvidence = evidence;
                 }
             },
-            getAssessments: function() {
+            getAssessments: function () {
                 this.init();
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
@@ -4302,7 +4637,7 @@
                 }
                 return this.memoryAssessments || [];
             },
-            saveAssessments: function(assessments) {
+            saveAssessments: function (assessments) {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
                     localStorage.setItem("db_assessments", JSON.stringify(assessments));
@@ -4490,7 +4825,7 @@
                             { code: "CTRL-001", title: "HTTP Strict Transport Security", severity: "HIGH", type: "AUTOMATED", desc: "HSTS header check. Must contain max-age of at least 1 year (31536000s).", rec: "Add Strict-Transport-Security header with max-age=31536000." },
                             { code: "CTRL-002", title: "Secure Cookie Flags", severity: "MEDIUM", type: "AUTOMATED", desc: "All session cookies must have HttpOnly and Secure flags, and SameSite set to Strict/Lax.", rec: "Set HttpOnly, Secure, and SameSite=Lax flags on session cookies." }
                         ];
-                        
+
                         const findings = assessments[idx].findings || [];
                         const allControls = [...automatedControls, ...manualControls];
                         allControls.forEach(ctrl => {
@@ -4535,11 +4870,11 @@
                     const parts = endpoint.split('?');
                     const pathParts = parts[0].split('/');
                     const findingId = parseInt(pathParts[4], 10);
-                    
+
                     const params = new URLSearchParams(parts[1] || "");
                     const status = params.get("status") || "FAIL";
                     const details = params.get("details") || "";
-                    
+
                     const assessments = localDB.getAssessments();
                     let updatedFinding = null;
                     assessments.forEach(a => {
@@ -4845,7 +5180,7 @@
         // Developer Console dynamic functions
         async function loadDevConsoleData() {
             logToTerminal("[Dev Console] Synchronizing database state...");
-            
+
             // 1. Load users
             const usersRes = await apiPost('/api/developer/users');
             if (usersRes.success) {
@@ -4945,7 +5280,7 @@
         async function triggerGenerateApiKeyModal() {
             const targetUser = prompt("Enter username to associate this API key with:");
             if (!targetUser) return;
-            
+
             const usersRes = await apiPost('/api/developer/users');
             if (usersRes.success) {
                 const exists = usersRes.users.some(u => u.username === targetUser);
@@ -5163,7 +5498,7 @@
                     const sources = ["AD", "Nessus", "EDR", "Zscaler"];
                     const randomSource = sources[Math.floor(Math.random() * sources.length)];
                     let templateStr = siemTemplates[randomSource];
-                    
+
                     let payload = JSON.parse(templateStr);
                     if (randomSource === "AD") {
                         const users = ["operator", "admin", "alkes", "analyst", "developer"];
@@ -5191,7 +5526,7 @@
 
                     const randomizedPayloadStr = JSON.stringify(payload, null, 4);
                     logToTerminal(`[Simulation Stream] Generated simulated event for source: "${randomSource}"`);
-                    
+
                     const res = await apiPost('/api/siem/ingest', {
                         source: randomSource,
                         raw_log: randomizedPayloadStr,
@@ -5226,7 +5561,7 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     const logs = JSON.parse(e.target.result);
                     if (!Array.isArray(logs)) {
@@ -5263,7 +5598,7 @@
             const mediumWeight = document.getElementById("weight-medium") ? parseFloat(document.getElementById("weight-medium").value) : 5;
             const lowWeight = document.getElementById("weight-low") ? parseFloat(document.getElementById("weight-low").value) : 2;
             const env = document.getElementById("risk-env-select") ? document.getElementById("risk-env-select").value : "Production";
-            
+
             const config = {
                 environment: env,
                 weights: {
@@ -5286,7 +5621,7 @@
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     const config = JSON.parse(e.target.result);
                     if (config.environment && document.getElementById("risk-env-select")) {
@@ -5322,16 +5657,16 @@
                 alert("Please select an assessment session first.");
                 return;
             }
-            
+
             const targetUrl = document.getElementById("zap-target-url").value.trim();
             if (!targetUrl) {
                 alert("Please enter a valid target URL.");
                 return;
             }
-            
+
             const term = document.getElementById("zap-terminal");
             term.innerHTML = `<div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Initiating scan for: ${targetUrl}...</div>`;
-            
+
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
             if (usePython) {
                 try {
@@ -5340,7 +5675,7 @@
                         target_url: targetUrl,
                         assessment_id: parseInt(assessmentId, 10)
                     });
-                    
+
                     if (res && res.success) {
                         term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[HTTP HEADERS] Ingestion complete.</div>`;
                         if (res.scans && res.scans.http_headers && res.scans.http_headers.report) {
@@ -5349,7 +5684,7 @@
                                 term.innerHTML += `<div class="terminal-line" style="color: ${col};">[HTTP HEADERS] ${code}: ${report.passed ? 'PASS' : 'FAIL'} - ${report.details}</div>`;
                             });
                         }
-                        
+
                         term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[ZAP VULNERABILITIES] Ingestion complete.</div>`;
                         if (res.scans && res.scans.zap_vulnerabilities && res.scans.zap_vulnerabilities.alerts) {
                             res.scans.zap_vulnerabilities.alerts.forEach(alert => {
@@ -5357,21 +5692,21 @@
                                 term.innerHTML += `<div class="terminal-line" style="color: ${col};">[ZAP] Alert: ${alert.alert} (${alert.risk}) - ${alert.description}</div>`;
                             });
                         }
-                        
+
                         term.innerHTML += `<div class="terminal-line info" style="color: #16a34a;">[SYSTEM] Scan completed successfully. Evidence registered and signed!</div>`;
-                        
+
                         // Re-evaluate assessment findings to map new evidence
                         term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Re-evaluating checklist findings...</div>`;
                         await apiPost(`/api/checklist/evaluate/${assessmentId}`);
-                        
+
                         // Reload checklist and findings UI
                         handleSampAssessmentChange();
-                        
+
                         const riskSelect = document.getElementById("risk-assessment-select");
                         if (riskSelect && riskSelect.value === assessmentId) {
                             handleRiskAssessmentChange();
                         }
-                        
+
                         alert("Security audit scan complete! Automated findings updated.");
                     } else {
                         const errMsg = res ? res.message || res.detail : "Unknown scan error";
@@ -5391,10 +5726,10 @@
                     term.innerHTML += `<div class="terminal-line" style="color: #dc2626;">[HTTP HEADERS] CTRL-002: FAIL - Missing secure flags.</div>`;
                     term.innerHTML += `<div class="terminal-line" style="color: #f59e0b;">[ZAP] Alert: Content Security Policy Header Not Set (Medium)</div>`;
                     term.innerHTML += `<div class="terminal-line" style="color: #16a34a;">[SYSTEM] Offline scan complete. Mocks updated in local evidence store.</div>`;
-                    
+
                     const evidence = localDB.getEvidence();
                     const collected_at_str = new Date().toISOString();
-                    
+
                     evidence.push({
                         id: evidence.length + 1,
                         assessment_id: parseInt(assessmentId, 10),
@@ -5405,7 +5740,7 @@
                         is_verified: true,
                         created_at: collected_at_str
                     });
-                    
+
                     evidence.push({
                         id: evidence.length + 1,
                         assessment_id: parseInt(assessmentId, 10),
@@ -5416,17 +5751,17 @@
                         is_verified: true,
                         created_at: collected_at_str
                     });
-                    
+
                     localDB.saveEvidence(evidence);
-                    
+
                     await apiPost(`/api/checklist/evaluate/${assessmentId}`);
                     handleSampAssessmentChange();
-                    
+
                     const riskSelect = document.getElementById("risk-assessment-select");
                     if (riskSelect && riskSelect.value === assessmentId) {
                         handleRiskAssessmentChange();
                     }
-                    
+
                     alert("Offline scan simulation complete! Findings updated.");
                 }, 1500);
             }
@@ -5440,7 +5775,7 @@
                 alert("Please select an assessment session first.");
                 return;
             }
-            
+
             logToTerminal(`[SAMP Auditor] Fetching and exporting compliance report in ${format.toUpperCase()} format...`);
             const endpoint = `/api/reports/${assessmentId}/${format}`;
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
@@ -5491,7 +5826,7 @@
                     alert("PDF generation is not supported in offline (file://) mode. Please run with Python backend.");
                     return;
                 }
-                
+
                 const blob = new Blob([format === 'json' ? JSON.stringify(reportData, null, 2) : reportData], { type: format === 'json' ? 'application/json' : 'text/html' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -5513,14 +5848,14 @@
                 alert("Please select an assessment session first.");
                 return;
             }
-            
+
             logToTerminal(`[SAMP Auditor] Fetching assessment session #${assessmentId} findings for data export...`);
             const res = await apiGet(`/api/assessments/${assessmentId}`);
             if (!res) {
                 alert("Failed to fetch assessment data for export.");
                 return;
             }
-            
+
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res, null, 2));
             const downloadAnchor = document.createElement('a');
             downloadAnchor.setAttribute("href", dataStr);
@@ -5540,9 +5875,9 @@
                 alert("Please select an assessment session first to import findings into.");
                 return;
             }
-            
+
             const reader = new FileReader();
-            reader.onload = async function(e) {
+            reader.onload = async function (e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     const findings = data.findings || (Array.isArray(data) ? data : []);
@@ -5550,17 +5885,17 @@
                         alert("No findings found in the imported file.");
                         return;
                     }
-                    
+
                     logToTerminal(`[SAMP Auditor] Importing ${findings.length} findings into assessment #${assessmentId}...`);
                     let successCount = 0;
-                    
+
                     for (const importedFinding of findings) {
                         const currentFinding = sampFindings.find(f => f.control_code === importedFinding.control_code);
                         if (currentFinding) {
                             const status = importedFinding.status || "FAIL";
                             const details = importedFinding.details || "";
                             const rec = importedFinding.recommendation || "";
-                            
+
                             const url = `/api/assessments/findings/${currentFinding.id}?status=${status}&details=${encodeURIComponent(details)}&recommendation=${encodeURIComponent(rec)}`;
                             const res = await apiPost(url, {}, 'PUT');
                             if (res && res.id) {
@@ -5568,16 +5903,16 @@
                             }
                         }
                     }
-                    
+
                     logToTerminal(`[SAMP Auditor] Successfully imported and updated ${successCount} findings.`, "info");
                     alert(`Successfully imported ${successCount} findings.`);
                     handleSampAssessmentChange();
-                    
+
                     const riskSelect = document.getElementById("risk-assessment-select");
                     if (riskSelect && riskSelect.value === assessmentId) {
                         handleRiskAssessmentChange();
                     }
-                    
+
                     event.target.value = "";
                 } catch (err) {
                     console.error(err);
@@ -5625,28 +5960,28 @@
                     }
                     return;
                 }
-                
+
                 activeAssessmentsList = res;
-                
+
                 const riskSelect = document.getElementById("risk-assessment-select");
                 const sampSelect = document.getElementById("samp-assessment-select");
-                
+
                 if (riskSelect && sampSelect) {
                     riskSelect.innerHTML = "";
                     sampSelect.innerHTML = "";
-                    
+
                     res.forEach(a => {
                         const opt1 = document.createElement("option");
                         opt1.value = a.id;
                         opt1.innerText = `${a.name} (${a.environment})`;
                         riskSelect.appendChild(opt1);
-                        
+
                         const opt2 = document.createElement("option");
                         opt2.value = a.id;
                         opt2.innerText = `${a.name} (${a.environment})`;
                         sampSelect.appendChild(opt2);
                     });
-                    
+
                     handleRiskAssessmentChange();
                     handleSampAssessmentChange();
                 }
@@ -5662,18 +5997,18 @@
             const res = await apiGet(`/api/assessments/${assessmentId}`);
             if (res) {
                 selectedAssessmentDetails = res;
-                
+
                 const envSelect = document.getElementById("risk-env-select");
                 if (envSelect) {
                     envSelect.value = res.environment || "Production";
                 }
-                
+
                 const scoreValEl = document.getElementById("risk-score-value");
                 const ratingEl = document.getElementById("risk-rating-label");
                 if (scoreValEl && ratingEl) {
                     if (res.overall_score !== null && res.overall_score !== undefined) {
                         scoreValEl.innerText = `${res.overall_score}%`;
-                        
+
                         if (res.overall_score >= 90) {
                             scoreValEl.style.color = "var(--status-low)";
                             ratingEl.innerText = "LOW COMPLIANCE RISK";
@@ -5693,7 +6028,7 @@
                         ratingEl.style.color = "var(--text-secondary)";
                     }
                 }
-                
+
                 renderRiskFindingsTable(res.findings || []);
             }
         }
@@ -5702,17 +6037,17 @@
             const tbody = document.getElementById("risk-findings-tbody");
             if (!tbody) return;
             tbody.innerHTML = "";
-            
+
             if (!findings || findings.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No findings evaluated yet. Click 'Calculate Risk Score'.</td></tr>`;
                 return;
             }
-            
-            const sorted = [...findings].sort((a,b) => {
+
+            const sorted = [...findings].sort((a, b) => {
                 if (a.status === b.status) return a.control_code.localeCompare(b.control_code);
                 return a.status === 'FAIL' ? -1 : 1;
             });
-            
+
             sorted.forEach(f => {
                 const tr = document.createElement("tr");
                 const baseSeverities = {
@@ -5722,7 +6057,7 @@
                     "CTRL-013": "HIGH", "CTRL-014": "MEDIUM", "CTRL-015": "HIGH"
                 };
                 const baseSev = baseSeverities[f.control_code] || f.severity;
-                
+
                 tr.innerHTML = `
                     <td style="font-weight: 700; font-family: var(--font-mono); color: var(--text-primary);">${f.control_code}</td>
                     <td style="color: var(--text-primary); font-weight: 600;">${f.control_title}</td>
@@ -5741,13 +6076,13 @@
             if (!assessmentId) return;
 
             const env = document.getElementById("risk-env-select").value;
-            
+
             logToTerminal(`[Risk Engine] Synchronizing assessment #${assessmentId} environment context to "${env}"...`);
             await apiPost(`/api/assessments/${assessmentId}`, { environment: env }, 'PUT');
-            
+
             logToTerminal(`[Risk Engine] Triggering environment-aware compliance rating index calculations...`);
             await apiPost(`/api/checklist/evaluate/${assessmentId}`);
-            
+
             const calcRes = await apiPost(`/api/risk/calculate/${assessmentId}`);
             if (calcRes && calcRes.id) {
                 logToTerminal(`[Risk Engine] Calculations complete. Composite compliance score: ${calcRes.overall_score}%`, "info");
@@ -5780,7 +6115,7 @@
                     handleSampAssessmentChange();
                     return;
                 }
-                
+
                 sampFindings = res.findings;
                 renderSampChecklistProgress();
                 loadSampControl(sampActiveControlIndex);
@@ -5790,22 +6125,22 @@
         function renderSampChecklistProgress() {
             const manualFindings = sampFindings.filter(f => manualControlCodes.includes(f.control_code));
             const evaluated = manualFindings.filter(f => !f.details.includes("Pending auditor manual")).length;
-            
+
             const progEl = document.getElementById("samp-progress-label");
             if (progEl) {
                 progEl.innerText = `${evaluated} / 5 Controls`;
             }
-            
+
             const listContainer = document.getElementById("samp-checklist-items-container");
             if (listContainer) {
                 listContainer.innerHTML = "";
-                
+
                 manualControls.forEach((c, idx) => {
                     const finding = sampFindings.find(f => f.control_code === c.code);
                     const status = finding ? finding.status : "FAIL";
                     const isEvaluated = finding && !finding.details.includes("Pending auditor manual");
                     const activeClass = (idx === sampActiveControlIndex) ? "border-color: var(--color-accent) !important; background: rgba(185, 28, 28, 0.05);" : "";
-                    
+
                     const div = document.createElement("div");
                     div.className = "card";
                     div.style = `padding: 0.85rem; border: 1px solid var(--border-clean); border-radius: 4px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: space-between; ${activeClass}`;
@@ -5813,7 +6148,7 @@
                         sampActiveControlIndex = idx;
                         handleSampAssessmentChange();
                     };
-                    
+
                     div.innerHTML = `
                         <div>
                             <div style="font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; color: var(--text-secondary);">${c.code}</div>
@@ -5833,20 +6168,20 @@
             sampActiveControlIndex = idx;
             const ctrl = manualControls[idx];
             if (!ctrl) return;
-            
+
             document.getElementById("samp-ctrl-code").innerText = ctrl.code;
             document.getElementById("samp-ctrl-title").innerText = ctrl.title;
             document.getElementById("samp-ctrl-desc").innerText = ctrl.desc;
-            
+
             const finding = sampFindings.find(f => f.control_code === ctrl.code);
             const status = finding ? finding.status : "FAIL";
             const notes = finding ? (finding.details.includes("Pending auditor manual") ? "" : finding.details) : "";
-            
+
             document.getElementById("samp-ctrl-notes").value = notes;
-            
+
             const btnPass = document.getElementById("btn-samp-pass");
             const btnFail = document.getElementById("btn-samp-fail");
-            
+
             if (status === 'PASS') {
                 btnPass.style.background = "#16a34a";
                 btnPass.style.color = "#ffffff";
@@ -5858,7 +6193,7 @@
                 btnFail.style.background = "#dc2626";
                 btnFail.style.color = "#ffffff";
             }
-            
+
             btnPass.setAttribute("data-active", status === 'PASS' ? "true" : "false");
             btnFail.setAttribute("data-active", status === 'FAIL' ? "true" : "false");
         }
@@ -5866,7 +6201,7 @@
         function setSampControlStatus(status) {
             const btnPass = document.getElementById("btn-samp-pass");
             const btnFail = document.getElementById("btn-samp-fail");
-            
+
             if (status === 'PASS') {
                 btnPass.style.background = "#16a34a";
                 btnPass.style.color = "#ffffff";
@@ -5889,7 +6224,7 @@
             const assessmentId = selectEl.value;
             const ctrl = manualControls[sampActiveControlIndex];
             const notes = document.getElementById("samp-ctrl-notes").value.trim() || "Audited and verified manual checklist compliance control.";
-            
+
             const btnPass = document.getElementById("btn-samp-pass");
             const status = (btnPass.getAttribute("data-active") === "true") ? "PASS" : "FAIL";
 
@@ -5900,20 +6235,20 @@
             }
 
             logToTerminal(`[SAMP Auditor] Dispatching override request for control ${ctrl.code} (Status: ${status})...`);
-            
+
             const url = `/api/assessments/findings/${finding.id}?status=${status}&details=${encodeURIComponent(notes)}&recommendation=${encodeURIComponent(ctrl.rec)}`;
             const res = await apiPost(url, {}, 'PUT');
 
             if (res && res.id) {
                 logToTerminal(`[SAMP Auditor] Override complete for ${ctrl.code}. Status committed to DB.`, "info");
-                
+
                 handleSampAssessmentChange();
-                
+
                 const riskSelect = document.getElementById("risk-assessment-select");
                 if (riskSelect && riskSelect.value === assessmentId) {
                     handleRiskAssessmentChange();
                 }
-                
+
                 alert(`Control ${ctrl.code} audit finding saved successfully!`);
             } else {
                 logToTerminal(`[SAMP Auditor] Error saving control finding override.`, "error");
@@ -5925,12 +6260,12 @@
             const assessmentId = selectEl.value;
             const ctrl = manualControls[sampActiveControlIndex];
             const notes = document.getElementById("samp-ctrl-notes").value.trim() || "Audited and verified manual checklist compliance control.";
-            
+
             const btnPass = document.getElementById("btn-samp-pass");
             const status = (btnPass.getAttribute("data-active") === "true") ? "PASS" : "FAIL";
-            
+
             logToTerminal(`[SAMP Auditor] Cryptographically signing manual audit check evidence for ${ctrl.code}...`);
-            
+
             const evidencePayload = {
                 source: "Manual",
                 raw_data: JSON.stringify({
@@ -5943,7 +6278,7 @@
                 collected_at: new Date().toISOString(),
                 assessment_id: parseInt(assessmentId, 10)
             };
-            
+
             const res = await apiPost('/api/evidence/', evidencePayload);
             if (res && res.id) {
                 logToTerminal(`[SAMP Auditor] Immutable evidence registered. ID #${res.id}.`, "info");
@@ -9131,7 +9466,7 @@
 
                     // Generate CSV content
                     let csvContent = "data:text/csv;charset=utf-8,";
-                    
+
                     // Header row
                     const headerRowStr = selectedCols.map(c => `"${c.header.replace(/"/g, '""')}"`).join(",");
                     csvContent += headerRowStr + "\n";
@@ -9231,7 +9566,7 @@
                 logEl.style.color = log.color;
                 const time = new Date().toLocaleTimeString();
                 logEl.innerText = `[${time}] ${log.text}`;
-                
+
                 // Add and scroll
                 terminal.appendChild(logEl);
                 if (terminal.children && terminal.children.length > 20 && typeof terminal.removeChild === "function") {
