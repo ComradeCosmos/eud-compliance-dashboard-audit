@@ -7201,6 +7201,12 @@
             const nameKeywords = ["devicename", "hostname", "device", "host", "name", "computer", "machine", "system"];
             const serialKeywords = ["serialnumber", "serial", "s/n", "sn", "uuid", "service tag", "servicetag", "tag", "asset tag", "assettag"];
             const macKeywords = ["macaddress", "mac", "physical", "ethernet", "hardware"];
+            const userKeywords = ["assigneduser", "user", "username", "owner", "assigned"];
+            const loginKeywords = ["lastlogin", "login", "active", "date", "time"];
+            const locKeywords = ["location", "site", "office", "building"];
+            const locGrpKeywords = ["locationgroup", "locgroup", "group"];
+            const mfgKeywords = ["manufacturer", "mfg", "make", "brand"];
+            const osKeywords = ["os", "operating system", "osversion", "os version", "platform"];
 
             const primarySheet = reconcilerSheets.find(s => s.role === "primary");
             const primaryHeaders = primarySheet ? primarySheet.headers.map(h => h.toLowerCase().trim()) : [];
@@ -7243,16 +7249,34 @@
             let nameVal = null;
             let serialVal = null;
             let macVal = null;
+            let userVal = null;
+            let loginVal = null;
+            let locationVal = null;
+            let locationGroupVal = null;
+            let manufacturerVal = null;
+            let osVal = null;
 
             if (item.primaryRow && primarySheet) {
                 nameVal = getPrimaryColValue(item.primaryRow, nameKeywords);
                 serialVal = getPrimaryColValue(item.primaryRow, serialKeywords);
                 macVal = getPrimaryColValue(item.primaryRow, macKeywords);
+                userVal = getPrimaryColValue(item.primaryRow, userKeywords);
+                loginVal = getPrimaryColValue(item.primaryRow, loginKeywords);
+                locationVal = getPrimaryColValue(item.primaryRow, locKeywords);
+                locationGroupVal = getPrimaryColValue(item.primaryRow, locGrpKeywords);
+                manufacturerVal = getPrimaryColValue(item.primaryRow, mfgKeywords);
+                osVal = getPrimaryColValue(item.primaryRow, osKeywords);
             }
             if (item.mergedProperties) {
                 if (!nameVal) nameVal = getMergedPropValue(item.mergedProperties, nameKeywords);
                 if (!serialVal) serialVal = getMergedPropValue(item.mergedProperties, serialKeywords);
                 if (!macVal) macVal = getMergedPropValue(item.mergedProperties, macKeywords);
+                if (!userVal) userVal = getMergedPropValue(item.mergedProperties, userKeywords);
+                if (!loginVal) loginVal = getMergedPropValue(item.mergedProperties, loginKeywords);
+                if (!locationVal) locationVal = getMergedPropValue(item.mergedProperties, locKeywords);
+                if (!locationGroupVal) locationGroupVal = getMergedPropValue(item.mergedProperties, locGrpKeywords);
+                if (!manufacturerVal) manufacturerVal = getMergedPropValue(item.mergedProperties, mfgKeywords);
+                if (!osVal) osVal = getMergedPropValue(item.mergedProperties, osKeywords);
             }
             if (item.sheets) {
                 item.sheets.forEach(s => {
@@ -7277,14 +7301,44 @@
                     if (!nameVal) nameVal = getSecondaryColValue(s.row, nameKeywords);
                     if (!serialVal) serialVal = getSecondaryColValue(s.row, serialKeywords);
                     if (!macVal) macVal = getSecondaryColValue(s.row, macKeywords);
+                    if (!userVal) userVal = getSecondaryColValue(s.row, userKeywords);
+                    if (!loginVal) loginVal = getSecondaryColValue(s.row, loginKeywords);
+                    if (!locationVal) locationVal = getSecondaryColValue(s.row, locKeywords);
+                    if (!locationGroupVal) locationGroupVal = getSecondaryColValue(s.row, locGrpKeywords);
+                    if (!manufacturerVal) manufacturerVal = getSecondaryColValue(s.row, mfgKeywords);
+                    if (!osVal) osVal = getSecondaryColValue(s.row, osKeywords);
                 });
             }
 
             if (!nameVal) nameVal = item.name || item.normalized || "Unknown Reconciled";
             if (!serialVal) serialVal = `SN-RECON-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
             if (!macVal) macVal = `00:1A:2B:3C:${Math.floor(Math.random() * 89 + 10)}:${Math.floor(Math.random() * 89 + 10)}`;
+            if (!userVal) userVal = (item.status === "COVERAGE_GAP" ? "unassigned" : "unassigned");
+            if (!loginVal) loginVal = "-";
+            if (!locationVal) locationVal = (item.status === "COVERAGE_GAP" ? "Remote - Untrusted" : "Corporate Head Office");
+            if (!locationGroupVal) locationGroupVal = (item.status === "COVERAGE_GAP" ? "Non-Sift" : "Sift");
+            if (!manufacturerVal) manufacturerVal = (item.status === "COVERAGE_GAP" ? "Generic Reconciled Gap" : "Generic Reconciled");
+            if (!osVal) osVal = (item.status === "COVERAGE_GAP" ? "Unknown Platform" : "Windows 11 Enterprise");
 
-            return { nameVal, serialVal, macVal };
+            let osFamilyVal = "Windows";
+            if (osVal) {
+                const osLow = osVal.toLowerCase();
+                if (osLow.includes("mac")) osFamilyVal = "macOS";
+                else if (osLow.includes("linux") || osLow.includes("ubuntu")) osFamilyVal = "Linux";
+            }
+
+            return {
+                nameVal,
+                serialVal,
+                macVal,
+                userVal,
+                loginVal,
+                locationVal,
+                locationGroupVal,
+                manufacturerVal,
+                osVal,
+                osFamilyVal
+            };
         }
 
         function extractConditionFromItem(item) {
@@ -7641,6 +7695,16 @@
                             sw.status = statusObj.status;
                         }
                     });
+                    const ids = extractDeviceIdentifiers(item);
+                    if (ids.userVal && ids.userVal !== "unassigned") existing.user_assigned = ids.userVal;
+                    if (ids.loginVal && ids.loginVal !== "-") existing.last_login = ids.loginVal;
+                    if (ids.locationVal && ids.locationVal !== "Remote") existing.location = ids.locationVal;
+                    if (ids.locationGroupVal) existing.location_group = (ids.locationGroupVal.toLowerCase() === "sift" ? "Sift" : "Non-Sift");
+                    if (ids.manufacturerVal && ids.manufacturerVal !== "Generic Reconciled") existing.manufacturer = ids.manufacturerVal;
+                    if (ids.osVal && ids.osVal !== "Windows 11 Enterprise") {
+                        existing.os = ids.osVal;
+                        existing.os_family = ids.osFamilyVal;
+                    }
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
@@ -7653,16 +7717,16 @@
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal,
                         mac: ids.macVal,
-                        manufacturer: "Generic Reconciled",
-                        os: "Windows 11 Enterprise",
-                        os_family: "Windows",
+                        manufacturer: ids.manufacturerVal,
+                        os: ids.osVal,
+                        os_family: ids.osFamilyVal,
                         score: 100.00,
                         level: "COMPLIANT",
                         condition: extractConditionFromItem(item),
-                        user_assigned: "reconciler.user",
-                        last_login: new Date().toISOString().substring(0, 16).replace("T", " "),
-                        location: "Corporate Head Office",
-                        location_group: "Sift",
+                        user_assigned: ids.userVal,
+                        last_login: ids.loginVal !== "-" ? ids.loginVal : new Date().toISOString().substring(0, 16).replace("T", " "),
+                        location: ids.locationVal,
+                        location_group: (ids.locationGroupVal.toLowerCase() === "sift" ? "Sift" : "Non-Sift"),
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
                             const statusObj = getMergedAgentStatus(item, sw.key);
@@ -7728,6 +7792,16 @@
                         }
                     });
 
+                    const ids = extractDeviceIdentifiers(item);
+                    if (ids.userVal && ids.userVal !== "unassigned") existing.user_assigned = ids.userVal;
+                    if (ids.loginVal && ids.loginVal !== "-") existing.last_login = ids.loginVal;
+                    if (ids.locationVal && ids.locationVal !== "Remote") existing.location = ids.locationVal;
+                    if (ids.locationGroupVal) existing.location_group = (ids.locationGroupVal.toLowerCase() === "sift" ? "Sift" : "Non-Sift");
+                    if (ids.manufacturerVal && ids.manufacturerVal !== "Generic Reconciled") existing.manufacturer = ids.manufacturerVal;
+                    if (ids.osVal && ids.osVal !== "Windows 11 Enterprise") {
+                        existing.os = ids.osVal;
+                        existing.os_family = ids.osFamilyVal;
+                    }
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
                     mergedUpdated++;
@@ -7740,16 +7814,16 @@
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : `SN-GAP-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
                         mac: ids.macVal,
-                        manufacturer: "Generic Reconciled Gap",
-                        os: "Unknown Platform",
-                        os_family: "Windows",
+                        manufacturer: ids.manufacturerVal,
+                        os: ids.osVal,
+                        os_family: ids.osFamilyVal,
                         score: 0.00,
                         level: "NON_COMPLIANT",
                         condition: extractConditionFromItem(item),
-                        user_assigned: "unassigned",
-                        last_login: "-",
-                        location: "Remote - Untrusted",
-                        location_group: "Non-Sift",
+                        user_assigned: ids.userVal,
+                        last_login: ids.loginVal,
+                        location: ids.locationVal,
+                        location_group: (ids.locationGroupVal.toLowerCase() === "sift" ? "Sift" : "Non-Sift"),
                         is_isolated: false,
                         software: sampleSoftwareCatalog.map(sw => {
                             const statusObj = getMergedAgentStatus(item, sw.key);
