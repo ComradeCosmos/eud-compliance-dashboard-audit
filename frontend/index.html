@@ -765,6 +765,16 @@
                                 </button>
                             </div>
 
+                            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-siem-export" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSiemLogs()">
+                                    Export Logs (JSON)
+                                </button>
+                                <label for="siem-import-file" class="btn" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                    Import Logs (JSON)
+                                </label>
+                                <input type="file" id="siem-import-file" accept=".json" style="display: none;" onchange="importSiemLogs(event)">
+                            </div>
+
                             <div style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
                                 <div>
                                     <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Background Stream Simulation</h4>
@@ -841,6 +851,16 @@
                             <button class="btn" style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;" onclick="triggerRiskCalculation()">
                                 Calculate Risk Score
                             </button>
+
+                            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-risk-export" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportRiskConfig()">
+                                    Export Config
+                                </button>
+                                <label for="risk-import-file" class="btn" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                    Import Config
+                                </label>
+                                <input type="file" id="risk-import-file" accept=".json" style="display: none;" onchange="importRiskConfig(event)">
+                            </div>
                         </div>
 
                         <!-- Right Panel: Results & Findings Breakdown -->
@@ -899,13 +919,22 @@
                         <!-- Left Panel: Manual Checklist Controls -->
                         <div style="display: flex; flex-direction: column; gap: 1.25rem;">
                             <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
-                                <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select Audit Assessment</label>
-                                    <select id="samp-assessment-select" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;" onchange="handleSampAssessmentChange()">
-                                        <!-- Dynamic options -->
-                                    </select>
+                                <div style="flex: 1.5; display: flex; gap: 0.75rem; align-items: flex-end;">
+                                    <div style="flex: 1;">
+                                        <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select Audit Assessment</label>
+                                        <select id="samp-assessment-select" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;" onchange="handleSampAssessmentChange()">
+                                            <!-- Dynamic options -->
+                                        </select>
+                                    </div>
+                                    <button class="btn" style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampFindingsData()">
+                                        Export Data
+                                    </button>
+                                    <label for="samp-import-file" class="btn" style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; box-sizing: border-box;">
+                                        Import Data
+                                    </label>
+                                    <input type="file" id="samp-import-file" accept=".json" style="display: none;" onchange="importSampFindingsData(event)">
                                 </div>
-                                <div style="text-align: right;">
+                                <div style="text-align: right; flex: 0.8;">
                                     <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Auditing Progress</div>
                                     <div id="samp-progress-label" style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5 Controls</div>
                                 </div>
@@ -942,6 +971,33 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- ZAP Vulnerability Scanner Card -->
+                            <div class="card" id="zap-scanner-card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; margin-top: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">ZAP SCANNER</span>
+                                    <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">AUTOMATED SECURITY SCAN</span>
+                                </div>
+                                <h3 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">Automated Web Scans</h3>
+                                <p style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                    Run active OWASP ZAP and HTTP security header compliance audits on target URLs.
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <div>
+                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Target URL</label>
+                                        <input type="text" id="zap-target-url" value="http://127.0.0.1:8080" style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); box-sizing: border-box;">
+                                    </div>
+                                    <button class="btn" id="btn-run-zap" style="width: 100%; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="runSampZapScan()">
+                                        Run Security Audit Scan
+                                    </button>
+                                    <div>
+                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Scan Output Logs</label>
+                                        <div id="zap-terminal" style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 180px; max-height: 180px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem; box-sizing: border-box;">
+                                            <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Scanner ready. Standing by...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Right Panel: Checklist Selector List -->
@@ -949,6 +1005,21 @@
                             <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual Controls Checklist</label>
                             <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="samp-checklist-items-container">
                                 <!-- Dynamic check items click to edit -->
+                            </div>
+
+                            <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Export Compliance Reports</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('html')">
+                                        Export HTML
+                                    </button>
+                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('pdf')">
+                                        Export PDF
+                                    </button>
+                                    <button class="btn" style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="exportSampReport('json')">
+                                        Export JSON
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -5127,12 +5198,394 @@
                         collected_at: new Date().toISOString()
                     });
                     if (res && res.id) {
-                        logToTerminal(`[Simulation Stream] Ingested simulated event. Evidence ID #${res.id}.`, "info");
-                    } else {
                         logToTerminal(`[Simulation Stream Error] Failed to ingest simulated event.`, "error");
                     }
                 }, 3000);
             }
+        }
+
+        async function exportSiemLogs() {
+            logToTerminal("[SIEM Ingest] Fetching evidence database records for export...");
+            const evidenceList = await apiGet('/api/evidence');
+            if (!evidenceList || evidenceList.length === 0) {
+                logToTerminal("[SIEM Ingest] No evidence records found to export.", "warn");
+                alert("No evidence records found to export.");
+                return;
+            }
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(evidenceList, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "siem_logs_export.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            logToTerminal("[SIEM Ingest] SIEM evidence logs exported successfully.", "info");
+        }
+
+        function importSiemLogs(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const logs = JSON.parse(e.target.result);
+                    if (!Array.isArray(logs)) {
+                        alert("Invalid file format. Expected a JSON array of logs.");
+                        return;
+                    }
+                    logToTerminal(`[SIEM Ingest] Importing ${logs.length} logs from file...`);
+                    let successCount = 0;
+                    for (const item of logs) {
+                        const rawLog = item.raw_log || item.raw_data || JSON.stringify(item);
+                        const res = await apiPost('/api/siem/ingest', {
+                            source: item.source || "AD",
+                            raw_log: typeof rawLog === 'string' ? rawLog : JSON.stringify(rawLog),
+                            collected_at: item.collected_at || new Date().toISOString()
+                        });
+                        if (res && res.id) {
+                            successCount++;
+                        }
+                    }
+                    logToTerminal(`[SIEM Ingest] Successfully imported ${successCount} / ${logs.length} logs.`, "info");
+                    alert(`Successfully imported ${successCount} logs.`);
+                    event.target.value = "";
+                } catch (err) {
+                    console.error(err);
+                    logToTerminal(`[SIEM Ingest] Failed to parse import file: ${err.message}`, "error");
+                    alert("Failed to parse import file. Ensure it is a valid JSON array.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function exportRiskConfig() {
+            const highWeight = document.getElementById("weight-high") ? parseFloat(document.getElementById("weight-high").value) : 10;
+            const mediumWeight = document.getElementById("weight-medium") ? parseFloat(document.getElementById("weight-medium").value) : 5;
+            const lowWeight = document.getElementById("weight-low") ? parseFloat(document.getElementById("weight-low").value) : 2;
+            const env = document.getElementById("risk-env-select") ? document.getElementById("risk-env-select").value : "Production";
+            
+            const config = {
+                environment: env,
+                weights: {
+                    HIGH: highWeight,
+                    MEDIUM: mediumWeight,
+                    LOW: lowWeight
+                }
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(config, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "risk_engine_config.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            alert("Risk Engine configuration exported successfully.");
+        }
+
+        function importRiskConfig(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const config = JSON.parse(e.target.result);
+                    if (config.environment && document.getElementById("risk-env-select")) {
+                        document.getElementById("risk-env-select").value = config.environment;
+                    }
+                    if (config.weights) {
+                        if (config.weights.HIGH !== undefined && document.getElementById("weight-high")) {
+                            document.getElementById("weight-high").value = config.weights.HIGH;
+                        }
+                        if (config.weights.MEDIUM !== undefined && document.getElementById("weight-medium")) {
+                            document.getElementById("weight-medium").value = config.weights.MEDIUM;
+                        }
+                        if (config.weights.LOW !== undefined && document.getElementById("weight-low")) {
+                            document.getElementById("weight-low").value = config.weights.LOW;
+                        }
+                    }
+                    alert("Risk configuration loaded. Recalculating...");
+                    await triggerRiskCalculation();
+                    event.target.value = "";
+                } catch (err) {
+                    console.error(err);
+                    alert("Failed to parse Risk Config file. Ensure it is a valid JSON configuration.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function runSampZapScan() {
+            const selectEl = document.getElementById("samp-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) {
+                alert("Please select an assessment session first.");
+                return;
+            }
+            
+            const targetUrl = document.getElementById("zap-target-url").value.trim();
+            if (!targetUrl) {
+                alert("Please enter a valid target URL.");
+                return;
+            }
+            
+            const term = document.getElementById("zap-terminal");
+            term.innerHTML = `<div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Initiating scan for: ${targetUrl}...</div>`;
+            
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
+            if (usePython) {
+                try {
+                    term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[ZAP] Request dispatched. Handshaking with automated client...</div>`;
+                    const res = await apiPost('/api/scanners/audit', {
+                        target_url: targetUrl,
+                        assessment_id: parseInt(assessmentId, 10)
+                    });
+                    
+                    if (res && res.success) {
+                        term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[HTTP HEADERS] Ingestion complete.</div>`;
+                        if (res.scans && res.scans.http_headers && res.scans.http_headers.report) {
+                            Object.entries(res.scans.http_headers.report).forEach(([code, report]) => {
+                                const col = report.passed ? "#16a34a" : "#dc2626";
+                                term.innerHTML += `<div class="terminal-line" style="color: ${col};">[HTTP HEADERS] ${code}: ${report.passed ? 'PASS' : 'FAIL'} - ${report.details}</div>`;
+                            });
+                        }
+                        
+                        term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[ZAP VULNERABILITIES] Ingestion complete.</div>`;
+                        if (res.scans && res.scans.zap_vulnerabilities && res.scans.zap_vulnerabilities.alerts) {
+                            res.scans.zap_vulnerabilities.alerts.forEach(alert => {
+                                const col = alert.risk === 'High' ? "#dc2626" : alert.risk === 'Medium' ? "#f59e0b" : "#3b82f6";
+                                term.innerHTML += `<div class="terminal-line" style="color: ${col};">[ZAP] Alert: ${alert.alert} (${alert.risk}) - ${alert.description}</div>`;
+                            });
+                        }
+                        
+                        term.innerHTML += `<div class="terminal-line info" style="color: #16a34a;">[SYSTEM] Scan completed successfully. Evidence registered and signed!</div>`;
+                        
+                        // Re-evaluate assessment findings to map new evidence
+                        term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Re-evaluating checklist findings...</div>`;
+                        await apiPost(`/api/checklist/evaluate/${assessmentId}`);
+                        
+                        // Reload checklist and findings UI
+                        handleSampAssessmentChange();
+                        
+                        const riskSelect = document.getElementById("risk-assessment-select");
+                        if (riskSelect && riskSelect.value === assessmentId) {
+                            handleRiskAssessmentChange();
+                        }
+                        
+                        alert("Security audit scan complete! Automated findings updated.");
+                    } else {
+                        const errMsg = res ? res.message || res.detail : "Unknown scan error";
+                        term.innerHTML += `<div class="terminal-line error" style="color: #dc2626;">[ERROR] Scan execution failed: ${errMsg}</div>`;
+                        alert(`Scan failed: ${errMsg}`);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    term.innerHTML += `<div class="terminal-line error" style="color: #dc2626;">[ERROR] System fault during audit: ${err.message}</div>`;
+                    alert(`Scan failed: ${err.message}`);
+                }
+            } else {
+                // Offline / file:// mock implementation
+                term.innerHTML += `<div class="terminal-line info" style="color: #38bdf8;">[OFFLINE] Simulation mode active. Running offline checks...</div>`;
+                setTimeout(async () => {
+                    term.innerHTML += `<div class="terminal-line" style="color: #16a34a;">[HTTP HEADERS] CTRL-001: PASS - HSTS Header exists.</div>`;
+                    term.innerHTML += `<div class="terminal-line" style="color: #dc2626;">[HTTP HEADERS] CTRL-002: FAIL - Missing secure flags.</div>`;
+                    term.innerHTML += `<div class="terminal-line" style="color: #f59e0b;">[ZAP] Alert: Content Security Policy Header Not Set (Medium)</div>`;
+                    term.innerHTML += `<div class="terminal-line" style="color: #16a34a;">[SYSTEM] Offline scan complete. Mocks updated in local evidence store.</div>`;
+                    
+                    const evidence = localDB.getEvidence();
+                    const collected_at_str = new Date().toISOString();
+                    
+                    evidence.push({
+                        id: evidence.length + 1,
+                        assessment_id: parseInt(assessmentId, 10),
+                        source: "HTTP_CHECK",
+                        raw_data: "CTRL-001 Status: PASS Details: HSTS Header exists.\nCTRL-002 Status: FAIL Details: Missing secure flags.",
+                        hash_signature: "mock_sha256_" + Math.random().toString(36).substring(2, 15),
+                        collected_at: collected_at_str,
+                        is_verified: true,
+                        created_at: collected_at_str
+                    });
+                    
+                    evidence.push({
+                        id: evidence.length + 1,
+                        assessment_id: parseInt(assessmentId, 10),
+                        source: "ZAP",
+                        raw_data: "ZAP Alert: Content Security Policy Header Not Set Severity: Medium Vulnerability Details: CSP missing.\nZAP Alert: Missing Anti-Clickjacking Header Severity: Medium Vulnerability Details: X-Frame-Options not found.",
+                        hash_signature: "mock_sha256_" + Math.random().toString(36).substring(2, 15),
+                        collected_at: collected_at_str,
+                        is_verified: true,
+                        created_at: collected_at_str
+                    });
+                    
+                    localDB.saveEvidence(evidence);
+                    
+                    await apiPost(`/api/checklist/evaluate/${assessmentId}`);
+                    handleSampAssessmentChange();
+                    
+                    const riskSelect = document.getElementById("risk-assessment-select");
+                    if (riskSelect && riskSelect.value === assessmentId) {
+                        handleRiskAssessmentChange();
+                    }
+                    
+                    alert("Offline scan simulation complete! Findings updated.");
+                }, 1500);
+            }
+        }
+
+        async function exportSampReport(format) {
+            const selectEl = document.getElementById("samp-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) {
+                alert("Please select an assessment session first.");
+                return;
+            }
+            
+            logToTerminal(`[SAMP Auditor] Fetching and exporting compliance report in ${format.toUpperCase()} format...`);
+            const endpoint = `/api/reports/${assessmentId}/${format}`;
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
+            if (usePython) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (!response.ok) throw new Error("Network response was not ok");
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `SAMP_Report_Assessment_${assessmentId}.${format === 'pdf' ? 'pdf' : format === 'html' ? 'html' : 'json'}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    window.URL.revokeObjectURL(url);
+                    logToTerminal(`[SAMP Auditor] ${format.toUpperCase()} report exported successfully.`, "info");
+                } catch (err) {
+                    console.error(err);
+                    logToTerminal(`[SAMP Auditor Error] Failed to export report: ${err.message}`, "error");
+                    alert(`Failed to export report: ${err.message}`);
+                }
+            } else {
+                let reportData = {};
+                if (format === 'json') {
+                    reportData = {
+                        assessment_id: assessmentId,
+                        status: "OFFLINE_REPORT",
+                        generated_at: new Date().toISOString(),
+                        findings: sampFindings
+                    };
+                } else if (format === 'html') {
+                    reportData = `
+                    <html>
+                    <head><title>SAMP Compliance Report (Offline)</title></head>
+                    <body style="font-family: sans-serif; padding: 20px; background: #0f172a; color: #f8fafc;">
+                        <h1>SAMP Offline Compliance Report</h1>
+                        <p>Assessment ID: ${assessmentId}</p>
+                        <p>Generated at: ${new Date().toISOString()}</p>
+                        <hr/>
+                        <h2>Checklist Findings</h2>
+                        <ul>
+                            ${sampFindings.map(f => `<li><strong>${f.control_code}</strong>: ${f.status} - ${f.details}</li>`).join('')}
+                        </ul>
+                    </body>
+                    </html>`;
+                } else {
+                    alert("PDF generation is not supported in offline (file://) mode. Please run with Python backend.");
+                    return;
+                }
+                
+                const blob = new Blob([format === 'json' ? JSON.stringify(reportData, null, 2) : reportData], { type: format === 'json' ? 'application/json' : 'text/html' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `SAMP_Report_Assessment_${assessmentId}_Offline.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+                logToTerminal(`[SAMP Auditor] Offline ${format.toUpperCase()} report exported successfully.`, "info");
+            }
+        }
+
+        async function exportSampFindingsData() {
+            const selectEl = document.getElementById("samp-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) {
+                alert("Please select an assessment session first.");
+                return;
+            }
+            
+            logToTerminal(`[SAMP Auditor] Fetching assessment session #${assessmentId} findings for data export...`);
+            const res = await apiGet(`/api/assessments/${assessmentId}`);
+            if (!res) {
+                alert("Failed to fetch assessment data for export.");
+                return;
+            }
+            
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `samp_assessment_${assessmentId}_data.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            logToTerminal(`[SAMP Auditor] Assessment data exported successfully.`, "info");
+        }
+
+        function importSampFindingsData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const selectEl = document.getElementById("samp-assessment-select");
+            const assessmentId = selectEl.value;
+            if (!assessmentId) {
+                alert("Please select an assessment session first to import findings into.");
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    const findings = data.findings || (Array.isArray(data) ? data : []);
+                    if (findings.length === 0) {
+                        alert("No findings found in the imported file.");
+                        return;
+                    }
+                    
+                    logToTerminal(`[SAMP Auditor] Importing ${findings.length} findings into assessment #${assessmentId}...`);
+                    let successCount = 0;
+                    
+                    for (const importedFinding of findings) {
+                        const currentFinding = sampFindings.find(f => f.control_code === importedFinding.control_code);
+                        if (currentFinding) {
+                            const status = importedFinding.status || "FAIL";
+                            const details = importedFinding.details || "";
+                            const rec = importedFinding.recommendation || "";
+                            
+                            const url = `/api/assessments/findings/${currentFinding.id}?status=${status}&details=${encodeURIComponent(details)}&recommendation=${encodeURIComponent(rec)}`;
+                            const res = await apiPost(url, {}, 'PUT');
+                            if (res && res.id) {
+                                successCount++;
+                            }
+                        }
+                    }
+                    
+                    logToTerminal(`[SAMP Auditor] Successfully imported and updated ${successCount} findings.`, "info");
+                    alert(`Successfully imported ${successCount} findings.`);
+                    handleSampAssessmentChange();
+                    
+                    const riskSelect = document.getElementById("risk-assessment-select");
+                    if (riskSelect && riskSelect.value === assessmentId) {
+                        handleRiskAssessmentChange();
+                    }
+                    
+                    event.target.value = "";
+                } catch (err) {
+                    console.error(err);
+                    logToTerminal(`[SAMP Auditor] Failed to import findings: ${err.message}`, "error");
+                    alert("Failed to parse file. Ensure it is a valid assessment JSON export.");
+                }
+            };
+            reader.readAsText(file);
         }
 
         function toggleSidebarGroup(groupName) {

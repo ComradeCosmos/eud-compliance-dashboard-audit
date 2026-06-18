@@ -76,6 +76,16 @@ graph TD
 *   **Identity Resolution**: Aligns Corporate Directory rows with EDR logs using normalized names, MACs, and serial keys.
 *   **Output Categorization**: Automatically groups reconciler assets into Matches, Coverage Gaps, and Rogue Assets.
 
+### 6. Automated Web Scans & Vulnerability Scanning
+*   **OWASP ZAP & HTTP Headers Scanner**: Evaluates web target security configurations, HTTP headers (HSTS, secure flags, CSP), and vulnerability alerts.
+*   **Cryptographically Signed Evidence**: Saves scanner reports directly to the database evidence store.
+*   **Dynamic Terminal Panel**: Streams live audit log updates and trace operations dynamically.
+
+### 7. Independent Data Portability & Document Export
+*   **HTML, PDF & JSON Exports**: Generates styled HTML pages, downloadable JSON data files, and print-ready PDFs of compliance reports.
+*   **Offline Operation Compatibility**: Supports complete offline functionality (via browser local storage/Blobs) enabling data exports and JSON config imports without relying on live backend servers.
+*   **Individual Module Portability**: Import/Export pipelines for SIEM logs, Risk Engine configuration weights, and SAMP findings.
+
 ---
 
 ## Project Structure
