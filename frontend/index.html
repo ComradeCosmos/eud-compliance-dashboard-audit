@@ -10,6 +10,189 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Dark Sidebar Overrides for high fidelity styling matching 2nd image */
+        .sidebar {
+            background-color: #090e17 !important; /* Elegant slate-950 tone */
+            border-right: 1px solid #1e293b !important;
+            box-shadow: inset -1px 0 0 0 #1e293b !important;
+        }
+        .sidebar-menu .menu-item {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.01em !important;
+            border-radius: 4px !important;
+            margin-bottom: 0.25rem !important;
+            transition: all 0.2s ease !important;
+        }
+        .sidebar-menu .menu-item:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+        .sidebar-menu .menu-item.active {
+            color: #ffffff !important;
+            background-color: #2e080c !important; /* Softer, highly professional burgundy */
+            border-left: 3px solid #ef4444 !important; /* Vibrant brand red */
+            border-radius: 0 4px 4px 0 !important;
+        }
+        
+        /* Dark Theme Gateway Hub Layout matching 1st image */
+        .gateway-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 5rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); /* Sophisticated dark slate gradient */
+        }
+        .gateway-title {
+            font-size: 2.5rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: -0.05em !important;
+            color: #ffffff !important;
+            margin-bottom: 0.5rem !important;
+            font-family: var(--font-display) !important;
+            text-align: center;
+            border: none !important;
+            padding: 0 !important;
+        }
+        .gateway-subtitle {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+            text-align: center;
+            margin-bottom: 3.5rem !important;
+        }
+        .gateway-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+            max-width: 1100px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .gateway-card {
+            background: #1e293b !important; /* Premium Slate-800 Card Background */
+            border: 1px solid #334155 !important; /* Slate-700 Border */
+            border-radius: 6px !important;
+            padding: 2.5rem !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 270px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+            box-sizing: border-box;
+        }
+        .gateway-card:hover {
+            transform: translateY(-5px) !important;
+            border-color: #ef4444 !important; /* Hover highlight to vibrant red */
+            box-shadow: 0 15px 35px rgba(239, 68, 68, 0.12) !important;
+        }
+        .gateway-card-btn {
+            border: 1px solid #475569 !important;
+            background: transparent !important;
+            color: #cbd5e1 !important;
+            padding: 0.85rem !important;
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+            letter-spacing: 0.05em !important;
+            text-transform: uppercase !important;
+            border-radius: 4px !important;
+            transition: all 0.3s ease !important;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        .gateway-card:hover .gateway-card-btn {
+            background: #ef4444 !important;
+            border-color: #ef4444 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+        }
+        .gateway-badge {
+            background: #334155 !important; /* Slate badge bg */
+            color: #f87171 !important; /* Professional light red text */
+            border: 1px solid #475569 !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.5rem !important;
+            font-weight: 800 !important;
+            border-radius: 3px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+        }
+        
+        /* Interactive SIEM Controls styling */
+        .siem-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr;
+            gap: 2rem;
+            width: 100%;
+        }
+        @media (max-width: 1024px) {
+            .siem-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+ 
+        /* Collapsible Sidebar Groups */
+        .sidebar-group-header {
+            color: #94a3b8 !important;
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em !important;
+            border-radius: 4px !important;
+            margin-top: 0.75rem !important;
+            margin-bottom: 0.15rem !important;
+            padding: 0.55rem 0.75rem !important;
+            cursor: pointer;
+            transition: all 0.2s ease !important;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar-group-header:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+        .sidebar-group-header.active {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+        .sidebar-submenu {
+            list-style: none !important;
+            padding-left: 1.25rem !important;
+            margin: 0 !important;
+            transition: all 0.3s ease !important;
+        }
+        .sidebar-submenu .menu-item {
+            font-size: 0.78rem !important;
+            font-weight: 500 !important;
+            padding: 0.45rem 0.75rem !important;
+            margin-bottom: 0.15rem !important;
+            border-radius: 3px !important;
+            color: #64748b !important;
+            background: transparent !important;
+            border-left: none !important;
+        }
+        .sidebar-submenu .menu-item:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+        .sidebar-submenu .menu-item.active {
+            color: #ffffff !important;
+            background-color: #2e080c !important; /* Burgundy highlight */
+            border-left: 2px solid #ef4444 !important; /* Brand red accent line */
+            border-radius: 0 3px 3px 0 !important;
+        }
+    </style>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 
@@ -119,6 +302,7 @@
                     </button>
                 </div>
             </div>
+
 
         </div>
     </div>
@@ -347,26 +531,82 @@
     <div class="app-container" id="main-app-container" style="display: flex;">
         <!-- Sidebar Navigation matching Aethelred Corp style -->
         <aside class="sidebar">
-            <div class="brand-section" style="flex-direction: row; align-items: center; gap: 0.75rem;">
-                <img src="logo.png" alt="AM/NS India EUD Logo"
-                    style="height: 36px;">
-                <div style="display: flex; flex-direction: column; gap: 0.1rem;">
-                    <div class="brand-logo" style="font-size: 1.1rem; line-height: 1.1;"> <span>EUD</span></div>
-                    <p
-                        style="font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;">
+            <div class="brand-section" style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;" onclick="switchNavSection('hub')">
+                <div style="display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap;">
+                    <div style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; white-space: nowrap;">
+                        AM/NS
+                    </div>
+                    <div style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; margin-top: -0.25rem; white-space: nowrap;">
+                        INDIA
+                    </div>
+                </div>
+                <div style="border-left: 2px solid #374151; height: 36px; padding-left: 0.5rem; display: flex; flex-direction: column; justify-content: center; line-height: 1.1; white-space: nowrap;">
+                    <div style="font-family: var(--font-display) !important; font-size: 1.05rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; white-space: nowrap;">EUD</div>
+                    <p style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin: 0; white-space: nowrap;">
                         Security & Compliance</p>
                 </div>
             </div>
 
             <!-- Top navigation menu -->
-            <nav>
+            <nav style="padding: 0.5rem 0.25rem;">
                 <ul class="sidebar-menu">
-                    <li class="menu-item active" id="menu-compliance" onclick="switchNavSection('compliance')">
-                        Compliance</li>
-                    <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">Scoring & Controls</li>
-                    <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">Reporting</li>
-                    <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">Reconciliation</li>
-                    <li class="menu-item" id="menu-dev-db" onclick="switchNavSection('dev-db')" style="display: none;">Developer Console</li>
+                    <!-- Root Gateway Link -->
+                    <li class="menu-item active" id="menu-hub" onclick="switchNavSection('hub')">
+                        Gateway Portal
+                    </li>
+
+                    <!-- Group: SIEM Ingest Module -->
+                    <li class="sidebar-group-header" id="group-header-siem" onclick="toggleSidebarGroup('siem')">
+                        SIEM Ingest Stream
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-siem" style="display: none;">
+                        <li class="menu-item" id="menu-siem" onclick="switchNavSection('siem')">
+                            Ingest Console
+                        </li>
+                    </ul>
+
+                    <!-- Group: Centralized Risk Engine -->
+                    <li class="sidebar-group-header" id="group-header-risk" onclick="toggleSidebarGroup('risk')">
+                        Centralized Risk Engine
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-risk" style="display: none;">
+                        <li class="menu-item" id="menu-risk-engine" onclick="switchNavSection('risk-engine')">
+                            Risk Calculator
+                        </li>
+                    </ul>
+
+                    <!-- Group: SAMP Auditor -->
+                    <li class="sidebar-group-header" id="group-header-samp" onclick="toggleSidebarGroup('samp')">
+                        SAMP Auditor
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-samp" style="display: none;">
+                        <li class="menu-item" id="menu-samp-auditor" onclick="switchNavSection('samp-auditor')">
+                            Manual Audit Checklist
+                        </li>
+                    </ul>
+
+                    <!-- Group: EUD Asset Reconciler -->
+                    <li class="sidebar-group-header" id="group-header-reconciler" onclick="toggleSidebarGroup('reconciler')">
+                        EUD Asset Reconciler
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-reconciler" style="display: none;">
+                        <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">
+                            Compliance Ledger
+                        </li>
+                        <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">
+                            Scoring & Controls
+                        </li>
+                        <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">
+                            Reporting Center
+                        </li>
+                        <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">
+                            Asset Reconciliation
+                        </li>
+                    </ul>
+
+                    <li class="menu-item" id="menu-dev-db" onclick="switchNavSection('dev-db')" style="display: none;">
+                        Developer Console
+                    </li>
                 </ul>
             </nav>
 
@@ -407,6 +647,312 @@
                 <span
                     style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">Recalculating
                     scores...</span>
+            </div>
+
+            <!-- Section: Gateway Selection Hub -->
+            <div id="section-hub" class="section-view" style="display: block;">
+                <div class="gateway-container">
+                    <h2 class="gateway-title">Unified Gateway Portal</h2>
+                    <p class="gateway-subtitle">Select an Operational Module to Launch</p>
+                    
+                    <div class="gateway-grid">
+                        <!-- Card 1: SIEM Ingest Stream -->
+                        <div class="gateway-card" onclick="switchNavSection('siem')">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 01</span>
+                                </div>
+                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    SIEM Ingest Stream
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Ingest, hash, and cryptographically verify live system event logs from Active Directory, Nessus, EDR, and network gateways.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Launch Console</button>
+                        </div>
+
+                        <!-- Card 2: Centralized Risk Engine -->
+                        <div class="gateway-card" onclick="switchNavSection('risk-engine')">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 02</span>
+                                </div>
+                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    Centralized Risk Engine
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Calculate and fine-tune environment-aware risk index ratings, configure scoring policies, and simulate threat modifiers.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Open Controls</button>
+                        </div>
+
+                        <!-- Card 3: SAMP Core Auditing -->
+                        <div class="gateway-card" onclick="switchNavSection('samp-auditor')">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 03</span>
+                                </div>
+                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    SAMP Core Auditing
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Audit enterprise device fleet metrics, log manual verification overrides, and evaluate NIST compliance controls.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Start Audit</button>
+                        </div>
+
+                        <!-- Card 4: EUD Asset Reconciler -->
+                        <div class="gateway-card" onclick="switchNavSection('reconciler')">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 04</span>
+                                </div>
+                                <h3 style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    EUD Asset Reconciler
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Reconcile multi-sheet telemetry from Active Directory, EDR agents, and vulnerability scanners to identify coverage gaps.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Reconcile Sheets</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: SIEM Ingest Console -->
+            <div id="section-siem" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            SIEM Ingest Stream Console
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Real-time security auditing logging feed. Any raw log ingestions, database operations, compliance calculations, or cryptographic integrity assertions will log here dynamically.
+                        </p>
+                    </div>
+
+                    <div class="siem-grid">
+                        <!-- Left Panel: Ingest Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Log Source Type</label>
+                                <select id="siem-source-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;" onchange="handleSiemSourceChange()">
+                                    <option value="AD">Active Directory (AD)</option>
+                                    <option value="Nessus">Nessus Vulnerability Scanner</option>
+                                    <option value="EDR">EDR Security Agent</option>
+                                    <option value="Zscaler">Zscaler Network Gateway</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin: 0;">Log Payload (JSON / Text)</label>
+                                    <button class="btn" style="font-size: 0.7rem; padding: 0.25rem 0.6rem; height: auto; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-secondary);" onclick="loadSiemDefaultTemplate()">Load Default Template</button>
+                                </div>
+                                <textarea id="siem-payload-input" rows="8" style="width: 100%; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.75rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn" id="btn-siem-ingest" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="executeManualSiemIngest()">
+                                    Sign & Ingest Log
+                                </button>
+                                <button class="btn" id="btn-siem-verify" style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="verifyAllSiemEvidence()">
+                                    Verify Hashes
+                                </button>
+                            </div>
+
+                            <div style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">Background Stream Simulation</h4>
+                                    <p style="margin: 0.1rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">Simulate dynamic log ingestion periodically</p>
+                                </div>
+                                <div>
+                                    <button class="btn" id="btn-siem-simulate" style="font-size: 0.78rem; padding: 0.5rem 1rem; background: #15803d; border-color: #15803d; color: #ffffff;" onclick="toggleSiemSimulation(event)">
+                                        Start Simulation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Terminal logs -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit Terminal Logs</label>
+                            <div id="audit-terminal" class="terminal-console" style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 430px; max-height: 430px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; box-sizing: border-box;">
+                                <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] SIEM Terminal Console initialized. Standing by for ingestion streams...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Centralized Risk Engine -->
+            <div id="section-risk-engine" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Centralized Risk Engine
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Multi-dimensional compliance risk indexing and environment-aware severity rating engine.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <!-- Left Panel: Calculation Inputs -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Select Audit Assessment</label>
+                                <select id="risk-assessment-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;" onchange="handleRiskAssessmentChange()">
+                                    <!-- Dynamic options -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit Environment Context</label>
+                                <select id="risk-env-select" style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                    <option value="Production">Production (Full Severity)</option>
+                                    <option value="UAT">UAT/QA (Downgrade Severity by 1 level)</option>
+                                    <option value="Development">Development (Downgrade Severity by 2 levels)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Core Severity Weights</label>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">HIGH</span>
+                                        <input type="number" id="weight-high" value="10" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">MEDIUM</span>
+                                        <input type="number" id="weight-medium" value="5" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">LOW</span>
+                                        <input type="number" id="weight-low" value="2" min="1" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn" style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;" onclick="triggerRiskCalculation()">
+                                Calculate Risk Score
+                            </button>
+                        </div>
+
+                        <!-- Right Panel: Results & Findings Breakdown -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Score Display Card -->
+                            <div class="card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">Composite Score</h4>
+                                    <div id="risk-rating-label" style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--status-low);">LOW COMPLIANCE RISK</div>
+                                </div>
+                                <div id="risk-score-value" style="font-size: 2.25rem; font-weight: 900; color: var(--text-primary); font-family: var(--font-display);">
+                                    --
+                                </div>
+                            </div>
+
+                            <!-- Findings Table -->
+                            <div>
+                                <h4 style="margin: 0 0 0.75rem 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">Active Findings Severity Mappings</h4>
+                                <div class="fleet-table-container" style="max-height: 280px; overflow-y: auto;">
+                                    <table class="fleet-table" style="width: 100%; font-size: 0.8rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Title</th>
+                                                <th>Base Sev</th>
+                                                <th>Effective Sev</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="risk-findings-tbody">
+                                            <tr>
+                                                <td colspan="5" style="text-align: center; color: var(--text-secondary);">Select an assessment session.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: SAMP Core Auditing / SAMP Auditor -->
+            <div id="section-samp-auditor" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            SAMP Core Auditor Board
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Audit governance dashboard to verify and override manual compliance checks and sign cryptographic evidence.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
+                        <!-- Left Panel: Manual Checklist Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select Audit Assessment</label>
+                                    <select id="samp-assessment-select" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;" onchange="handleSampAssessmentChange()">
+                                        <!-- Dynamic options -->
+                                    </select>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Auditing Progress</div>
+                                    <div id="samp-progress-label" style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5 Controls</div>
+                                </div>
+                            </div>
+
+                            <!-- The active manual control form -->
+                            <div class="card" id="samp-control-card" style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px;">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span id="samp-ctrl-code" style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">CTRL-011</span>
+                                    <span style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">MANUAL CONTROL</span>
+                                </div>
+                                <h3 id="samp-ctrl-title" style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">Role-Based Access Control</h3>
+                                <p id="samp-ctrl-desc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                    Auditors verify RBAC authorization checks are enforced on endpoints.
+                                </p>
+
+                                <div style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                    <div>
+                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Evaluation Status</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <button class="btn" id="btn-samp-pass" style="flex: 1; padding: 0.45rem; background: transparent; border-color: #16a34a; color: #16a34a;" onclick="setSampControlStatus('PASS')">PASS</button>
+                                            <button class="btn" id="btn-samp-fail" style="flex: 1; padding: 0.45rem; background: transparent; border-color: #dc2626; color: #dc2626;" onclick="setSampControlStatus('FAIL')">FAIL</button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Audit Findings & Evidence Notes</label>
+                                        <textarea id="samp-ctrl-notes" rows="3" placeholder="Enter manual audit findings, LDAP queries verified, endpoint tests conducted, etc..." style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                                    </div>
+
+                                    <div style="display: flex; gap: 0.75rem;">
+                                        <button class="btn" id="btn-samp-save" style="flex: 1.3; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);" onclick="saveSampControlOverride()">Save Finding Override</button>
+                                        <button class="btn" id="btn-samp-sign" style="flex: 1; font-size: 0.78rem; padding: 0.55rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);" onclick="signSampControlEvidence()">Sign Evidence</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Checklist Selector List -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual Controls Checklist</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;" id="samp-checklist-items-container">
+                                <!-- Dynamic check items click to edit -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Section: Scoring & Controls -->
@@ -1518,10 +2064,45 @@
                     return;
                 }
             }
-
-
+            // Toggle sidebar visibility and layout sizing
+            const sidebar = document.querySelector(".sidebar");
+            const mainContent = document.querySelector(".main-content");
+            const header = document.querySelector(".main-content > header");
+            
+            const menuHub = document.getElementById("menu-hub");
+            if (target === 'hub') {
+                if (sidebar) sidebar.style.display = "none";
+                if (header) header.style.display = "none";
+                if (mainContent) {
+                    mainContent.style.background = "radial-gradient(circle at center, #111827 0%, #030712 100%)";
+                    mainContent.style.padding = "0";
+                }
+                if (menuHub) menuHub.style.display = "block";
+            } else {
+                if (sidebar) sidebar.style.display = "flex";
+                if (header) header.style.display = "flex";
+                if (mainContent) {
+                    mainContent.style.background = "transparent";
+                    mainContent.style.padding = "3rem 2.5rem";
+                }
+                if (menuHub) menuHub.style.display = "none";
+            }
 
             document.querySelectorAll(".sidebar-menu .menu-item").forEach(item => item.classList.remove("active"));
+            document.querySelectorAll(".sidebar-group-header").forEach(item => item.classList.remove("active"));
+
+            // Expand the group that contains this sub-item
+            if (target === 'siem') {
+                toggleSidebarGroup('siem');
+            } else if (target === 'risk-engine') {
+                toggleSidebarGroup('risk');
+            } else if (target === 'samp-auditor') {
+                toggleSidebarGroup('samp');
+            } else if (['compliance', 'risk', 'reporting', 'reconciler'].includes(target)) {
+                toggleSidebarGroup('reconciler');
+            } else if (target === 'hub') {
+                toggleSidebarGroup('none');
+            }
 
             const clickedMenu = document.getElementById(`menu-${target}`);
             if (clickedMenu) {
@@ -1550,6 +2131,12 @@
                     case "analytics":
                         titleEl.innerText = "Executive Overview";
                         break;
+                    case "hub":
+                        titleEl.innerText = "Unified Gateway Portal";
+                        break;
+                    case "siem":
+                        titleEl.innerText = "SIEM Ingestion Logs Pipeline";
+                        break;
                     case "compliance":
                         titleEl.innerText = "Fleet Compliance Ledger";
                         break;
@@ -1558,6 +2145,12 @@
                         break;
                     case "reporting":
                         titleEl.innerText = "Compliance Telemetry Reporting Center";
+                        break;
+                    case "risk-engine":
+                        titleEl.innerText = "Centralized Risk Engine";
+                        break;
+                    case "samp-auditor":
+                        titleEl.innerText = "SAMP Core Auditing Board";
                         break;
                     case "profile":
                         titleEl.innerText = "Security Analyst Identity";
@@ -3544,6 +4137,7 @@
         const localDB = {
             memoryUsers: null,
             memoryKeys: null,
+            memoryEvidence: null,
             init: function() {
                 const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
                 if (hasLocalStorage) {
@@ -3560,6 +4154,9 @@
                     if (!localStorage.getItem("db_api_keys")) {
                         localStorage.setItem("db_api_keys", JSON.stringify([]));
                     }
+                    if (!localStorage.getItem("db_evidence")) {
+                        localStorage.setItem("db_evidence", JSON.stringify([]));
+                    }
                 } else {
                     if (!this.memoryUsers) {
                         this.memoryUsers = [
@@ -3572,6 +4169,9 @@
                     }
                     if (!this.memoryKeys) {
                         this.memoryKeys = [];
+                    }
+                    if (!this.memoryEvidence) {
+                        this.memoryEvidence = [];
                     }
                 }
             },
@@ -3606,16 +4206,48 @@
                 } else {
                     this.memoryKeys = keys;
                 }
+            },
+            getEvidence: function() {
+                this.init();
+                const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
+                if (hasLocalStorage) {
+                    return JSON.parse(localStorage.getItem("db_evidence")) || [];
+                }
+                return this.memoryEvidence || [];
+            },
+            saveEvidence: function(evidence) {
+                const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
+                if (hasLocalStorage) {
+                    localStorage.setItem("db_evidence", JSON.stringify(evidence));
+                } else {
+                    this.memoryEvidence = evidence;
+                }
+            },
+            getAssessments: function() {
+                this.init();
+                const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
+                if (hasLocalStorage) {
+                    return JSON.parse(localStorage.getItem("db_assessments")) || [];
+                }
+                return this.memoryAssessments || [];
+            },
+            saveAssessments: function(assessments) {
+                const hasLocalStorage = (typeof localStorage !== "undefined" && localStorage !== null);
+                if (hasLocalStorage) {
+                    localStorage.setItem("db_assessments", JSON.stringify(assessments));
+                } else {
+                    this.memoryAssessments = assessments;
+                }
             }
         };
 
         // API Post client that routes to python server or falls back to local DB
-        async function apiPost(endpoint, data = {}) {
+        async function apiPost(endpoint, data = {}, method = "POST") {
             const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
             if (usePython) {
                 try {
                     const response = await fetch(endpoint, {
-                        method: "POST",
+                        method: method,
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(data)
                     });
@@ -3714,6 +4346,145 @@
                     localDB.saveKeys(keys);
                     return { success: true, message: "API Key revoked successfully!" };
                 }
+                else if (endpoint === '/api/siem/ingest') {
+                    localDB.init();
+                    const evidence = localDB.getEvidence();
+                    const newEv = {
+                        id: evidence.length + 1,
+                        assessment_id: data.assessment_id || null,
+                        source: data.source,
+                        raw_data: data.raw_log,
+                        hash_signature: "mock_sha256_" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+                        collected_at: data.collected_at || new Date().toISOString(),
+                        is_verified: true,
+                        created_at: new Date().toISOString()
+                    };
+                    evidence.push(newEv);
+                    localDB.saveEvidence(evidence);
+                    return newEv;
+                }
+                else if (endpoint === '/api/assessments') {
+                    localDB.init();
+                    if (method === 'POST') {
+                        const assessments = localDB.getAssessments();
+                        const newA = {
+                            id: assessments.length + 1,
+                            name: data.name,
+                            environment: data.environment,
+                            status: "IN_PROGRESS",
+                            overall_score: null,
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                            findings: [],
+                            evidence_list: []
+                        };
+                        assessments.push(newA);
+                        localDB.saveAssessments(assessments);
+                        return newA;
+                    }
+                }
+                else if (endpoint.startsWith('/api/assessments/')) {
+                    localDB.init();
+                    const assessments = localDB.getAssessments();
+                    const parts = endpoint.split('?');
+                    const pathParts = parts[0].split('/');
+                    const id = parseInt(pathParts[3], 10);
+                    const idx = assessments.findIndex(a => a.id === id);
+                    if (idx !== -1) {
+                        if (method === 'PUT') {
+                            if (data.environment) assessments[idx].environment = data.environment;
+                            if (data.status) assessments[idx].status = data.status;
+                            if (data.overall_score !== undefined) assessments[idx].overall_score = data.overall_score;
+                            assessments[idx].updated_at = new Date().toISOString();
+                            localDB.saveAssessments(assessments);
+                            return assessments[idx];
+                        }
+                    }
+                }
+                else if (endpoint.startsWith('/api/checklist/evaluate/')) {
+                    localDB.init();
+                    const parts = endpoint.split('/');
+                    const id = parseInt(parts[4], 10);
+                    const assessments = localDB.getAssessments();
+                    const idx = assessments.findIndex(a => a.id === id);
+                    if (idx !== -1) {
+                        const manualControls = [
+                            { code: "CTRL-011", title: "Role-Based Access Control", severity: "HIGH", type: "MANUAL", desc: "Auditors verify RBAC authorization checks are enforced on endpoints.", rec: "Conduct audit of access policies, map all endpoints to roles, and verify restriction." },
+                            { code: "CTRL-012", title: "Inactive Account Disable", severity: "MEDIUM", type: "MANUAL", desc: "Auditors verify LDAP/AD deactivation policies are active.", rec: "Review Active Directory account deactivation logs for accounts idle > 90 days." },
+                            { code: "CTRL-013", title: "Audit Log Completeness", severity: "HIGH", type: "MANUAL", desc: "Auditors verify access, modifications, and security events are logged.", rec: "Review centralized logging daemon configs to verify auditing completeness." },
+                            { code: "CTRL-014", title: "Security Alerting", severity: "MEDIUM", type: "MANUAL", desc: "Auditors verify alerts are raised on anomalous login attempts.", rec: "Check SIEM alerting rules for brute-force or anomalous geolocation logins." },
+                            { code: "CTRL-015", title: "Logout Session Kill", severity: "HIGH", type: "MANUAL", desc: "Auditors verify backend session tokens are revoked upon logout.", rec: "Test session revocation endpoint and confirm server-side token state is deleted." }
+                        ];
+                        const automatedControls = [
+                            { code: "CTRL-001", title: "HTTP Strict Transport Security", severity: "HIGH", type: "AUTOMATED", desc: "HSTS header check. Must contain max-age of at least 1 year (31536000s).", rec: "Add Strict-Transport-Security header with max-age=31536000." },
+                            { code: "CTRL-002", title: "Secure Cookie Flags", severity: "MEDIUM", type: "AUTOMATED", desc: "All session cookies must have HttpOnly and Secure flags, and SameSite set to Strict/Lax.", rec: "Set HttpOnly, Secure, and SameSite=Lax flags on session cookies." }
+                        ];
+                        
+                        const findings = assessments[idx].findings || [];
+                        const allControls = [...automatedControls, ...manualControls];
+                        allControls.forEach(ctrl => {
+                            if (!findings.some(f => f.control_code === ctrl.code)) {
+                                findings.push({
+                                    id: findings.length + 1,
+                                    assessment_id: id,
+                                    control_code: ctrl.code,
+                                    control_title: ctrl.title,
+                                    severity: ctrl.severity,
+                                    status: "FAIL",
+                                    details: ctrl.type === "MANUAL" ? "Pending auditor manual checklist verification." : "No evidence gathered for automated validation.",
+                                    recommendation: ctrl.rec,
+                                    type: ctrl.type,
+                                    checked_at: new Date().toISOString()
+                                });
+                            }
+                        });
+                        assessments[idx].findings = findings;
+                        localDB.saveAssessments(assessments);
+                        return findings;
+                    }
+                }
+                else if (endpoint.startsWith('/api/risk/calculate/')) {
+                    localDB.init();
+                    const parts = endpoint.split('/');
+                    const id = parseInt(parts[4], 10);
+                    const assessments = localDB.getAssessments();
+                    const idx = assessments.findIndex(a => a.id === id);
+                    if (idx !== -1) {
+                        const findings = assessments[idx].findings || [];
+                        let passed = findings.filter(f => f.status === 'PASS').length;
+                        let score = findings.length > 0 ? (passed / findings.length) * 100 : 100;
+                        assessments[idx].overall_score = Math.round(score);
+                        assessments[idx].status = "COMPLETED";
+                        localDB.saveAssessments(assessments);
+                        return assessments[idx];
+                    }
+                }
+                else if (endpoint.startsWith('/api/assessments/findings/')) {
+                    localDB.init();
+                    const parts = endpoint.split('?');
+                    const pathParts = parts[0].split('/');
+                    const findingId = parseInt(pathParts[4], 10);
+                    
+                    const params = new URLSearchParams(parts[1] || "");
+                    const status = params.get("status") || "FAIL";
+                    const details = params.get("details") || "";
+                    
+                    const assessments = localDB.getAssessments();
+                    let updatedFinding = null;
+                    assessments.forEach(a => {
+                        if (a.findings) {
+                            const fIdx = a.findings.findIndex(f => f.id === findingId);
+                            if (fIdx !== -1) {
+                                a.findings[fIdx].status = status;
+                                a.findings[fIdx].details = details;
+                                a.findings[fIdx].checked_at = new Date().toISOString();
+                                updatedFinding = a.findings[fIdx];
+                            }
+                        }
+                    });
+                    localDB.saveAssessments(assessments);
+                    return updatedFinding || { success: false, message: "Finding not found." };
+                }
                 return { success: false, message: "Unknown local endpoint." };
             }
         }
@@ -3728,11 +4499,21 @@
                 if (landing) landing.style.display = "none";
                 if (loginCanvas) loginCanvas.style.display = "none";
 
-                // Set default nav to compliance if no section is active
+                // Set default nav to hub if no section is active
                 const activeItem = document.querySelector(".sidebar-menu .menu-item.active");
                 if (!activeItem) {
-                    switchNavSection("compliance");
+                    switchNavSection("hub");
                 }
+
+                // Initialize default template for SIEM & load assessments
+                setTimeout(() => {
+                    const selectEl = document.getElementById("siem-source-select");
+                    if (selectEl) {
+                        selectEl.value = "AD";
+                        loadSiemSample("AD");
+                    }
+                    loadAssessmentsForSelectors();
+                }, 100);
             } else {
                 const mainApp = document.getElementById("main-app-container");
                 const landing = document.getElementById("section-landing");
@@ -3876,7 +4657,7 @@
             initSessionUI();
 
             // Switch to overview view
-            switchNavSection("compliance");
+            switchNavSection("hub");
             logToTerminal(`[Session Active] Successfully logged in. Session established for tenant: "${tenant}"`, "info");
         }
 
@@ -3946,7 +4727,7 @@
 
                 enforceRoleBasedControls();
                 initSessionUI();
-                switchNavSection("compliance");
+                switchNavSection("hub");
                 logToTerminal(`[OAuth SSO] Authentication lease established via ${provider.toUpperCase()}: ${res.username}`, "info");
                 alert(`Welcome back! Successfully authenticated via ${provider.toUpperCase()} SSO.`);
             } else {
@@ -4069,7 +4850,7 @@
                     currentSession.roleLabel = roleLabels[newRole] || "Enterprise Compliance User";
                     enforceRoleBasedControls();
                     if (newRole !== 'admin' && newRole !== 'developer') {
-                        switchNavSection("compliance");
+                        switchNavSection("hub");
                     }
                 }
             } else {
@@ -4137,8 +4918,588 @@
             logToTerminal(`[Settings] Vault provider path synchronized with server: "${vaultAddr}" (mount: "${vaultEngine}")`, "info");
             logToTerminal("[Settings] Configuration successfully committed and replicated to downstream gateway.", "info");
 
-            // Switch back to compliance overview as active view
-            switchNavSection("compliance");
+            // Switch back to gateway hub as active view
+            switchNavSection("hub");
+        }
+
+        async function apiGet(endpoint) {
+            const usePython = (typeof window !== "undefined" && window.location && window.location.protocol && window.location.protocol.startsWith("http"));
+            if (usePython) {
+                try {
+                    const response = await fetch(endpoint, {
+                        method: "GET"
+                    });
+                    return await response.json();
+                } catch (err) {
+                    console.error("API GET error:", err);
+                    return null;
+                }
+            } else {
+                localDB.init();
+                if (endpoint === '/api/evidence') {
+                    return localDB.getEvidence();
+                } else if (endpoint.startsWith('/api/evidence/') && endpoint.endsWith('/verify')) {
+                    const parts = endpoint.split('/');
+                    const id = parseInt(parts[3], 10);
+                    const evidence = localDB.getEvidence();
+                    const item = evidence.find(e => e.id === id);
+                    if (item) {
+                        return {
+                            evidence_id: id,
+                            is_verified: item.is_verified !== false,
+                            expected_hash: item.hash_signature,
+                            status: (item.is_verified !== false) ? "SECURE" : "TAMPERED_OR_INVALID"
+                        };
+                    } else {
+                        return { success: false, message: "Evidence not found." };
+                    }
+                }
+                return null;
+            }
+        }
+
+        const siemTemplates = {
+            AD: JSON.stringify({
+                "event_id": 4724,
+                "target_username": "operator",
+                "changed_by": "admin",
+                "domain": "COSMOS.LOCAL",
+                "status": "success",
+                "details": "An attempt was made to reset an account's password."
+            }, null, 4),
+            Nessus: JSON.stringify({
+                "plugin_id": 104631,
+                "plugin_name": "HTTP Strict Transport Security (HSTS) Detection",
+                "severity": "HIGH",
+                "port": 443,
+                "protocol": "tcp",
+                "plugin_output": "The remote HTTPS server does not send the HTTP Strict Transport Security header.",
+                "cve": ["CVE-2015-2808"]
+            }, null, 4),
+            EDR: JSON.stringify({
+                "agent_id": "eud-agent-88a",
+                "hostname": "DELL-EUD-1003",
+                "os": "Windows 11 Enterprise",
+                "last_checkin": "2026-06-18T10:00:00Z",
+                "malware_status": "Clean",
+                "threats_blocked": 0,
+                "tamper_protection": "Enabled"
+            }, null, 4),
+            Zscaler: JSON.stringify({
+                "transaction_id": 9847192,
+                "user": "alkes@cosmos.local",
+                "action": "Blocked",
+                "url": "http://malicious-command-and-control.com/payload.exe",
+                "category": "Malware/Spyware",
+                "threat_name": "Win32.Trojan.Downloader"
+            }, null, 4)
+        };
+
+        function handleSiemSourceChange() {
+            const source = document.getElementById("siem-source-select").value;
+            loadSiemSample(source);
+        }
+
+        function loadSiemDefaultTemplate() {
+            const source = document.getElementById("siem-source-select").value;
+            loadSiemSample(source);
+        }
+
+        function loadSiemSample(source) {
+            const textarea = document.getElementById("siem-payload-input");
+            if (textarea && siemTemplates[source]) {
+                textarea.value = siemTemplates[source];
+                logToTerminal(`[SIEM Ingest] Template loaded for source: "${source}"`);
+            }
+        }
+
+        async function executeManualSiemIngest() {
+            const source = document.getElementById("siem-source-select").value;
+            const payload = document.getElementById("siem-payload-input").value;
+            if (!payload || !payload.trim()) {
+                alert("Please enter a valid log payload.");
+                return;
+            }
+
+            logToTerminal(`[SIEM Ingest] Dispatching manual log ingestion event for source: "${source}"...`);
+            const res = await apiPost('/api/siem/ingest', {
+                source: source,
+                raw_log: payload,
+                collected_at: new Date().toISOString()
+            });
+
+            if (res && res.id) {
+                logToTerminal(`[SIEM Ingest] Ingestion complete: Evidence ID #${res.id} registered successfully.`, "info");
+                logToTerminal(`[SIEM Ingest] Hash Signature: ${res.hash_signature}`, "info");
+                logToTerminal(`[SIEM Ingest] Verification Status: ${res.is_verified ? "SECURE" : "TAMPERED"}`, res.is_verified ? "info" : "error");
+            } else {
+                logToTerminal(`[SIEM Ingest Error] Failed to ingest log payload: ${res ? res.message : "Unknown error"}`, "error");
+            }
+        }
+
+        async function verifyAllSiemEvidence() {
+            logToTerminal("[SIEM Ingest] Initiating cryptographic hash integrity check for all registered evidence...");
+            const evidenceList = await apiGet('/api/evidence');
+            if (!evidenceList || evidenceList.length === 0) {
+                logToTerminal("[SIEM Ingest] No evidence records found in the cryptographic database to verify.", "warn");
+                return;
+            }
+
+            logToTerminal(`[SIEM Ingest] Found ${evidenceList.length} evidence records. Querying validation keys...`, "info");
+            let verifiedCount = 0;
+            let compromisedCount = 0;
+
+            for (const ev of evidenceList) {
+                const res = await apiGet(`/api/evidence/${ev.id}/verify`);
+                if (res && res.is_verified) {
+                    logToTerminal(`[SECURE] ID #${ev.id} (${ev.source}): Hash matches registry value. [Signature: ${res.expected_hash.substring(0, 16)}...]`, "info");
+                    verifiedCount++;
+                } else {
+                    logToTerminal(`[TAMPERED] ID #${ev.id} (${ev.source}): CRYPTOGRAPHIC SIGNATURE MISMATCH OR EVIDENCE CORRUPTED!`, "error");
+                    compromisedCount++;
+                }
+            }
+
+            if (compromisedCount > 0) {
+                logToTerminal(`[INTEGRITY AUDIT COMPLETE] Result: COMPROMISED. Verified: ${verifiedCount}, Tampered/Failed: ${compromisedCount}`, "error");
+                alert(`WARNING: Integrity audit failed! Detected ${compromisedCount} tampered evidence record(s).`);
+            } else {
+                logToTerminal(`[INTEGRITY AUDIT COMPLETE] Result: SECURE. All ${verifiedCount} records passed signature validation.`, "info");
+                alert("Integrity check complete: All evidence logs verified secure. Non-repudiation integrity intact.");
+            }
+        }
+
+        let siemSimulationInterval = null;
+
+        function toggleSiemSimulation(event) {
+            const btn = document.getElementById("btn-siem-simulate");
+            if (!btn) return;
+
+            if (siemSimulationInterval) {
+                clearInterval(siemSimulationInterval);
+                siemSimulationInterval = null;
+                btn.innerText = "Start Simulation";
+                btn.style.background = "#15803d";
+                btn.style.borderColor = "#15803d";
+                logToTerminal("[SIEM Ingest] Background log stream simulation stopped.");
+            } else {
+                btn.innerText = "Stop Simulation";
+                btn.style.background = "#b91c1c";
+                btn.style.borderColor = "#b91c1c";
+                logToTerminal("[SIEM Ingest] Background log stream simulation started.");
+
+                siemSimulationInterval = setInterval(async () => {
+                    const sources = ["AD", "Nessus", "EDR", "Zscaler"];
+                    const randomSource = sources[Math.floor(Math.random() * sources.length)];
+                    let templateStr = siemTemplates[randomSource];
+                    
+                    let payload = JSON.parse(templateStr);
+                    if (randomSource === "AD") {
+                        const users = ["operator", "admin", "alkes", "analyst", "developer"];
+                        payload.target_username = users[Math.floor(Math.random() * users.length)];
+                        payload.event_id = Math.random() > 0.5 ? 4724 : 4624;
+                        payload.details = payload.event_id === 4724 ? "An attempt was made to reset an account's password." : "An account was successfully logged on.";
+                    } else if (randomSource === "Nessus") {
+                        const severities = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
+                        payload.severity = severities[Math.floor(Math.random() * severities.length)];
+                        payload.port = Math.random() > 0.5 ? 443 : 80;
+                    } else if (randomSource === "EDR") {
+                        const hosts = ["DELL-EUD-1001", "DELL-EUD-1002", "DELL-EUD-1003", "DELL-EUD-9999"];
+                        payload.hostname = hosts[Math.floor(Math.random() * hosts.length)];
+                        payload.threats_blocked = Math.floor(Math.random() * 3);
+                    } else if (randomSource === "Zscaler") {
+                        const urls = [
+                            "http://malicious-command-and-control.com/payload.exe",
+                            "http://phishing-site-domain.org/login",
+                            "http://trusted-internal-dns.net/api",
+                            "https://external-file-sharing.com/doc.pdf"
+                        ];
+                        payload.url = urls[Math.floor(Math.random() * urls.length)];
+                        payload.action = payload.url.includes("malicious") || payload.url.includes("phishing") ? "Blocked" : "Allowed";
+                    }
+
+                    const randomizedPayloadStr = JSON.stringify(payload, null, 4);
+                    logToTerminal(`[Simulation Stream] Generated simulated event for source: "${randomSource}"`);
+                    
+                    const res = await apiPost('/api/siem/ingest', {
+                        source: randomSource,
+                        raw_log: randomizedPayloadStr,
+                        collected_at: new Date().toISOString()
+                    });
+                    if (res && res.id) {
+                        logToTerminal(`[Simulation Stream] Ingested simulated event. Evidence ID #${res.id}.`, "info");
+                    } else {
+                        logToTerminal(`[Simulation Stream Error] Failed to ingest simulated event.`, "error");
+                    }
+                }, 3000);
+            }
+        }
+
+        function toggleSidebarGroup(groupName) {
+            const groups = ["siem", "risk", "samp", "reconciler"];
+            groups.forEach(g => {
+                const submenu = document.getElementById(`submenu-${g}`);
+                const header = document.getElementById(`group-header-${g}`);
+                if (submenu) {
+                    if (g === groupName) {
+                        submenu.style.display = "block";
+                        if (header) header.classList.add("active");
+                    } else {
+                        submenu.style.display = "none";
+                        if (header) header.classList.remove("active");
+                    }
+                }
+            });
+        }
+
+        let activeAssessmentsList = [];
+        let selectedAssessmentDetails = null;
+        let sampFindings = [];
+        let sampActiveControlIndex = 0;
+        const manualControlCodes = ["CTRL-011", "CTRL-012", "CTRL-013", "CTRL-014", "CTRL-015"];
+
+        async function loadAssessmentsForSelectors() {
+            const res = await apiGet('/api/assessments');
+            if (res && Array.isArray(res)) {
+                if (res.length === 0) {
+                    logToTerminal("[Database Manager] Seeding default Enterprise Audit assessment...");
+                    const seedRes = await apiPost('/api/assessments', {
+                        name: "AM/NS Enterprise Audit 2026",
+                        environment: "Production"
+                    });
+                    if (seedRes && seedRes.id) {
+                        loadAssessmentsForSelectors();
+                    }
+                    return;
+                }
+                
+                activeAssessmentsList = res;
+                
+                const riskSelect = document.getElementById("risk-assessment-select");
+                const sampSelect = document.getElementById("samp-assessment-select");
+                
+                if (riskSelect && sampSelect) {
+                    riskSelect.innerHTML = "";
+                    sampSelect.innerHTML = "";
+                    
+                    res.forEach(a => {
+                        const opt1 = document.createElement("option");
+                        opt1.value = a.id;
+                        opt1.innerText = `${a.name} (${a.environment})`;
+                        riskSelect.appendChild(opt1);
+                        
+                        const opt2 = document.createElement("option");
+                        opt2.value = a.id;
+                        opt2.innerText = `${a.name} (${a.environment})`;
+                        sampSelect.appendChild(opt2);
+                    });
+                    
+                    handleRiskAssessmentChange();
+                    handleSampAssessmentChange();
+                }
+            }
+        }
+
+        async function handleRiskAssessmentChange() {
+            const selectEl = document.getElementById("risk-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) return;
+
+            const res = await apiGet(`/api/assessments/${assessmentId}`);
+            if (res) {
+                selectedAssessmentDetails = res;
+                
+                const envSelect = document.getElementById("risk-env-select");
+                if (envSelect) {
+                    envSelect.value = res.environment || "Production";
+                }
+                
+                const scoreValEl = document.getElementById("risk-score-value");
+                const ratingEl = document.getElementById("risk-rating-label");
+                if (scoreValEl && ratingEl) {
+                    if (res.overall_score !== null && res.overall_score !== undefined) {
+                        scoreValEl.innerText = `${res.overall_score}%`;
+                        
+                        if (res.overall_score >= 90) {
+                            scoreValEl.style.color = "var(--status-low)";
+                            ratingEl.innerText = "LOW COMPLIANCE RISK";
+                            ratingEl.style.color = "var(--status-low)";
+                        } else if (res.overall_score >= 70) {
+                            scoreValEl.style.color = "var(--status-medium)";
+                            ratingEl.innerText = "MEDIUM COMPLIANCE RISK";
+                            ratingEl.style.color = "var(--status-medium)";
+                        } else {
+                            scoreValEl.style.color = "var(--status-critical)";
+                            ratingEl.innerText = "HIGH/CRITICAL COMPLIANCE RISK";
+                            ratingEl.style.color = "var(--status-critical)";
+                        }
+                    } else {
+                        scoreValEl.innerText = "--";
+                        ratingEl.innerText = "UNSCORED / PENDING EVALUATION";
+                        ratingEl.style.color = "var(--text-secondary)";
+                    }
+                }
+                
+                renderRiskFindingsTable(res.findings || []);
+            }
+        }
+
+        function renderRiskFindingsTable(findings) {
+            const tbody = document.getElementById("risk-findings-tbody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+            
+            if (!findings || findings.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary);">No findings evaluated yet. Click 'Calculate Risk Score'.</td></tr>`;
+                return;
+            }
+            
+            const sorted = [...findings].sort((a,b) => {
+                if (a.status === b.status) return a.control_code.localeCompare(b.control_code);
+                return a.status === 'FAIL' ? -1 : 1;
+            });
+            
+            sorted.forEach(f => {
+                const tr = document.createElement("tr");
+                const baseSeverities = {
+                    "CTRL-001": "HIGH", "CTRL-002": "MEDIUM", "CTRL-003": "HIGH", "CTRL-004": "LOW",
+                    "CTRL-005": "LOW", "CTRL-006": "HIGH", "CTRL-007": "LOW", "CTRL-008": "LOW",
+                    "CTRL-009": "HIGH", "CTRL-010": "HIGH", "CTRL-011": "HIGH", "CTRL-012": "MEDIUM",
+                    "CTRL-013": "HIGH", "CTRL-014": "MEDIUM", "CTRL-015": "HIGH"
+                };
+                const baseSev = baseSeverities[f.control_code] || f.severity;
+                
+                tr.innerHTML = `
+                    <td style="font-weight: 700; font-family: var(--font-mono); color: var(--text-primary);">${f.control_code}</td>
+                    <td style="color: var(--text-primary); font-weight: 600;">${f.control_title}</td>
+                    <td><span class="badge" style="font-size: 0.65rem; border-color: var(--border-clean); color: var(--text-secondary); background: transparent;">${baseSev}</span></td>
+                    <td><span class="badge ${f.severity === 'HIGH' ? 'status-critical-bg' : f.severity === 'MEDIUM' ? 'status-medium-bg' : 'status-low-bg'}" style="font-size: 0.65rem;">${f.severity}</span></td>
+                    <td><span class="badge ${f.status === 'PASS' ? 'status-low-bg' : 'status-critical-bg'}" style="font-size: 0.65rem; border-radius: 3px; font-weight: 800; padding: 0.2rem 0.5rem;">${f.status}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function triggerRiskCalculation() {
+            const selectEl = document.getElementById("risk-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) return;
+
+            const env = document.getElementById("risk-env-select").value;
+            
+            logToTerminal(`[Risk Engine] Synchronizing assessment #${assessmentId} environment context to "${env}"...`);
+            await apiPost(`/api/assessments/${assessmentId}`, { environment: env }, 'PUT');
+            
+            logToTerminal(`[Risk Engine] Triggering environment-aware compliance rating index calculations...`);
+            await apiPost(`/api/checklist/evaluate/${assessmentId}`);
+            
+            const calcRes = await apiPost(`/api/risk/calculate/${assessmentId}`);
+            if (calcRes && calcRes.id) {
+                logToTerminal(`[Risk Engine] Calculations complete. Composite compliance score: ${calcRes.overall_score}%`, "info");
+                handleRiskAssessmentChange();
+                alert(`Risk calculation complete!\n\nOverall Score: ${calcRes.overall_score}%\nEnvironment: ${calcRes.environment}`);
+            } else {
+                logToTerminal(`[Risk Engine Error] Calculation failed.`, "error");
+            }
+        }
+
+        const manualControls = [
+            { code: "CTRL-011", title: "Role-Based Access Control", desc: "Auditors verify RBAC authorization checks are enforced on endpoints.", rec: "Conduct audit of access policies, map all endpoints to roles, and verify restriction." },
+            { code: "CTRL-012", title: "Inactive Account Disable", desc: "Auditors verify LDAP/AD deactivation policies are active.", rec: "Review Active Directory account deactivation logs for accounts idle > 90 days." },
+            { code: "CTRL-013", title: "Audit Log Completeness", desc: "Auditors verify access, modifications, and security events are logged.", rec: "Review centralized logging daemon configs to verify auditing completeness." },
+            { code: "CTRL-014", title: "Security Alerting", desc: "Auditors verify alerts are raised on anomalous login attempts.", rec: "Check SIEM alerting rules for brute-force or anomalous geolocation logins." },
+            { code: "CTRL-015", title: "Logout Session Kill", desc: "Auditors verify backend session tokens are revoked upon logout.", rec: "Test session revocation endpoint and confirm server-side token state is deleted." }
+        ];
+
+        async function handleSampAssessmentChange() {
+            const selectEl = document.getElementById("samp-assessment-select");
+            if (!selectEl) return;
+            const assessmentId = selectEl.value;
+            if (!assessmentId) return;
+
+            const res = await apiGet(`/api/assessments/${assessmentId}`);
+            if (res) {
+                if (!res.findings || res.findings.length === 0) {
+                    logToTerminal(`[SAMP Auditor] Findings database uninitialized. Seeding automated checklists...`);
+                    await apiPost(`/api/checklist/evaluate/${assessmentId}`);
+                    handleSampAssessmentChange();
+                    return;
+                }
+                
+                sampFindings = res.findings;
+                renderSampChecklistProgress();
+                loadSampControl(sampActiveControlIndex);
+            }
+        }
+
+        function renderSampChecklistProgress() {
+            const manualFindings = sampFindings.filter(f => manualControlCodes.includes(f.control_code));
+            const evaluated = manualFindings.filter(f => !f.details.includes("Pending auditor manual")).length;
+            
+            const progEl = document.getElementById("samp-progress-label");
+            if (progEl) {
+                progEl.innerText = `${evaluated} / 5 Controls`;
+            }
+            
+            const listContainer = document.getElementById("samp-checklist-items-container");
+            if (listContainer) {
+                listContainer.innerHTML = "";
+                
+                manualControls.forEach((c, idx) => {
+                    const finding = sampFindings.find(f => f.control_code === c.code);
+                    const status = finding ? finding.status : "FAIL";
+                    const isEvaluated = finding && !finding.details.includes("Pending auditor manual");
+                    const activeClass = (idx === sampActiveControlIndex) ? "border-color: var(--color-accent) !important; background: rgba(185, 28, 28, 0.05);" : "";
+                    
+                    const div = document.createElement("div");
+                    div.className = "card";
+                    div.style = `padding: 0.85rem; border: 1px solid var(--border-clean); border-radius: 4px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: space-between; ${activeClass}`;
+                    div.onclick = () => {
+                        sampActiveControlIndex = idx;
+                        handleSampAssessmentChange();
+                    };
+                    
+                    div.innerHTML = `
+                        <div>
+                            <div style="font-family: var(--font-mono); font-size: 0.72rem; font-weight: 800; color: var(--text-secondary);">${c.code}</div>
+                            <h5 style="margin: 0.15rem 0 0 0; font-size: 0.8rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">${c.title}</h5>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span class="badge ${isEvaluated ? 'group-sift' : 'group-non-sift'}" style="font-size: 0.6rem;">${isEvaluated ? 'AUDITED' : 'PENDING'}</span>
+                            <span class="badge ${status === 'PASS' ? 'status-low-bg' : 'status-critical-bg'}" style="font-size: 0.6rem; font-weight: 800;">${status}</span>
+                        </div>
+                    `;
+                    listContainer.appendChild(div);
+                });
+            }
+        }
+
+        function loadSampControl(idx) {
+            sampActiveControlIndex = idx;
+            const ctrl = manualControls[idx];
+            if (!ctrl) return;
+            
+            document.getElementById("samp-ctrl-code").innerText = ctrl.code;
+            document.getElementById("samp-ctrl-title").innerText = ctrl.title;
+            document.getElementById("samp-ctrl-desc").innerText = ctrl.desc;
+            
+            const finding = sampFindings.find(f => f.control_code === ctrl.code);
+            const status = finding ? finding.status : "FAIL";
+            const notes = finding ? (finding.details.includes("Pending auditor manual") ? "" : finding.details) : "";
+            
+            document.getElementById("samp-ctrl-notes").value = notes;
+            
+            const btnPass = document.getElementById("btn-samp-pass");
+            const btnFail = document.getElementById("btn-samp-fail");
+            
+            if (status === 'PASS') {
+                btnPass.style.background = "#16a34a";
+                btnPass.style.color = "#ffffff";
+                btnFail.style.background = "transparent";
+                btnFail.style.color = "#dc2626";
+            } else {
+                btnPass.style.background = "transparent";
+                btnPass.style.color = "#16a34a";
+                btnFail.style.background = "#dc2626";
+                btnFail.style.color = "#ffffff";
+            }
+            
+            btnPass.setAttribute("data-active", status === 'PASS' ? "true" : "false");
+            btnFail.setAttribute("data-active", status === 'FAIL' ? "true" : "false");
+        }
+
+        function setSampControlStatus(status) {
+            const btnPass = document.getElementById("btn-samp-pass");
+            const btnFail = document.getElementById("btn-samp-fail");
+            
+            if (status === 'PASS') {
+                btnPass.style.background = "#16a34a";
+                btnPass.style.color = "#ffffff";
+                btnFail.style.background = "transparent";
+                btnFail.style.color = "#dc2626";
+                btnPass.setAttribute("data-active", "true");
+                btnFail.setAttribute("data-active", "false");
+            } else {
+                btnPass.style.background = "transparent";
+                btnPass.style.color = "#16a34a";
+                btnFail.style.background = "#dc2626";
+                btnFail.style.color = "#ffffff";
+                btnPass.setAttribute("data-active", "false");
+                btnFail.setAttribute("data-active", "true");
+            }
+        }
+
+        async function saveSampControlOverride() {
+            const selectEl = document.getElementById("samp-assessment-select");
+            const assessmentId = selectEl.value;
+            const ctrl = manualControls[sampActiveControlIndex];
+            const notes = document.getElementById("samp-ctrl-notes").value.trim() || "Audited and verified manual checklist compliance control.";
+            
+            const btnPass = document.getElementById("btn-samp-pass");
+            const status = (btnPass.getAttribute("data-active") === "true") ? "PASS" : "FAIL";
+
+            const finding = sampFindings.find(f => f.control_code === ctrl.code);
+            if (!finding) {
+                logToTerminal(`[SAMP Auditor] Error: Finding record for ${ctrl.code} not found.`, "error");
+                return;
+            }
+
+            logToTerminal(`[SAMP Auditor] Dispatching override request for control ${ctrl.code} (Status: ${status})...`);
+            
+            const url = `/api/assessments/findings/${finding.id}?status=${status}&details=${encodeURIComponent(notes)}&recommendation=${encodeURIComponent(ctrl.rec)}`;
+            const res = await apiPost(url, {}, 'PUT');
+
+            if (res && res.id) {
+                logToTerminal(`[SAMP Auditor] Override complete for ${ctrl.code}. Status committed to DB.`, "info");
+                
+                handleSampAssessmentChange();
+                
+                const riskSelect = document.getElementById("risk-assessment-select");
+                if (riskSelect && riskSelect.value === assessmentId) {
+                    handleRiskAssessmentChange();
+                }
+                
+                alert(`Control ${ctrl.code} audit finding saved successfully!`);
+            } else {
+                logToTerminal(`[SAMP Auditor] Error saving control finding override.`, "error");
+            }
+        }
+
+        async function signSampControlEvidence() {
+            const selectEl = document.getElementById("samp-assessment-select");
+            const assessmentId = selectEl.value;
+            const ctrl = manualControls[sampActiveControlIndex];
+            const notes = document.getElementById("samp-ctrl-notes").value.trim() || "Audited and verified manual checklist compliance control.";
+            
+            const btnPass = document.getElementById("btn-samp-pass");
+            const status = (btnPass.getAttribute("data-active") === "true") ? "PASS" : "FAIL";
+            
+            logToTerminal(`[SAMP Auditor] Cryptographically signing manual audit check evidence for ${ctrl.code}...`);
+            
+            const evidencePayload = {
+                source: "Manual",
+                raw_data: JSON.stringify({
+                    control_code: ctrl.code,
+                    control_title: ctrl.title,
+                    audit_status: status,
+                    auditor_notes: notes,
+                    verified_at: new Date().toISOString()
+                }, null, 4),
+                collected_at: new Date().toISOString(),
+                assessment_id: parseInt(assessmentId, 10)
+            };
+            
+            const res = await apiPost('/api/evidence/', evidencePayload);
+            if (res && res.id) {
+                logToTerminal(`[SAMP Auditor] Immutable evidence registered. ID #${res.id}.`, "info");
+                logToTerminal(`[SAMP Auditor] SHA-256 Hash Signature: ${res.hash_signature}`, "info");
+                logToTerminal(`[SAMP Auditor] Non-repudiation registry secure status: SECURE`, "info");
+                alert(`Evidence signed successfully!\n\nEvidence ID: #${res.id}\nHash: ${res.hash_signature}`);
+            } else {
+                logToTerminal(`[SAMP Auditor] Failed to register cryptographic evidence.`, "error");
+            }
         }
 
         // --- Simplified Compliance & Policy Governance Scripting Blocks ---

@@ -8,31 +8,45 @@ A premium, enterprise-grade **End-User Device (EUD) Compliance & Risk Management
 
 The platform is designed to run in air-gapped or locked-down corporate environments with **zero external python dependencies**, leveraging native XML/zip parsers to inspect Excel spreadsheets on the backend.
 
----
-
 ## System Architecture
 
-The platform uses a secure, lightweight Python backend to serve static assets and offload intensive data validation and cross-sheet reconciliation tasks:
+The platform uses a secure FastAPI backend backed by SQLAlchemy and SQLite to host the database registry, evaluate YAML compliance mappings, ingest verified SIEM event streams, run environment-aware risk scaling calculations, and serve manual audit checklist overrides.
 
 ```mermaid
 graph TD
-    subgraph Browser [Presentation Layer - Frontend]
-        UI[Compliance Dashboard HTML/CSS/JS]
-        Terminal[Ingestion Logger Terminal]
+    subgraph ClientLayer [Presentation Layer - Frontend]
+        UI[SAMP Admin & Audit UI]
+        Console[Ingestion Logger Terminal]
     end
 
-    subgraph PythonBackend [Secure Hosting & Parser Engine]
-        Server[host_secure.py Web Server]
-        Parser[excel_validator.py Parser]
-        Reconciler[Deep Reconciler Matcher]
+    subgraph ServiceLayer [Business & Logic Layer]
+        Loader[YAML Checklist Loader]
+        Mapper[YAML Mapping Engine]
+        Risk[Unified Risk Engine]
+        Reporter[PDF/HTML Reporting Engine]
     end
 
-    UI -->|Ingest Excel/CSV| Server
-    Server -->|Parse XML/Zip Streams| Parser
-    Parser -->|Validate Fields & Normalization| Reconciler
-    Reconciler -->|Matches, Gaps & Rogues JSON| Server
-    Server -->|API Response & SIEM Logs| UI
-    Server -->|Validation Warnings/Errors| Terminal
+    subgraph IngestionLayer [SIEM & Logging Connectors]
+        SIEM[SIEM Stream Ingest]
+        Manual[Auditor Manual Checklists]
+    end
+
+    subgraph DataLayer [Persistence & Verification Layer]
+        DB[(SQLAlchemy SQLite Database)]
+        Crypto[SHA-256 Evidence Integrity Verification]
+    end
+
+    UI --> IngestionLayer
+    SIEM -->|Raw Logs| Crypto
+    Manual -->|Manual Assessments| Crypto
+    Crypto -->|Hash & Verify| DB
+    
+    DB --> Mapper
+    Loader -->|Mappings & Rules| Mapper
+    Mapper -->|Unified Findings| Risk
+    Risk -->|Centralized Risk Scores| DB
+    DB --> Reporter
+    Reporter --> UI
 ```
 
 ---
@@ -40,29 +54,27 @@ graph TD
 ## Key Features
 
 ### 1. Premium Frontend Dashboard & Portals
-*   **Official AM/NS INDIA Brand Typography**: Imported Google Fonts (Montserrat & Inter) configured to exactly match the bold, geometric block layout and tight letter-spacing (`-0.05em`) of the corporate logo across all headers.
-*   **Global Background Drift Animations**: Dynamic floating spheres (`drift1` and `drift2` CSS keyframes) sliding behind all pages, overlayed with a premium glassmorphic blur backdrop on the Auth Gateways.
-*   **Fluid Navigation & Interactions**: Smooth CSS page transitions (`slideInFade` keyframe) for tab/section switches, and micro-interactive hover styling on buttons, dashboard widgets, and data cards.
-*   **Real-time Slide Telemetry Simulator**: Fully fluctuating random-walk live data generator that dynamically updates the Fleet Scale, enrollment indicators, progress bars, and compliance averages every 3 seconds to simulate an active pipeline.
-*   **Corporate Authentications & OAuth Simulator**: Multi-factor credentials validator supporting regular username/vault-PIN checks alongside simulated Google and GitHub SSO identity assertions.
-*   **Developer Administration Console**: Accessible database records manager allowing users with Operator/Developer/Admin privileges to adjust user accounts, delete listings, and generate custom masked API keys (`amns_sk_...`).
-*   **Executive Policy Isolation**: Restricts the SLA dial gauge, checklists, and exception lists to evaluate and render compliance metrics using strictly the **6 core mandated policies** (Active Directory, BitLocker, Zscaler, Nessus, SentinelOne, and SCCM), preventing custom dynamic policies from polluting executive SLA reports.
+*   **Official AM/NS INDIA Brand Typography**: Montserrat and Inter display fonts configured to match the corporate block logo layout and tight letter-spacing (`-0.05em`).
+*   **Dynamic Sidebar & Logo Routing**: Logo is clickable to return to the hub, and the "Gateway Portal" menu item is dynamically hidden once an active tool is launched.
+*   **Professional Corporate Aesthetics**: Deep dark slate backgrounds (`#0f172a` to `#020617` gradient) and sleek, minimalist card/borders replacing unneeded decorative elements.
+*   **Executive Policy Isolation**: Restricts the SLA dial gauge and exceptions to evaluate compliance using strictly the **6 core mandated policies** (Active Directory, BitLocker, Zscaler, Nessus, SentinelOne, and SCCM).
 
+### 2. SIEM Ingest Stream Pipeline
+*   **Connector Feeds**: Ingests event logs from Active Directory, Nessus, EDR, and network gateways.
+*   **Non-Repudiation Registry**: Signs evidence log records immediately on ingest using a cryptographic **SHA-256** hashing function (`SHA-256(raw_log + assessment_id + collected_at)`).
+*   **Background Simulation**: Features a background simulation logging terminal to stream and register simulated system events.
 
-### 2. Zero-Dependency Python Validation Engine (`excel_validator.py`)
-*   **Native XML/Zip XLSX Parser**: Direct extraction and parsing of `.xlsx` files without requiring heavy libraries like `pandas` or `openpyxl`.
-*   **Fuzzy Header Matching**: Auto-detects device name, serials, MACs, states, and compliance columns from raw spreadsheets.
-*   **Field Format Validation**: Validates hostname syntax, MAC address formatting (IEEE 802.3), IPv4 patterns, last login dates, and normalized state values.
-*   **OS-Applicable Policy Filters**: Automatically restricts Windows-specific policies (`Active Directory Enrollment`, `BitLocker Drive Encryption`, and `SCCM Management Agent`) to evaluate and score only Windows devices, bypassing macOS/Linux systems.
+### 3. Centralized Risk Engine
+*   **Multi-Dimensional Scoring**: Configurable severity weights (High, Medium, Low) that calculate normalized overall compliance risk metrics.
+*   **Environment-Aware Risk Scaling**: Adjusts ratings based on host environments (Production carries full severity, UAT is downgraded by 1 tier, and Development is downgraded by 2 tiers, never scaling below LOW for failures).
 
-### 3. Multi-Sheet Asset Reconciliation
-*   **Identity Resolution**: Aligns Corporate Directory rows with secondary agent outputs using normalized names, MACs, and serial keys.
-*   **Output Categorization**:
-    *   **Matches**: Device successfully aligned across all telemetries.
-    *   **Coverage Gaps**: Device registered in the Corporate Directory but missing checking records in agent logs (triggers immediate non-compliance rating).
-    *   **Rogue Assets**: Untracked devices discovered checking into agent logs but missing from the Corporate Directory.
-*   **Virtual Table Rendering**: Handles huge datasets (10,000+ rows) without browser lockups using a fast, memory-batched paginated viewer.
-*   **Clean Fleet Grid**: The main assets table displays key identity attributes, location information, and active condition states, with the redundant compliance status badge column removed to keep focus on dynamic telemetry values.
+### 4. SAMP Auditor Board & Manual Checklists
+*   **NIST Control Mappings**: Fully maps manual controls CTRL-011 through CTRL-015 (RBAC checks, LDAP account disablement, audit completeness, alerting, and logout session revokes).
+*   **Manual Overrides & Evidence Registry**: Allows auditors to pass/fail checklist items, add detailed verification findings, and sign evidence blocks cryptographically.
+
+### 5. Multi-Sheet Asset Reconciliation
+*   **Identity Resolution**: Aligns Corporate Directory rows with EDR logs using normalized names, MACs, and serial keys.
+*   **Output Categorization**: Automatically groups reconciler assets into Matches, Coverage Gaps, and Rogue Assets.
 
 ---
 
@@ -70,50 +82,46 @@ graph TD
 
 ```
 .
+├── backend/
+│   └── app/
+│       ├── main.py            # FastAPI Application bootstrap
+│       ├── database.py        # SQLAlchemy SQLite engine configuration
+│       ├── security.py        # SSRF checks, URL validation, and cryptographic hash verification
+│       ├── assessment/        # Assessment/Findings database schemas, services & routers
+│       ├── checklist/         # YAML checklist loaders and policy evaluation interpreters
+│       ├── evidence/          # Immutable evidence store & SHA-256 validation endpoints
+│       ├── risk/              # Risk calculator, weights engine, and environment modifiers
+│       ├── siem/              # Event logger ingestion and simulation endpoints
+│       └── reports/           # HTML and PDF compliance report generators
 ├── frontend/
-│   ├── index.html             # High-fidelity dashboard application
-│   ├── style.css              # Custom dark-theme stylesheet
-│   ├── logo.png               # Corporate sidebar branding logo
-│   └── favicon.png            # Browser tab icon
-├── tests/                     # Automated test suite scripts
-│   ├── test-distinct-merge-keys.js
-│   ├── test-interaction.js
-│   ├── test-mismatched-keys-prevention.js
-│   ├── test-rogue-actions.js
-│   ├── test-runtime.js
-│   ├── test-syntax.js
-│   ├── test-telemetry-leakage.js
-│   ├── verify-ad-windows-only.js
-│   ├── verify-details-table.js
-│   └── verify-reporting-policies.js
-├── host_secure.py             # Secure HTTPS/HTTP Python server (AWS compatible)
-├── excel_validator.py         # Native XML/zip Excel parser & validation engine
-├── Dockerfile                 # Docker container config (for AWS App Runner / ECS)
-├── Procfile                   # Elastic Beanstalk process deployment config
-├── .gitignore                 # Exclude list for credentials and local cache files
-└── README.md                  # System overview and deployment guide
+│   ├── index.html             # High-fidelity single-page compliance console
+│   ├── style.css              # Custom minimalist stylesheet
+│   ├── logo.png               # Brand logo
+│   └── favicon.png            # Tab icon
+├── tests/                     # Automated JS and Python test suite scripts
+│   ├── test_api.py            # API routing integration checks
+│   ├── test_mapping_engine.py # YAML parsing mapping validations
+│   ├── test_risk_engine.py    # Environment risk modifier assertions
+│   ├── test_security.py       # SSRF and URL validation checks
+│   ├── test-interaction.js    # Front-end reconciliation logic simulations
+│   └── ...                    # Other automated DOM and telemetry leakage validations
+├── Dockerfile                 # ECS/AWS App Runner container config
+├── Procfile                   # Elastic Beanstalk configuration
+└── README.md                  # System overview and manual
 ```
 
 ---
 
 ## Hosting & Setup Guide
 
-### 1. Hosting Locally / Corporate Network (Python)
+### 1. Hosting Locally / Corporate Network (FastAPI)
 
-Ensure Python 3.10+ is installed. Run the secure Python server from the project root:
+Ensure Python 3.10+ is installed. Install requirements and run the FastAPI server using Uvicorn:
 
-*   **Option A: HTTPS Mode (Recommended for Corporate Networks)**
-    Automatically generates or loads SSL certificate/key files and starts a hardened server on port `4430`:
-    ```bash
-    python host_secure.py --generate-cert
-    ```
-    *Open browser at: `https://127.0.0.1:4430` (or `https://<YOUR_LOCAL_IP>:4430` for network devices).*
-
-*   **Option B: HTTP Mode (Unencrypted / Local Testing)**
-    Bypasses SSL wrapping to serve on port `8080` bound to all interfaces for network hosting:
-    ```bash
-    python host_secure.py --no-ssl --port 8080 --bind 0.0.0.0
-    ```
+```bash
+python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8080
+```
+*Open browser at: `http://127.0.0.1:8080/index.html`.*
 
 ### 2. Hosting on AWS (Future Compatibility)
 
@@ -122,7 +130,7 @@ The server automatically prioritizes the `PORT` environment variable injected by
 *   **AWS App Runner / ECS Fargate**:
     Deploy using the root `Dockerfile`. Configure the build and point the start command to:
     ```bash
-    python host_secure.py --no-ssl --bind 0.0.0.0 --port 8080
+    python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8080
     ```
 *   **AWS Elastic Beanstalk**:
     Zip the project files and upload to a Python platform application. Elastic Beanstalk will automatically use the root `Procfile` to start the application.
@@ -131,9 +139,12 @@ The server automatically prioritizes the `PORT` environment variable injected by
 
 ## Running Verification Tests
 
-Run the standard automated test suites inside the `tests/` directory to verify syntax, security policies, and reconciliation logic:
+Run the standard automated test suites inside the `tests/` directory to verify backend endpoints, YAML parsing rules, CSS theme selectors, and frontend reconciliation logic:
 
 ```bash
+# Run backend Python pytest suite
+python -m pytest tests
+
 # Verify JavaScript Syntax in index.html script tags
 node tests/test-syntax.js
 

@@ -1,0 +1,105 @@
+controls:
+  - code: CTRL-001
+    title: HTTP Strict Transport Security
+    type: AUTOMATED
+    severity: HIGH
+    description: HSTS header check. Must contain max-age of at least 1 year (31536000s).
+    recommendation: Add Strict-Transport-Security header with max-age=31536000.
+
+  - code: CTRL-002
+    title: Secure Cookie Flags
+    type: AUTOMATED
+    severity: MEDIUM
+    description: All session cookies must have HttpOnly and Secure flags, and SameSite set to Strict/Lax.
+    recommendation: Set HttpOnly, Secure, and SameSite=Lax flags on session cookies.
+
+  - code: CTRL-003
+    title: Content Security Policy
+    type: AUTOMATED
+    severity: HIGH
+    description: CSP header check. Must exist and not allow wildcard default-src *.
+    recommendation: Implement a Content-Security-Policy header restricting sources.
+
+  - code: CTRL-004
+    title: X-Content-Type-Options
+    type: AUTOMATED
+    severity: LOW
+    description: Header must be set to nosniff.
+    recommendation: "Add X-Content-Type-Options: nosniff header."
+
+  - code: CTRL-005
+    title: Cache-Control Policies
+    type: AUTOMATED
+    severity: LOW
+    description: "Sensitive pages must set Cache-Control: no-store, no-cache."
+    recommendation: "Add Cache-Control: no-store, no-cache, must-revalidate header on sensitive endpoints."
+
+  - code: CTRL-006
+    title: Secure Password Forms
+    type: AUTOMATED
+    severity: HIGH
+    description: Login forms must submit passwords via HTTPS POST, not HTTP or GET.
+    recommendation: Ensure all form submissions containing credentials use HTTPS POST.
+
+  - code: CTRL-007
+    title: Cookie Path Restriction
+    type: AUTOMATED
+    severity: LOW
+    description: Cookies must specify a restricted path rather than defaulting to / where applicable.
+    recommendation: Explicitly set path parameter when setting cookies.
+
+  - code: CTRL-008
+    title: Server Banner Disclosure
+    type: AUTOMATED
+    severity: LOW
+    description: Headers must not leak server versions (e.g., Server or X-Powered-By).
+    recommendation: Disable server tokens in Nginx/Apache configuration and remove custom powered-by headers.
+
+  - code: CTRL-009
+    title: Active Scan Vulnerabilities
+    type: SCANNER
+    severity: HIGH
+    description: Target must not have High or Critical alerts in active scanning.
+    recommendation: Remediate high and critical vulnerabilities identified by vulnerability scanners.
+
+  - code: CTRL-010
+    title: Unencrypted HTTP Fallback
+    type: AUTOMATED
+    severity: HIGH
+    description: Validates that HTTP requests are automatically redirected to HTTPS.
+    recommendation: Configure a global redirect from port 80 to port 443 in the web server.
+
+  - code: CTRL-011
+    title: Role-Based Access Control
+    type: MANUAL
+    severity: HIGH
+    description: Auditors verify RBAC authorization checks are enforced on endpoints.
+    recommendation: Conduct audit of access policies, map all endpoints to roles, and verify restriction.
+
+  - code: CTRL-012
+    title: Inactive Account Disable
+    type: MANUAL
+    severity: MEDIUM
+    description: Auditors verify LDAP/AD automated deactivation policies are active.
+    recommendation: Review Active Directory account deactivation logs for accounts idle > 90 days.
+
+  - code: CTRL-013
+    title: Audit Log Completeness
+    type: MANUAL
+    severity: HIGH
+    description: Auditors verify access, modifications, and security events are logged.
+    recommendation: Review centralized logging daemon configs to verify auditing completeness.
+
+  - code: CTRL-014
+    title: Security Alerting
+    type: MANUAL
+    severity: MEDIUM
+    description: Auditors verify alerts are raised on anomalous login attempts.
+    recommendation: Check SIEM alerting rules for brute-force or anomalous geolocation logins.
+
+  - code: CTRL-015
+    title: Logout Session Kill
+    type: MANUAL
+    severity: HIGH
+    description: Auditors verify backend session tokens are revoked upon logout.
+    recommendation: Test session revocation endpoint and confirm server-side token state is deleted.
