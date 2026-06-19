@@ -232,16 +232,6 @@ try {
     vm.runInContext('mergeReconciliationIntoFleet()', context);
     console.log('✔ Phase 5: mergeReconciliationIntoFleet() executed cleanly.');
 
-    // Call renderPoliciesGrid
-    console.log('Executing renderPoliciesGrid()...');
-    vm.runInContext('renderPoliciesGrid()', context);
-    console.log('✔ Phase 6: renderPoliciesGrid() executed cleanly.');
-
-    // Generate compliance report
-    console.log('Executing generateComplianceReport()...');
-    vm.runInContext('generateComplianceReport()', context);
-    console.log('✔ Phase 7: generateComplianceReport() executed cleanly.');
-
     console.log('All detailed reconciliation integration tests passed successfully! 🎉');
 } catch (err) {
     console.error('❌ Detailed Integration Test failed:', err.message);

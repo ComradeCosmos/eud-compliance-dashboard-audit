@@ -20,8 +20,6 @@ from backend.app.database import engine, Base, get_db, SessionLocal
 from backend.app.evidence.router import router as evidence_router
 from backend.app.assessment.router import router as assessment_router
 from backend.app.checklist.router import router as checklist_router
-from backend.app.reports.router import router as reports_router
-from backend.app.scanners.router import router as scanners_router
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -69,8 +67,6 @@ def on_startup():
 app.include_router(evidence_router)
 app.include_router(assessment_router)
 app.include_router(checklist_router)
-app.include_router(reports_router)
-app.include_router(scanners_router)
 
 
 # ----------------------------------------------------

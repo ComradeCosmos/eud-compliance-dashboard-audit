@@ -243,10 +243,10 @@ def validate_sheet_data(headers, rows, filename=None):
     # Core compliance parameters mapping
     ad_idx = find_index(headers, ["active directory", "ad", "active_directory", "domain"])
     bitlocker_idx = find_index(headers, ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"])
-    zscaler_idx = find_index(headers, ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"])
-    nessus_idx = find_index(headers, ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"])
+    zscaler_idx = find_index(headers, ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn","device","export"])
+    nessus_idx = find_index(headers, ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner","agent","agents"])
     s1_idx = find_index(headers, ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"])
-    sccm_idx = find_index(headers, ["sccm", "sccm agent", "mecm", "management agent", "patch agent"])
+    sccm_idx = find_index(headers, ["sccm", "sccm agent", "mecm", "management agent", "patch agent","Hardware"])
     
     warnings = []
     errors = []

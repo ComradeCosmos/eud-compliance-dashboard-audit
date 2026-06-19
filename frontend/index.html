@@ -247,7 +247,7 @@
 
             <!-- Close Button -->
             <button onclick="document.getElementById('login-screen-canvas').style.display = 'none';"
-                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">Ã¢Å“â€¢</button>
+                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">&times;</button>
 
             <div
                 style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
@@ -291,7 +291,7 @@
                         <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
                         <input type="password" id="portal-login-passcode"
-                            placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
+                            placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
 
@@ -314,7 +314,7 @@
                         <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
                         <input type="password" id="portal-signup-passcode"
-                            placeholder="Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢"
+                            placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.5rem;">
@@ -686,7 +686,7 @@
             style="border-top: 1px solid var(--border-clean); padding: 3rem 2rem; background: var(--bg-card); text-align: center;">
             <p
                 style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
-                ArcelorMittal Nippon Steel India Ã‚Â© 2026. All Rights Reserved.
+                ArcelorMittal Nippon Steel India &copy; 2026. All Rights Reserved.
             </p>
             <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
                 Authorized Personnel Only. Security Auditing and User Activity Logging Active.
@@ -784,59 +784,6 @@
                     scores...</span>
             </div>
 
-
-
-            <!-- Section: Scoring & Controls -->
-            <div id="section-risk" class="section-view" style="display: none;">
-                <div class="card" style="padding: 2rem;">
-                    <div
-                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
-                        <h2
-                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
-                            Security Policies Governance Board</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                            Configure active compliance mandates for the fleet. Toggling a security policy to <strong
-                                style="color: var(--color-accent);">Optional</strong> will exclude it from the
-                            zero-tolerance compliance engine. The fleet's composite scores, status badges, donut charts,
-                            and reporting audits will instantly recalculate in real-time.
-                        </p>
-                    </div>
-
-                    <!-- Admin-Only Config Alert -->
-                    <div id="policy-admin-alert"
-                        style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
-                        ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin)
-                        privileges are required to override compliance requirements.
-                    </div>
-
-                    <!-- Policy Grid Filter Tabs -->
-                    <div
-                        style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">
-                        <button id="policy-filter-btn-all" class="tab-btn active"
-                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('all')">All Policies
-                            (<span id="policy-count-all">0</span>)</button>
-                        <button id="policy-filter-btn-core" class="tab-btn"
-                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('core')">Core
-                            Mandates (<span id="policy-count-core">0</span>)</button>
-                        <button id="policy-filter-btn-excel" class="tab-btn"
-                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('excel')">Spreadsheet
-                            Telemetries (<span id="policy-count-excel">0</span>)</button>
-                    </div>
-
-                    <!-- Dynamic Policies Grid -->
-                    <div id="policies-governance-grid"
-                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-                        <!-- Dynamic policy cards render here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section: Reporting -->
-            <div id="section-reporting" class="section-view" style="display: none;">
-                <div id="reporting-dashboard-content" style="display: flex; flex-direction: column; gap: 2rem;">
-                    <!-- Dynamic Reporting Dashboard will be loaded here -->
-                </div>
-            </div>
 
             <!-- Section: Reconciliation -->
             <div id="section-reconciler" class="section-view" style="display: none;">
@@ -1888,9 +1835,6 @@
             term.appendChild(line);
             term.scrollTop = term.scrollHeight;
         }
-
-
-
         function switchNavSection(target) {
             // NIST CSF 2.0 Airtight Auth Boundaries
             if (!currentSession.isLoggedIn && target !== 'login') {
@@ -1901,7 +1845,7 @@
             }
 
             if (currentSession.isLoggedIn) {
-                if ((target === 'settings' || target === 'reporting') && currentSession.role !== 'admin') {
+                if (target === 'settings' && currentSession.role !== 'admin') {
                     logToTerminal(`[Security Alert] RBAC Violation: User "${currentSession.username}" (Role: ${currentSession.role.toUpperCase()}) lacks Global Admin privileges for "${target.toUpperCase()}".`, "error");
                     alert(`Access Denied: Global Administrator privileges are required to view the ${target.toUpperCase()} configurations.`);
                     return;
@@ -1917,39 +1861,19 @@
             const mainContent = document.querySelector(".main-content");
             const header = document.querySelector(".main-content > header");
 
-            const menuHub = document.getElementById("menu-hub");
-            if (target === 'hub') {
-                if (sidebar) sidebar.style.display = "none";
-                if (header) header.style.display = "none";
-                if (mainContent) {
-                    mainContent.style.background = "radial-gradient(circle at center, #111827 0%, #030712 100%)";
-                    mainContent.style.padding = "0";
-                }
-                if (menuHub) menuHub.style.display = "block";
-            } else {
-                if (sidebar) sidebar.style.display = "flex";
-                if (header) header.style.display = "flex";
-                if (mainContent) {
-                    mainContent.style.background = "transparent";
-                    mainContent.style.padding = "3rem 2.5rem";
-                }
-                if (menuHub) menuHub.style.display = "none";
+            if (sidebar) sidebar.style.display = "flex";
+            if (header) header.style.display = "flex";
+            if (mainContent) {
+                mainContent.style.background = "transparent";
+                mainContent.style.padding = "3rem 2.5rem";
             }
 
             document.querySelectorAll(".sidebar-menu .menu-item").forEach(item => item.classList.remove("active"));
             document.querySelectorAll(".sidebar-group-header").forEach(item => item.classList.remove("active"));
 
             // Expand the group that contains this sub-item
-            if (target === 'siem') {
-                toggleSidebarGroup('siem');
-            } else if (target === 'risk-engine') {
-                toggleSidebarGroup('risk');
-            } else if (target === 'samp-auditor') {
-                toggleSidebarGroup('samp');
-            } else if (['compliance', 'risk', 'reporting', 'reconciler'].includes(target)) {
+            if (['compliance', 'reconciler'].includes(target)) {
                 toggleSidebarGroup('reconciler');
-            } else if (target === 'hub') {
-                toggleSidebarGroup('none');
             }
 
             const clickedMenu = document.getElementById(`menu-${target}`);
@@ -1976,42 +1900,17 @@
             const titleEl = document.getElementById("main-section-title");
             if (titleEl) {
                 switch (target) {
-                    case "analytics":
-                        titleEl.innerText = "Executive Overview";
-                        break;
-                    case "hub":
-                        titleEl.innerText = "Unified Gateway Portal";
-                        break;
-                    case "siem":
-                        titleEl.innerText = "SIEM Ingestion Logs Pipeline";
-                        break;
                     case "compliance":
                         titleEl.innerText = "Compliance Report";
-                        break;
-                    case "risk":
-                        titleEl.innerText = "Compliance & Scoring Controls Engine";
-                        break;
-                    case "reporting":
-                        titleEl.innerText = "Compliance Telemetry Reporting Center";
-                        break;
-                    case "risk-engine":
-                        titleEl.innerText = "Centralized Risk Engine";
-                        break;
-                    case "samp-auditor":
-                        titleEl.innerText = "SAMP Core Auditing Board";
                         break;
                     case "profile":
                         titleEl.innerText = "Security Analyst Identity";
                         break;
-
                     case "settings":
                         titleEl.innerText = "Console Settings & Pipeline Parameters";
                         break;
                     case "dev-db":
                         titleEl.innerText = "Developer Console & Database Management";
-                        break;
-                    case "sso":
-                        titleEl.innerText = "SSO Identity Directory & Audit Trail";
                         break;
                     default:
                         titleEl.innerText = "Executive Overview";
@@ -2019,14 +1918,8 @@
             }
 
             // Trigger real-time dashboard renders on section load
-            if (target === "reporting") {
-                generateComplianceReport();
-            } else if (target === "risk") {
-                renderPoliciesGrid();
-            } else if (target === "dev-db") {
+            if (target === "dev-db") {
                 loadDevConsoleData();
-            } else if (target === "sso") {
-                populateIdentitySSOAudits();
             } else if (target === "reconciler") {
                 if (typeof renderReconciliationUI === "function" && reconciliationResults && (reconciliationResults.matches.length > 0 || reconciliationResults.gaps.length > 0 || reconciliationResults.rogues.length > 0)) {
                     renderReconciliationUI();
@@ -4838,15 +4731,6 @@
         // --- Simplified Compliance & Policy Governance Scripting Blocks ---
 
 
-        currentPolicyTab = "all";
-
-        function switchPolicyTab(tabId) {
-            currentPolicyTab = tabId;
-            document.querySelectorAll("#section-risk .tab-btn").forEach(btn => btn.classList.remove("active"));
-            const clickedBtn = document.getElementById(`policy-filter-btn-${tabId}`);
-            if (clickedBtn) clickedBtn.classList.add("active");
-            renderPoliciesGrid();
-        }
 
         function getAvailablePolicies() {
             const list = [
@@ -4909,133 +4793,6 @@
         }
 
 
-        function handleReportingSearch(val) {
-            reportingSearchQuery = val.toLowerCase();
-            reportingCurrentPage = 1;
-            renderReportingAgentTable();
-        }
-
-        function changeReportingPage(dir) {
-            const activeFleet = fleetDataset.filter(dev => dev.condition === "IN_USE");
-            const filtered = activeFleet.filter(dev => {
-                const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
-                const name = dev.canonical_name || "";
-                const id = dev.id || "";
-                return assetTag.toLowerCase().includes(reportingSearchQuery) ||
-                    name.toLowerCase().includes(reportingSearchQuery) ||
-                    id.toLowerCase().includes(reportingSearchQuery);
-            });
-
-            const maxPage = Math.ceil(filtered.length / reportingPageSize) || 1;
-            reportingCurrentPage += dir;
-            if (reportingCurrentPage < 1) reportingCurrentPage = 1;
-            if (reportingCurrentPage > maxPage) reportingCurrentPage = maxPage;
-
-            renderReportingAgentTable();
-        }
-
-        function toggleReportingPolicy(name) {
-            const current = enforcedPolicies[name] !== false;
-            enforcedPolicies[name] = !current;
-
-            logToTerminal(`[Reporting Audit] Excluded policy "${name}" status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL (Negated)'}.`, enforcedPolicies[name] ? 'info' : 'warning');
-
-            recalculateAllScores();
-            generateComplianceReport();
-        }
-
-        function renderReportingAgentTable() {
-            const tableHead = document.getElementById("reporting-table-head-row");
-            const tbody = document.getElementById("reporting-agent-tbody");
-            if (!tableHead || !tbody) return;
-
-            const policies = [
-                "Active Directory",
-                "BitLocker",
-                "Zscaler",
-                "Nessus",
-                "SentinelOne",
-                "SCCM"
-            ];
-
-            let headHtml = `
-                <th style="text-align: left;">Asset Tag</th>
-                <th style="text-align: left;">Device ID / Name</th>
-            `;
-            policies.forEach(name => {
-                const cleanName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
-                headHtml += `<th style="text-align: center;">${escapeHTML(cleanName)}</th>`;
-            });
-            headHtml += `<th style="text-align: center;">Overall Compliance</th>`;
-            tableHead.innerHTML = headHtml;
-
-            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
-            const activeFleet = fleetDataset.filter(dev => {
-                return (conditionFilter === "ALL") || (dev.condition === conditionFilter);
-            });
-            const filtered = activeFleet.filter(dev => {
-                const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "";
-                const name = dev.canonical_name || "";
-                const id = dev.id || "";
-                return assetTag.toLowerCase().includes(reportingSearchQuery) ||
-                    name.toLowerCase().includes(reportingSearchQuery) ||
-                    id.toLowerCase().includes(reportingSearchQuery);
-            });
-
-            const total = filtered.length;
-            const startIdx = (reportingCurrentPage - 1) * reportingPageSize;
-            const endIdx = Math.min(startIdx + reportingPageSize, total);
-
-            const displaySlice = filtered.slice(startIdx, endIdx);
-            tbody.innerHTML = "";
-
-            if (displaySlice.length === 0) {
-                const colSpan = 3 + policies.length;
-                tbody.innerHTML = `<tr><td colspan="${colSpan}" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No matching assets found.</td></tr>`;
-            } else {
-                displaySlice.forEach(dev => {
-                    const assetTag = (dev.custom_properties && dev.custom_properties["Asset Tag"]) || dev.serial || "-";
-
-                    let rowHtml = `
-                        <td><strong>${escapeHTML(assetTag)}</strong></td>
-                        <td>${escapeHTML(dev.canonical_name.toUpperCase())} <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono);">(${dev.id})</span></td>
-                    `;
-
-                    policies.forEach(policyName => {
-                        const isRequired = enforcedPolicies[policyName] !== false;
-
-                        const coreSw = sampleSoftwareCatalog.find(sw => sw.name === policyName);
-                        if (coreSw) {
-                            const sw = dev.software && dev.software.find(s => s.name === policyName);
-                            if (!sw) {
-                                rowHtml += `<td style="text-align: center;"><span class="badge group-non-sift" style="font-size:0.65rem;">UNREPORTED</span></td>`;
-                            } else {
-                                const opacityStyle = isRequired ? '' : ' style="opacity: 0.65;"';
-                                const isCompliant = sw.status === "COMPLIANT";
-                                rowHtml += `<td style="text-align: center;"><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}" style="font-size:0.65rem;"${opacityStyle}>${escapeHTML(sw.installed)}</span></td>`;
-                            }
-                        } else {
-                            const val = (dev.custom_properties && dev.custom_properties[policyName] !== undefined) ? dev.custom_properties[policyName] : "MISSING";
-                            const isCompliant = val !== "MISSING" && !["fail", "failed", "inactive", "missing", "no", "disabled"].includes(val.toLowerCase());
-                            const opacityStyle = isRequired ? '' : ' style="opacity: 0.65;"';
-                            rowHtml += `<td style="text-align: center;"><span class="badge ${isCompliant ? 'risk-low' : 'risk-critical'}" style="font-size:0.65rem;"${opacityStyle}>${escapeHTML(val)}</span></td>`;
-                        }
-                    });
-
-                    const overallCompliant = isDeviceCompliantForReporting(dev);
-                    const levelText = overallCompliant ? "COMPLIANT" : "NON_COMPLIANT";
-                    rowHtml += `<td style="text-align: center;"><span class="badge ${overallCompliant ? 'risk-low' : 'risk-critical'}">${levelText}</span></td>`;
-
-                    const tr = document.createElement("tr");
-                    tr.innerHTML = rowHtml;
-                    tbody.appendChild(tr);
-                });
-            }
-
-            document.getElementById("reporting-pag-start").innerText = total === 0 ? 0 : (startIdx + 1).toLocaleString();
-            document.getElementById("reporting-pag-end").innerText = endIdx.toLocaleString();
-            document.getElementById("reporting-pag-total").innerText = total.toLocaleString();
-        }
 
         // Per-render cache for getPolicyStats Ã¢â‚¬â€ avoids re-scanning 14k rows multiple times per render
         var _policyStatsCache = null;
@@ -5285,473 +5042,8 @@
             updateFleetWideMetrics();
             // Use _doFleetFilter directly to avoid double-debounce delay
             _doFleetFilter();
-
-            // Re-render active views if open
-            const reportingSection = document.getElementById("section-reporting");
-            if (reportingSection && reportingSection.style.display !== "none") {
-                generateComplianceReport();
-            }
-            const riskSection = document.getElementById("section-risk");
-            if (riskSection && riskSection.style.display !== "none") {
-                renderPoliciesGrid();
-            }
         }
 
-        function renderPoliciesGrid() {
-            const grid = document.getElementById("policies-governance-grid");
-            const alertEl = document.getElementById("policy-admin-alert");
-            if (!grid) return;
-
-            const isAdmin = (currentSession.role === "admin");
-            if (alertEl) {
-                alertEl.style.display = isAdmin ? "none" : "block";
-            }
-
-            const policies = getAvailablePolicies();
-
-            // Calculate tab totals dynamically
-            const allCount = policies.length;
-            const coreCount = policies.filter(p => !p.startsWith('[')).length;
-            const excelCount = policies.filter(p => p.startsWith('[')).length;
-
-            const allCountEl = document.getElementById("policy-count-all");
-            const coreCountEl = document.getElementById("policy-count-core");
-            const excelCountEl = document.getElementById("policy-count-excel");
-
-            if (allCountEl) allCountEl.innerText = allCount.toLocaleString();
-            if (coreCountEl) coreCountEl.innerText = coreCount.toLocaleString();
-            if (excelCountEl) excelCountEl.innerText = excelCount.toLocaleString();
-
-            // Filter policies according to active tab selection
-            let filteredPolicies = policies;
-            if (currentPolicyTab === "core") {
-                filteredPolicies = policies.filter(p => !p.startsWith('['));
-            } else if (currentPolicyTab === "excel") {
-                filteredPolicies = policies.filter(p => p.startsWith('['));
-            }
-
-            grid.innerHTML = "";
-
-            if (filteredPolicies.length === 0) {
-                grid.style.display = "block";
-                grid.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 3rem; background: var(--bg-card); border: 1px solid var(--border-clean); border-radius: 4px;">No policies found in this category.</div>`;
-            } else {
-                grid.style.display = "grid";
-                filteredPolicies.forEach(name => {
-                    const isRequired = enforcedPolicies[name] !== false; // default true
-
-                    // Count telemetry passes via unified stats helper
-                    const stats = getPolicyStats(name);
-                    const compliantCount = stats.compliantCount;
-                    const totalCount = stats.totalCount;
-                    const isUnreported = stats.isUnreported;
-
-                    const passRate = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
-                    const card = document.createElement("div");
-                    card.className = "metric-widget";
-                    card.style.border = "1px solid var(--border-clean)";
-                    card.style.display = "flex";
-                    card.style.flexDirection = "column";
-                    card.style.gap = "0.75rem";
-                    card.style.padding = "1.25rem";
-                    card.style.background = "var(--bg-card)";
-                    card.style.borderRadius = "4px";
-
-                    const badgeClass = isUnreported ? "group-non-sift" : (isRequired ? "risk-low" : "group-non-sift");
-                    const badgeLabel = isUnreported ? "UNREPORTED" : (isRequired ? "REQUIRED" : "OPTIONAL");
-
-                    // Core mandates are simple display names
-                    const displayName = name;
-                    const displaySubtitle = 'Core System Mandate';
-
-                    const telemetryText = isUnreported ? "Sheet Missing" : `${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()} Pass`;
-                    const passRateText = isUnreported ? "N/A (Unreported)" : `${passRate.toFixed(1)}%`;
-                    const passRateColor = isUnreported ? "var(--text-muted)" : (passRate === 100 ? "var(--status-low)" : (isRequired ? "var(--status-critical)" : "var(--text-primary)"));
-
-                    card.innerHTML = `
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem;">
-                            <div style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-transform: none; line-height: 1.3;">${escapeHTML(displayName)}</span>
-                                <span style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem;">${escapeHTML(displaySubtitle)}</span>
-                            </div>
-                            <span class="badge ${badgeClass}" style="font-size: 0.65rem; padding: 0.15rem 0.4rem; font-weight: 700;">${badgeLabel}</span>
-                        </div>
-                        
-                        <div style="font-size: 0.75rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;">
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Active Telemetry:</span>
-                                <strong style="color: ${isUnreported ? 'var(--text-muted)' : 'var(--text-primary)'}; font-family: var(--font-mono);">${escapeHTML(telemetryText)}</strong>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>Mandate Pass Rate:</span>
-                                <strong style="color: ${passRateColor}; font-family: var(--font-mono);">${escapeHTML(passRateText)}</strong>
-                            </div>
-                        </div>
-                        
-                        <div style="margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
-                            <button class="btn" style="width: 100%; font-size: 0.7rem; padding: 0.45rem; background: ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.15)' : 'rgba(21, 128, 61, 0.15)')}; border: 1px solid ${isUnreported ? 'var(--border-clean)' : (isRequired ? 'rgba(220, 53, 69, 0.4)' : 'rgba(21, 128, 61, 0.4)')}; color: ${isUnreported ? 'var(--text-muted)' : (isRequired ? '#ff6b6b' : '#15803d')}; font-weight: 700; cursor: ${isAdmin && !isUnreported ? 'pointer' : 'not-allowed'}; opacity: ${isAdmin && !isUnreported ? 1 : 0.6};" 
-                                ${isUnreported ? 'disabled' : ''}
-                                onclick="togglePolicyEnforcement(decodeURIComponent('${encodeURIComponent(name)}'))">
-                                ${isUnreported ? 'Telemetry Unavailable' : (isRequired ? 'Exclude Policy (Make Optional)' : 'Enforce Policy (Make Required)')}
-                            </button>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                });
-            }
-        }
-
-        function togglePolicyEnforcement(name) {
-            if (currentSession.role !== "admin") {
-                logToTerminal(`[Security Alert] Policy override denied: User "${currentSession.username}" lacks Global Security Administrator clearance.`, "error");
-                alert("Access Denied: Only a Global Security Administrator (admin) is authorized to modify compliance policy enforcement parameters.");
-                return;
-            }
-
-            const current = enforcedPolicies[name] !== false; // default true
-            enforcedPolicies[name] = !current;
-
-            logToTerminal(`[Policy Board] Policy "${name}" enforcement status changed to ${enforcedPolicies[name] ? 'REQUIRED' : 'OPTIONAL'}.`, enforcedPolicies[name] ? 'info' : 'warning');
-
-            recalculateAllScores();
-        }
-
-        function isDeviceCompliantForReporting(dev) {
-            if (dev.is_isolated) return false;
-            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
-            const targetCondition = conditionFilter === "ALL" ? ["IN_USE", "UNKNOWN"] : [conditionFilter];
-            if (!targetCondition.includes(dev.condition)) return false;
-            if (dev.is_rogue) return false;
-
-            const corePolicies = [
-                "Active Directory",
-                "BitLocker",
-                "Zscaler",
-                "Nessus",
-                "SentinelOne",
-                "SCCM"
-            ];
-
-            let hasNonCompliant = false;
-            for (let name of corePolicies) {
-                const isRequired = enforcedPolicies[name] !== false; // Required by default
-                if (!isRequired) continue;
-
-                // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
-                const isApplicable = !["Active Directory", "BitLocker", "SCCM"].includes(name) || isWindows;
-                if (!isApplicable) continue;
-
-                const sw = dev.software && dev.software.find(s => s.name === name);
-                if (sw) {
-                    const isUploaded = isSheetUploadedForSoftware(sw.key);
-                    const isEverMerged = typeof mergedSoftwareAgents !== "undefined" && mergedSoftwareAgents.has(sw.key);
-                    const alwaysReported = sw.key === "ad";
-
-                    if (!alwaysReported && !isUploaded && !isEverMerged) {
-                        continue;
-                    }
-
-                    if (sw.status === "NON_COMPLIANT") {
-                        hasNonCompliant = true;
-                        break;
-                    }
-                } else {
-                    hasNonCompliant = true;
-                    break;
-                }
-            }
-            return !hasNonCompliant;
-        }
-
-        function generateComplianceReport() {
-            const container = document.getElementById("reporting-dashboard-content");
-            if (!container) return;
-
-            const conditionFilter = (document.getElementById("fleet-filter-condition") || {}).value || "ALL";
-            const activeFleet = fleetDataset.filter(dev => {
-                return (conditionFilter === "ALL") || (dev.condition === conditionFilter);
-            });
-            const totalDevices = activeFleet.length;
-            let compliantCount = 0;
-            let nonCompliantCount = 0;
-
-            activeFleet.forEach(dev => {
-                if (isDeviceCompliantForReporting(dev)) compliantCount++;
-                else nonCompliantCount++;
-            });
-
-            const compliantPct = totalDevices > 0 ? (compliantCount / totalDevices) * 100 : 0;
-            const nonCompliantPct = totalDevices > 0 ? (nonCompliantCount / totalDevices) * 100 : 0;
-
-            // Calculate circle properties for SLA SVG dial gauge
-            const radius = 40;
-            const circumference = 2 * Math.PI * radius; // 251.327
-            const offset = circumference - (compliantPct / 100) * circumference;
-            const gaugeColor = compliantPct >= 85 ? 'var(--status-low)' : (compliantPct >= 65 ? 'var(--status-medium)' : 'var(--status-critical)');
-
-            let html = `
-                <!-- SLA Gauge and Quick Stats Row -->
-                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.5rem; width: 100%;">
-                    <!-- Dial Gauge Card -->
-                    <div class="card" style="padding: 1.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: row; align-items: center; justify-content: space-between; border-radius: 4px; gap: 1rem;">
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem; max-width: 65%;">
-                            <h3 style="margin: 0; font-size: 0.95rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">Fleet Compliance SLA Status</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0; line-height: 1.45;">
-                                The fleet composite score is <strong style="color: ${gaugeColor};">${compliantPct.toFixed(2)}%</strong> compliant. Calculated dynamically across all <strong>${totalDevices.toLocaleString()}</strong> active endpoint assets.
-                            </p>
-                            <div style="display: flex; gap: 0.75rem; margin-top: 0.25rem;">
-                                <span class="badge" style="background: ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.1)' : 'rgba(220, 53, 69, 0.1)'}; border: 1px solid ${compliantPct >= 85 ? 'rgba(21, 128, 61, 0.3)' : 'rgba(220, 53, 69, 0.3)'}; color: ${compliantPct >= 85 ? 'var(--status-low)' : 'var(--status-critical)'}; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.35rem;">
-                                    ${compliantPct >= 85 ? 'COMPLIANT Ã¢â€“Â²' : 'VIOLATION Ã¢â€“Â¼'}
-                                </span>
-                            </div>
-                        </div>
-                        <div style="width: 100px; height: 100px; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                            <svg viewBox="0 0 100 100" style="width: 100%; height: 100%; transform: rotate(-90deg);">
-                                <circle cx="50" cy="50" r="${radius}" fill="transparent" stroke="var(--bg-main)" stroke-width="8" />
-                                <circle cx="50" cy="50" r="${radius}" fill="transparent" stroke="${gaugeColor}" stroke-width="8" 
-                                        stroke-dasharray="${circumference}" stroke-dashoffset="${offset}" 
-                                        stroke-linecap="round" style="transition: stroke-dashoffset 0.6s ease;" />
-                            </svg>
-                            <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                                <span style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">${compliantPct.toFixed(1)}%</span>
-                                <span style="font-size: 0.5rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em;">SLA Score</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Compliant Fleet Assets Card -->
-                    <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.5rem; background: var(--bg-card); border-radius: 4px; display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--status-low); font-weight: 700; letter-spacing: 0.05em;">Compliant Assets</span>
-                        <div class="val" style="font-size: 2rem; font-family: var(--font-mono); margin-top: 0.25rem; font-weight: 800; color: var(--status-low);">${compliantCount.toLocaleString()}</div>
-                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">${compliantPct.toFixed(1)}% pass rate</p>
-                    </div>
-                    
-                    <!-- Non-Compliant Exceptions Card -->
-                    <div class="metric-widget" style="border: 1px solid var(--border-clean); padding: 1.5rem; background: var(--bg-card); border-radius: 4px; display: flex; flex-direction: column; justify-content: center;">
-                        <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--status-critical); font-weight: 700; letter-spacing: 0.05em;">Non-Compliant</span>
-                        <div class="val" style="font-size: 2rem; font-family: var(--font-mono); margin-top: 0.25rem; font-weight: 800; color: var(--status-critical);">${nonCompliantCount.toLocaleString()}</div>
-                        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem; color: var(--status-critical); font-weight: 700;">${nonCompliantPct.toFixed(1)}% fail rate</p>
-                    </div>
-                </div>
-            `;
-
-            const policies = [
-                "Active Directory",
-                "BitLocker",
-                "Zscaler",
-                "Nessus",
-                "SentinelOne",
-                "SCCM"
-            ];
-            let controlRowsHtml = "";
-
-            if (policies.length === 0) {
-                controlRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--text-secondary); font-style: italic; padding: 2rem;">No security policies loaded.</td></tr>`;
-            } else {
-                policies.forEach(name => {
-                    const isRequired = enforcedPolicies[name] !== false;
-                    const stats = getPolicyStats(name);
-                    const compliantCount = stats.compliantCount;
-                    const totalCount = stats.totalCount;
-                    const isUnreported = stats.isUnreported;
-
-                    const passPct = totalCount > 0 ? (compliantCount / totalCount) * 100 : 100;
-                    const barColor = isUnreported ? 'var(--border-clean)' : (isRequired ? (passPct === 100 ? 'var(--status-low)' : 'var(--status-critical)') : 'var(--text-muted)');
-                    const barBg = "rgba(255, 255, 255, 0.05)";
-
-                    const displayName = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
-                    const displaySubtitle = name.startsWith('[') ? `Source: ${name.match(/^\[(.*?)\]/)[1]}` : 'Core System Mandate';
-
-                    const telemetryText = isUnreported ? "Sheet Missing" : `${compliantCount.toLocaleString()} / ${totalCount.toLocaleString()}`;
-                    const passRateText = isUnreported ? "N/A" : `${passPct.toFixed(1)}%`;
-                    const passRateColor = isUnreported ? "var(--text-muted)" : (passPct === 100 ? "var(--status-low)" : (isRequired ? "var(--status-critical)" : "var(--text-primary)"));
-                    const barWidth = isUnreported ? 0 : passPct;
-
-                    controlRowsHtml += `
-                        <tr>
-                            <td>
-                                <strong style="color: var(--text-primary); display: block;">${escapeHTML(displayName)}</strong>
-                                <span style="font-size: 0.7rem; color: var(--text-muted);">${escapeHTML(displaySubtitle)}</span>
-                            </td>
-                            <td><span class="badge ${isUnreported ? 'group-non-sift' : (isRequired ? 'risk-low' : 'group-non-sift')}" style="font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.4rem;">${isUnreported ? 'UNREPORTED' : (isRequired ? 'REQUIRED' : 'OPTIONAL')}</span></td>
-                            <td style="font-family: var(--font-mono); font-weight: 600; text-align: center; color: ${isUnreported ? 'var(--text-muted)' : 'var(--text-primary)'};">${escapeHTML(telemetryText)}</td>
-                            <td style="font-family: var(--font-mono); font-weight: 700; color: ${passRateColor};">${escapeHTML(passRateText)}</td>
-                            <td style="width: 180px; vertical-align: middle;">
-                                <div style="width: 100%; height: 6px; background: ${barBg}; border-radius: 3px; overflow: hidden; position: relative;">
-                                    <div style="width: ${barWidth}%; height: 100%; background: ${barColor}; transition: width 0.3s;"></div>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            html += `
-                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean);">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
-                        <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700;">Global Security Policy Audit Summary</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time breakdown of control validation passes across active, reconciled endpoints.</p>
-                    </div>
-                    <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left;">Compliance Policy mandated</th>
-                                <th style="text-align: left; width: 110px;">Status</th>
-                                <th style="text-align: center; width: 140px;">Verification Matches</th>
-                                <th style="text-align: left; width: 100px;">Pass Rate</th>
-                                <th style="text-align: left; width: 180px;">SLA Verification Bar</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${controlRowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            const nonCompliantDevices = activeFleet.filter(dev => !isDeviceCompliantForReporting(dev)).slice(0, 10);
-            let exceptionsRowsHtml = "";
-
-            if (nonCompliantDevices.length === 0) {
-                exceptionsRowsHtml = `<tr><td colspan="5" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;"> No non-compliance exceptions detected! Active fleet is 100% compliant.</td></tr>`;
-            } else {
-                nonCompliantDevices.forEach(dev => {
-                    const failedControls = getFailedControlsForDevice(dev).filter(name => !name.startsWith('['));
-                    let failedMarkup = "";
-
-                    if (dev.condition !== "IN_USE") {
-                        failedMarkup = `<span class="badge risk-critical">Physical: ${escapeHTML(dev.condition.replace("_", " "))}</span>`;
-                    } else if (dev.is_isolated) {
-                        failedMarkup = `<span class="badge risk-critical">Host Containment Active</span>`;
-                    } else if (failedControls.length === 0) {
-                        failedMarkup = `<span class="badge risk-low">None (Optional Control Bypass)</span>`;
-                    } else {
-                        failedMarkup = failedControls.map(c => {
-                            const displayName = c.startsWith('[') ? c.replace(/^\[.*?\]\s*/, '') : c;
-                            return `<span class="badge risk-critical" style="font-size: 0.65rem; margin-right: 0.25rem; display: inline-block; margin-bottom: 0.15rem;" title="${escapeHTML(c)}">${escapeHTML(displayName)}</span>`;
-                        }).join("");
-                    }
-
-                    exceptionsRowsHtml += `
-                        <tr>
-                            <td><strong style="color: var(--text-primary);">${escapeHTML(dev.canonical_name.toUpperCase())}</strong></td>
-                            <td style="font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.8rem;">${escapeHTML(dev.id)}</td>
-                            <td style="color: var(--text-primary); font-size: 0.8rem;">${escapeHTML(dev.os)}</td>
-                            <td style="vertical-align: middle; padding: 0.4rem 0;">
-                                <div style="display: flex; flex-wrap: wrap; max-width: 420px; gap: 0.2rem;">
-                                    ${failedMarkup}
-                                </div>
-                            </td>
-                            <td style="text-align: right; width: 120px;">
-                                <button class="btn" style="font-size: 0.7rem; padding: 0.35rem 0.65rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 700; width: auto; cursor: pointer;"
-                                    onclick="goToRemediation('${dev.id}')">
-                                     Remediate
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            html += `
-                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean);">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--status-critical);">Top Fleet Compliance Exceptions</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Lists the top systems currently violating required security mandates. Direct action required.</p>
-                        </div>
-                        <span class="badge risk-critical" style="font-weight: 800; font-size: 0.7rem; padding: 0.25rem 0.5rem;">IMMEDIATE ACTIONS REQUIRED</span>
-                    </div>
-                    <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
-                        <thead>
-                            <tr>
-                                <th style="text-align: left;">Device Name</th>
-                                <th style="text-align: left; width: 100px;">Device ID</th>
-                                <th style="text-align: left; width: 150px;">OS Platform</th>
-                                <th style="text-align: left;">Policy Violation Gaps</th>
-                                <th style="text-align: right; width: 120px;">Remediation Path</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${exceptionsRowsHtml}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            // Build dynamic negation controls checkboxes
-            let negationControlsHtml = "";
-            policies.forEach(name => {
-                const isRequired = enforcedPolicies[name] !== false;
-                const cleanLabel = name.startsWith('[') ? name.replace(/^\[.*?\]\s*/, '') : name;
-                const sourceLabel = name.startsWith('[') ? ` (${name.match(/^\[(.*?)\]/)[1]})` : '';
-                const checkboxId = `negate-policy-${name.replace(/[^a-zA-Z0-9]/g, "-")}`;
-                negationControlsHtml += `
-                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600; color: var(--text-primary); cursor: pointer;">
-                        <input type="checkbox" id="${checkboxId}" ${isRequired ? 'checked' : ''} onchange="toggleReportingPolicy('${escapeHTML(name)}')" style="accent-color: var(--color-accent); width: 14px; height: 14px; cursor: pointer;">
-                        <span>${escapeHTML(cleanLabel)}<span style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal;">${escapeHTML(sourceLabel)}</span></span>
-                    </label>
-                `;
-            });
-
-            html += `
-                <div class="card" style="padding: 2rem; border: 1px solid var(--border-clean); display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 0.5rem;">
-                        <h3 style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">Interactive Policy Negation & Agent Compliance Audit</h3>
-                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Negate specific policies to exclude them from calculations, and audit individual agent compliance pass rates compared across all active asset tags.</p>
-                    </div>
-
-                    <!-- Negation Controls Grid -->
-                    <div>
-                        <h4 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">Active Compliance Mandates (Uncheck to Negate)</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; padding: 1.25rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
-                            ${negationControlsHtml}
-                        </div>
-                    </div>
-
-                    <!-- Agent Compliance Grid (compared individually with Asset Tag) -->
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 1rem;">
-                            <h4 style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary);">Asset Tag Agent Compliance Ledger</h4>
-                            <!-- Search field inside reporting for these asset tags -->
-                            <input type="text" id="reporting-search-input" value="${escapeHTML(reportingSearchQuery)}" placeholder="Search by Asset Tag or Name..." oninput="handleReportingSearch(this.value)" style="border: 1px solid var(--border-clean); padding: 0.4rem 0.75rem; font-size: 0.8rem; outline: none; background: var(--bg-card); border-radius: 4px; width: 220px; color: var(--text-primary);">
-                        </div>
-                        
-                        <div class="fleet-table-container">
-                            <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
-                                <thead>
-                                    <tr id="reporting-table-head-row">
-                                        <!-- Dynamic headers -->
-                                    </tr>
-                                </thead>
-                                <tbody id="reporting-agent-tbody">
-                                    <!-- Dynamic rows paginated -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Reporting pagination -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border-clean);">
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">
-                                Showing <span id="reporting-pag-start" style="font-weight: 700; color: var(--text-primary);">0</span> to <span id="reporting-pag-end" style="font-weight: 700; color: var(--text-primary);">0</span> of <span id="reporting-pag-total" style="font-weight: 700; color: var(--text-primary);">0</span> records
-                            </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 0.35rem 0.75rem;" onclick="changeReportingPage(-1)">Previous</button>
-                                <button class="btn btn-secondary" style="font-size: 0.7rem; padding: 0.35rem 0.75rem;" onclick="changeReportingPage(1)">Next</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            container.innerHTML = html;
-            renderReportingAgentTable();
-        }
-
-        function goToRemediation(deviceId) {
-            switchNavSection("compliance");
-            showDeviceAuditDetails(deviceId);
-        }
 
         // --- Cross-Sheet Asset Reconciliation Workspace Engine ---
 
@@ -5890,8 +5182,10 @@
 
         function getSheetSoftwareKey(sheet) {
             if (!sheet || !sheet.filename) return null;
-            if (sheet.role === "primary") return null; // Primary is the directory baseline, not an agent telemetry sheet
-            const fn = sheet.filename.toLowerCase();
+            const fullSheet = typeof reconcilerSheets !== "undefined" ? reconcilerSheets.find(s => s.filename === sheet.filename) : null;
+            const actualSheet = fullSheet || sheet;
+            if (actualSheet.role === "primary") return null; // Primary is the directory baseline, not an agent telemetry sheet
+            const fn = actualSheet.filename.toLowerCase();
             const words = fn.split(/[^a-z0-9]+/);
 
             // Check filename matches first
@@ -5913,7 +5207,7 @@
 
             // "ad" is too short for simple includes, use word list
             if (words.includes("ad") || words.includes("adcomputers") || fn.includes("adcomputers") || fn.includes("ad_computers") || fn.includes("ad-computers") || fn.includes("active directory") || fn.includes("active_directory") || fn.includes("enrollment")) {
-                if (sheet.role !== "primary") {
+                if (actualSheet.role !== "primary") {
                     return "ad";
                 }
             }
@@ -5921,8 +5215,8 @@
             // If filename doesn't match any key, fall back to matching headers
             const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
             for (const k of swKeys) {
-                if (k === "ad" && sheet.role === "primary") continue;
-                if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                if (k === "ad" && actualSheet.role === "primary") continue;
+                if (actualSheet.headers && actualSheet.headers.some(h => matchSoftwareKey(h, k))) {
                     return k;
                 }
             }
@@ -6964,7 +6258,7 @@
                 head.innerHTML = `<tr>${headersToRender.map(h => `<th>${escapeHTML(h)}</th>`).join("")}</tr>`;
 
                 if (rowsToRender.length === 0) {
-                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">Ã°Å¸Å½â€° Stellar Alignment! Zero gaps detected.</td></tr>`;
+                    body.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--status-low); font-style: italic; padding: 2rem; font-weight: 700;">🎉 Stellar Alignment! Zero gaps detected.</td></tr>`;
                 } else {
                     rowsToRender.forEach(item => {
                         const tr = document.createElement("tr");
@@ -7029,7 +6323,7 @@
                         tr.innerHTML = `
                             <td style="font-family: var(--font-mono); color: var(--text-secondary); vertical-align: middle;">${escapeHTML(item.id)}</td>
                             <td style="vertical-align: middle;"><strong style="color: var(--status-low);">${item.name.toUpperCase()}</strong> <span class="badge risk-low" style="font-size:0.6rem; padding: 0.1rem 0.25rem; margin-left: 0.5rem;">MATCHED</span></td>
-                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">Ã°Å¸Å¸Â¢ Aligned</td>
+                            <td style="vertical-align: middle; color: var(--status-low); font-weight:700;">🟢 Aligned</td>
                             <td style="vertical-align: middle; padding: 0.75rem 0;">
                                 <div style="display: flex; flex-wrap: wrap; max-width: 750px;">
                                     ${propertiesHtml}
@@ -7613,7 +6907,7 @@
                 }
             }
 
-            const confirmMerge = confirm(`Ã¢Å¡Â¡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
+            const confirmMerge = confirm(`⚡ Are you sure you want to merge these reconciled Excel records into the active database?\n\n- ${matches.length} Matched devices will have their custom Excel information merged.\n- ${gaps.length} Coverage Gaps will be marked in the database.\n- ${rogues.length} Rogue Assets will be appended to the active list.\n\nDashboard ledger updates instantly.`);
             if (!confirmMerge) return;
 
             registerMergedSoftwareAgents();
