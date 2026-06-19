@@ -1136,13 +1136,13 @@
 
                         <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
                             style="flex: 0 1 160px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
-                            <option value="ALL">All Conditions</option>
+                            <option value="ALL" selected>All Conditions</option>
                             <option value="DISPOSED">Disposed</option>
                             <option value="DONATED_UNDER_CSR">Donated Under CSR</option>
                             <option value="EXPIRED">Expired</option>
                             <option value="IN_REPAIR">In Repair</option>
                             <option value="IN_STORE">In Store</option>
-                            <option value="IN_USE" selected>In Use</option>
+                            <option value="IN_USE">In Use</option>
                             <option value="LOANABLE_RESERVED">Loanable Reserved</option>
                             <option value="NOT_TRACEABLE">Not Traceable</option>
                             <option value="RESERVED">Reserved</option>
@@ -2750,8 +2750,8 @@
                 if (!isRequired) continue;
 
                 // Check OS applicability for AD, BitLocker, and SCCM (Windows-only)
-                const isWindows = dev.os_family && String(dev.os_family).toLowerCase().includes("win");
-                const isApplicable = !["Active Directory", "BitLocker", "SCCM"].includes(name) || isWindows;
+                // Disabled Windows-only applicability to align dashboard comparison metrics with Excel validation sheets
+                const isApplicable = true;
                 if (!isApplicable) continue;
 
                 if (!name.startsWith('[')) {
@@ -4821,7 +4821,8 @@
                     "SentinelOne",
                     "SCCM"
                 ];
-                const windowsOnlyPolicies = new Set(["Active Directory", "BitLocker", "SCCM"]);
+                // Disabled Windows-only applicability to align dashboard comparison metrics with Excel validation sheets
+                const windowsOnlyPolicies = new Set([]);
 
                 // Initialize accumulators for core policies
                 corePolicyNames.forEach(n => {
