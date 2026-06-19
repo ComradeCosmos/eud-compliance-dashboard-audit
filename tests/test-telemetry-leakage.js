@@ -449,6 +449,101 @@ try {
     `, context);
     console.log('✔ Phase 7: evaluateComplianceValue version patterns & negation verification succeeded flawlessly!');
 
+    console.log('\nRunning Phase 8: Multi-compliance agent single-sheet upload with spelling variants verification...');
+    vm.runInContext(`
+        // Reset fleet dataset
+        fleetDataset.length = 0;
+        fleetDataset.push({
+            id: "dev-multitest",
+            canonical_name: "DELL-EUD-MULTI",
+            serial: "SN-MULTI-999",
+            mac: "00:1A:2B:3C:4D:5F",
+            manufacturer: "Dell",
+            os: "Windows 11 Enterprise",
+            os_family: "Windows",
+            score: 100.00,
+            level: "COMPLIANT",
+            condition: "IN_USE",
+            user_assigned: "multi.user",
+            last_login: "2026-06-01 12:00",
+            location: "Office",
+            location_group: "Sift",
+            is_isolated: false,
+            software: sampleSoftwareCatalog.map(sw => ({
+                name: sw.name,
+                key: sw.key,
+                installed: "MISSING",
+                required: "REQUIRED",
+                status: "NON_COMPLIANT"
+            }))
+        });
+
+        // Setup a single multi-compliance sheet with spelling variant headers: "BiLocker Non-Compliance" & "Sentinel Non-Compliance" & "Zscaler Non-Compliance"
+        reconcilerSheets.length = 0;
+        reconcilerSheets.push({
+            filename: "multi_compliance_export.csv",
+            role: "secondary",
+            headers: ["Serial Number", "BiLocker Non-Compliance", "Sentinel Non-Compliance", "Zscaler Non-Compliance"],
+            keyIdx: 0,
+            rows: [
+                ["SN-MULTI-999", "COMPLIANT", "COMPLIANT", "COMPLIANT"]
+            ]
+        });
+
+        // Set up reconciliationResults match
+        reconciliationResults.matches = [
+            {
+                id: "match-multi",
+                name: "SN-MULTI-999",
+                normalized: "snmulti999",
+                mergedProperties: [
+                    { source: "multi_compliance_export.csv", sheetRole: "Secondary", property: "BiLocker Non-Compliance", value: "COMPLIANT" },
+                    { source: "multi_compliance_export.csv", sheetRole: "Secondary", property: "Sentinel Non-Compliance", value: "COMPLIANT" },
+                    { source: "multi_compliance_export.csv", sheetRole: "Secondary", property: "Zscaler Non-Compliance", value: "COMPLIANT" }
+                ],
+                sheets: [
+                    {
+                        filename: "multi_compliance_export.csv",
+                        row: ["SN-MULTI-999", "COMPLIANT", "COMPLIANT", "COMPLIANT"],
+                        headers: ["Serial Number", "BiLocker Non-Compliance", "Sentinel Non-Compliance", "Zscaler Non-Compliance"],
+                        keyIdx: 0
+                    }
+                ],
+                status: "MATCHED"
+            }
+        ];
+        reconciliationResults.gaps = [];
+        reconciliationResults.rogues = [];
+
+        // Run merge
+        mergeReconciliationIntoFleet();
+
+        const dev = fleetDataset[0];
+        const s1 = dev.software.find(sw => sw.key === "sentinelone");
+        const bl = dev.software.find(sw => sw.key === "bitlocker");
+        const zs = dev.software.find(sw => sw.key === "zscaler");
+        const nessus = dev.software.find(sw => sw.key === "nessus"); // not in sheet
+
+        console.log('Multi-compliance BitLocker status:', bl.status);
+        console.log('Multi-compliance SentinelOne status:', s1.status);
+        console.log('Multi-compliance Zscaler status:', zs.status);
+        console.log('Multi-compliance Nessus status:', nessus.status);
+
+        if (bl.status !== "COMPLIANT" || bl.installed !== "INSTALLED") {
+            throw new Error("FAIL: BitLocker did not merge successfully from spelling variant 'BiLocker'!");
+        }
+        if (s1.status !== "COMPLIANT" || s1.installed !== "INSTALLED") {
+            throw new Error("FAIL: SentinelOne did not merge successfully from spelling variant 'Sentinel'!");
+        }
+        if (zs.status !== "COMPLIANT" || zs.installed !== "INSTALLED") {
+            throw new Error("FAIL: Zscaler did not merge successfully from 'Zscaler'!");
+        }
+        if (nessus.status !== "NON_COMPLIANT") {
+            throw new Error("FAIL: Nessus should remain non-compliant as it was not in the sheet!");
+        }
+    `, context);
+    console.log('✔ Phase 8: Multi-compliance agent single-sheet upload verification succeeded!');
+
     console.log('\nAll single-agent uploader mapping leakage & successive merge tracking verification tests passed successfully! 🎉');
 } catch (err) {
     console.error('❌ Integration Test failed:', err.message);

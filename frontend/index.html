@@ -290,8 +290,7 @@
                     <div class="input-group" style="margin-bottom: 0.5rem;">
                         <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
-                        <input type="password" id="portal-login-passcode"
-                            placeholder="••••••••"
+                        <input type="password" id="portal-login-passcode" placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
 
@@ -313,8 +312,7 @@
                     <div class="input-group" style="margin-bottom: 0.25rem;">
                         <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
                             PIN</label>
-                        <input type="password" id="portal-signup-passcode"
-                            placeholder="••••••••"
+                        <input type="password" id="portal-signup-passcode" placeholder="••••••••"
                             style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
                     </div>
                     <div class="input-group" style="margin-bottom: 0.5rem;">
@@ -5134,11 +5132,11 @@
             }
 
             if (k === "bitlocker") {
-                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption")) {
+                if (h.includes("bitlocker") || h.includes("bit locker") || h.includes("encryption") || h.includes("drive encryption") || h.includes("drive_encryption") || h.includes("disk encryption") || h.includes("bilocker") || h.includes("bi locker") || h.includes("bi-locker")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("bitlocker");
+                return words.includes("bitlocker") || words.includes("bilocker");
             }
 
             if (k === "zscaler") {
@@ -5158,11 +5156,11 @@
             }
 
             if (k === "sentinelone") {
-                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus")) {
+                if (h.includes("sentinelone") || h.includes("sentinel one") || h.includes("s1") || h.includes("endpoint agent") || h.includes("edr") || h.includes("antivirus") || h.includes("sentinel") || h.includes("sentiel")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("sentinelone") || words.includes("s1");
+                return words.includes("sentinelone") || words.includes("s1") || words.includes("sentinel") || words.includes("sentiel");
             }
 
             if (k === "sccm") {
@@ -5228,7 +5226,7 @@
             if (!swKey) return false;
             const k = swKey.toLowerCase();
             return reconcilerSheets.some(sheet => {
-                return getSheetSoftwareKey(sheet) === k;
+                return getSheetSoftwareKey(sheet) === k || (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k)));
             });
         }
 
@@ -5325,10 +5323,10 @@
         function getMergedAgentStatus(item, swKey) {
             const agentKeywords = {
                 ad: ["active directory", "ad", "active_directory", "domain", "canonicalname", "canonical name", "distinguishedname", "distinguished name"],
-                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption", "bilocker", "bi locker", "bi-locker"],
                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
+                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
             };
 
@@ -5352,7 +5350,10 @@
                     if (p.sheetRole === "Primary") continue;
                     const propSwKey = getSheetSoftwareKey({ filename: p.source });
                     if (propSwKey && propSwKey !== swKey) {
-                        continue;
+                        const matchesHeader = matchSoftwareKey(p.property, swKey);
+                        if (!matchesHeader) {
+                            continue;
+                        }
                     }
                     const propName = p.property.toLowerCase().trim();
 
@@ -5394,7 +5395,7 @@
             if (isUploaded) {
                 const isMissing = item.missingInSheets && item.missingInSheets.some(filename => {
                     const sheet = reconcilerSheets.find(s => s.filename === filename);
-                    return sheet && (getSheetSoftwareKey(sheet) === swKey);
+                    return sheet && (getSheetSoftwareKey(sheet) === swKey || (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, swKey))));
                 });
 
                 if (isMissing) {
@@ -5424,11 +5425,17 @@
         }
 
         function registerMergedSoftwareAgents() {
+            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm", "ad"];
             reconcilerSheets.forEach(sheet => {
                 const key = getSheetSoftwareKey(sheet);
                 if (key) {
                     mergedSoftwareAgents.add(key);
                 }
+                swKeys.forEach(k => {
+                    if (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                        mergedSoftwareAgents.add(k);
+                    }
+                });
             });
         }
 
@@ -6953,7 +6960,10 @@
                             if (p.sheetRole === "Primary") return false;
                             const propSwKey = getSheetSoftwareKey({ filename: p.source });
                             if (propSwKey && propSwKey !== sw.key) {
-                                return false;
+                                const matchesHeader = matchSoftwareKey(p.property, sw.key);
+                                if (!matchesHeader) {
+                                    return false;
+                                }
                             }
                             const propName = p.property.toLowerCase().trim();
 
@@ -6967,10 +6977,10 @@
 
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
-                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption", "bilocker", "bi locker", "bi-locker"],
                                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
                                 sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
@@ -7058,15 +7068,18 @@
                         const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
                             const propSwKey = getSheetSoftwareKey({ filename: p.source });
                             if (propSwKey && propSwKey !== sw.key) {
-                                return false;
+                                const matchesHeader = matchSoftwareKey(p.property, sw.key);
+                                if (!matchesHeader) {
+                                    return false;
+                                }
                             }
                             const agentKeywords = {
                                 ad: ["active directory", "ad", "active_directory", "domain", "enrollment"],
-                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"],
-                                zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
-                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
-                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status"],
-                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                                bitlocker: ["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption", "bilocker", "bi locker", "bi-locker"],
+                                zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "device", "export"],
+                                nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner", "agent", "agents"],
+                                sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent", "Hardware"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
                             const propName = p.property.toLowerCase().trim();
@@ -7226,24 +7239,24 @@
                 const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
 
                 const fieldIndexMap = [
-                    { idx: idIdx,       key: "id",             label: null },
-                    { idx: nameIdx,     key: "canonical_name", label: null },
-                    { idx: serialIdx,   key: "serial",         label: null },
-                    { idx: macIdx,      key: "mac",            label: null },
-                    { idx: mfgIdx,      key: "manufacturer",   label: null },
-                    { idx: osIdx,       key: "os",             label: null },
-                    { idx: osFamilyIdx, key: "os_family",      label: null },
-                    { idx: userIdx,     key: "user_assigned",  label: null },
-                    { idx: loginIdx,    key: "last_login",     label: null },
-                    { idx: locIdx,      key: "location",       label: null },
-                    { idx: locGrpIdx,   key: "location_group", label: null },
-                    { idx: condIdx,     key: "condition",      label: null },
-                    { idx: adIdx,       key: "compliance:Active Directory",  label: null },
-                    { idx: bitlockerIdx,key: "compliance:BitLocker",         label: null },
-                    { idx: zscalerIdx,  key: "compliance:Zscaler",          label: null },
-                    { idx: nessusIdx,   key: "compliance:Nessus",           label: null },
-                    { idx: s1Idx,       key: "compliance:SentinelOne",       label: null },
-                    { idx: sccmIdx,     key: "compliance:SCCM",             label: null },
+                    { idx: idIdx, key: "id", label: null },
+                    { idx: nameIdx, key: "canonical_name", label: null },
+                    { idx: serialIdx, key: "serial", label: null },
+                    { idx: macIdx, key: "mac", label: null },
+                    { idx: mfgIdx, key: "manufacturer", label: null },
+                    { idx: osIdx, key: "os", label: null },
+                    { idx: osFamilyIdx, key: "os_family", label: null },
+                    { idx: userIdx, key: "user_assigned", label: null },
+                    { idx: loginIdx, key: "last_login", label: null },
+                    { idx: locIdx, key: "location", label: null },
+                    { idx: locGrpIdx, key: "location_group", label: null },
+                    { idx: condIdx, key: "condition", label: null },
+                    { idx: adIdx, key: "compliance:Active Directory", label: null },
+                    { idx: bitlockerIdx, key: "compliance:BitLocker", label: null },
+                    { idx: zscalerIdx, key: "compliance:Zscaler", label: null },
+                    { idx: nessusIdx, key: "compliance:Nessus", label: null },
+                    { idx: s1Idx, key: "compliance:SentinelOne", label: null },
+                    { idx: sccmIdx, key: "compliance:SCCM", label: null },
                 ];
                 const colIndexToKey = {};
                 fieldIndexMap.forEach(({ idx, key }) => {
