@@ -2253,8 +2253,8 @@
             const bitlockerIdx = findColIdx(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
             const zscalerIdx = findColIdx(["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"]);
             const nessusIdx = findColIdx(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
-            const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
-            const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
+            const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "sentinel", "sentiel"]);
+            const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent", "hardware", "Hardware"]);
 
             const standardIndices = new Set([
                 nameIdx, idIdx, serialIdx, macIdx, mfgIdx, osIdx, osFamilyIdx,
@@ -5164,11 +5164,11 @@
             }
 
             if (k === "sccm") {
-                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent")) {
+                if (h.includes("sccm") || h.includes("mecm") || h.includes("management agent") || h.includes("patch agent") || h.includes("hardware")) {
                     return true;
                 }
                 const words = h.split(/[^a-z0-9]+/);
-                return words.includes("sccm") || words.includes("mecm");
+                return words.includes("sccm") || words.includes("mecm") || words.includes("hardware");
             }
 
             if (k.length <= 3) {
@@ -5327,7 +5327,7 @@
                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "vpn state", "vpn_state", "vpn status", "device state", "device_state", "status", "state"],
                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
-                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent", "hardware"]
             };
 
             const keywords = agentKeywords[swKey] || [];
@@ -6983,7 +6983,7 @@
                                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"],
                                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
-                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent"]
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent", "hardware"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
                             return keywords.some(kw => {
@@ -7082,7 +7082,7 @@
                                 zscaler: ["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn", "device", "export"],
                                 nessus: ["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner", "agent", "agents"],
                                 sentinelone: ["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "status", "state", "installed", "compliance", "agent status", "agent_status", "sentinel", "sentiel"],
-                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent", "Hardware"]
+                                sccm: ["sccm", "sccm agent", "mecm", "management agent", "patch agent", "hardware", "Hardware"]
                             };
                             const keywords = agentKeywords[sw.key] || [];
                             const propName = p.property.toLowerCase().trim();
@@ -7150,30 +7150,6 @@
             });
 
             let expectedRoguesInFleet = 0;
-            rogues.forEach(item => {
-                let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
-
-                const customProps = { "Reconciliation Match": "ROGUE_UNMANAGED" };
-                item.sheets.forEach(s => {
-                    s.headers.forEach((h, idx) => {
-                        if (idx !== s.keyIdx) {
-                            customProps[`[${s.filename}] ${h}`] = String(s.row[idx] || "");
-                        }
-                    });
-                });
-
-                if (existing) {
-                    existing.score = item.is_isolated ? 10.00 : 0.00;
-                    existing.level = "NON_COMPLIANT";
-                    existing.is_rogue = true;
-                    existing.is_isolated = !!item.is_isolated;
-                    if (!existing.custom_properties) existing.custom_properties = {};
-                    mergeDistinctProperties(existing.custom_properties, customProps);
-                    newFleetDataset.push(existing);
-                    expectedRoguesInFleet++;
-                    mergedUpdated++;
-                }
-            });
             window._expectedRoguesInFleet = expectedRoguesInFleet;
 
             fleetDataset = newFleetDataset;
@@ -7214,8 +7190,8 @@
                 const bitlockerIdx = findColIdx(["bitlocker", "bit locker", "encryption", "drive encryption", "drive_encryption", "disk encryption"]);
                 const zscalerIdx = findColIdx(["zscaler", "zscalar", "zscalr", "z-scaler", "z-scalar", "z-scalr", "zscaler client connector", "zscalar client connector", "zscalr client connector", "vpn"]);
                 const nessusIdx = findColIdx(["nessus", "tenable", "vulnerability agent", "nessus agent", "scanner"]);
-                const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus"]);
-                const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent"]);
+                const s1Idx = findColIdx(["sentinelone", "sentinel one", "s1", "endpoint agent", "edr", "antivirus", "sentinel", "sentiel"]);
+                const sccmIdx = findColIdx(["sccm", "sccm agent", "mecm", "management agent", "patch agent", "hardware", "Hardware"]);
 
                 const fieldIndexMap = [
                     { idx: idIdx, key: "id", label: null },
