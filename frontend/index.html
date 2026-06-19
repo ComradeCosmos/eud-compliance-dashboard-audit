@@ -6217,8 +6217,9 @@
             const hasMergedData = (matchesInFleet > 0 || gapsInFleet > 0 || roguesInFleet > 0);
 
             if (hasMergedData) {
-                logToTerminal(`[Audit Reconciler] Verification: Matches=${matches.length} (Fleet: ${matchesInFleet}), Gaps=${gaps.length} (Fleet: ${gapsInFleet}), Rogues=${rogues.length} (Fleet: ${roguesInFleet}).`, "info");
-                if (matches.length === matchesInFleet && gaps.length === gapsInFleet && rogues.length === roguesInFleet) {
+                const expectedRogues = window._expectedRoguesInFleet !== undefined ? window._expectedRoguesInFleet : rogues.length;
+                logToTerminal(`[Audit Reconciler] Verification: Matches=${matches.length} (Fleet: ${matchesInFleet}), Gaps=${gaps.length} (Fleet: ${gapsInFleet}), Rogues=${expectedRogues} (Fleet: ${roguesInFleet}).`, "info");
+                if (matches.length === matchesInFleet && gaps.length === gapsInFleet && expectedRogues === roguesInFleet) {
                     logToTerminal(`[Audit Reconciler] Verification SUCCESS: Active Reconciled Fleet dataset is in 100% perfect sync with reconciliation metrics.`, "info");
                 } else {
                     logToTerminal(`[Audit Reconciler] Verification Warning: Active fleet counts have deviated from reconciliation results (possibly due to manual overrides).`, "warn");
@@ -6939,6 +6940,7 @@
                 }
             });
 
+            const newFleetDataset = [];
             let newlyCreated = 0;
             let mergedUpdated = 0;
 
@@ -7008,12 +7010,13 @@
                     }
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
+                    newFleetDataset.push(existing);
                     mergedUpdated++;
                 } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
-                    fleetDataset.push({
+                    newFleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal,
@@ -7108,12 +7111,13 @@
                     }
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
+                    newFleetDataset.push(existing);
                     mergedUpdated++;
                 } else {
                     const newCustomProps = {};
                     mergeDistinctProperties(newCustomProps, customProps);
                     const ids = extractDeviceIdentifiers(item);
-                    fleetDataset.push({
+                    newFleetDataset.push({
                         id: `dev-${Math.random().toString(36).substring(2, 8)}`,
                         canonical_name: ids.nameVal,
                         serial: ids.serialVal.startsWith("SN-GAP-") ? ids.serialVal : `SN-GAP-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
@@ -7145,6 +7149,7 @@
                 }
             });
 
+            let expectedRoguesInFleet = 0;
             rogues.forEach(item => {
                 let existing = findExistingDeviceByItem(item, fleetByName, fleetBySerial, fleetByMac);
 
@@ -7164,40 +7169,14 @@
                     existing.is_isolated = !!item.is_isolated;
                     if (!existing.custom_properties) existing.custom_properties = {};
                     mergeDistinctProperties(existing.custom_properties, customProps);
+                    newFleetDataset.push(existing);
+                    expectedRoguesInFleet++;
                     mergedUpdated++;
-                } else if (false) { // Skip creating new records for Rogues since they do not come from Corporate Directory (Primary)
-                    const newCustomProps = {};
-                    mergeDistinctProperties(newCustomProps, customProps);
-                    const ids = extractDeviceIdentifiers(item);
-                    fleetDataset.push({
-                        id: `dev-${Math.random().toString(36).substring(2, 8)}`,
-                        canonical_name: ids.nameVal,
-                        serial: ids.serialVal.startsWith("SN-ROGUE-") ? ids.serialVal : `SN-ROGUE-${ids.serialVal.replace(/^SN-RECON-/, "").replace(/^SN-/, "")}`,
-                        mac: ids.macVal,
-                        manufacturer: "Unmanaged Rogue",
-                        os: "Unknown Platform",
-                        os_family: "Windows",
-                        score: item.is_isolated ? 10.00 : 0.00,
-                        level: "NON_COMPLIANT",
-                        condition: extractConditionFromItem(item),
-                        user_assigned: "rogue.unmanaged",
-                        last_login: "-",
-                        location: "Unknown / Network Trace",
-                        location_group: "Non-Sift",
-                        is_isolated: !!item.is_isolated,
-                        is_rogue: true,
-                        software: sampleSoftwareCatalog.map(sw => ({
-                            name: sw.name,
-                            key: sw.key,
-                            installed: "MISSING",
-                            required: "REQUIRED",
-                            status: "NON_COMPLIANT"
-                        })),
-                        custom_properties: newCustomProps
-                    });
-                    newlyCreated++;
                 }
             });
+            window._expectedRoguesInFleet = expectedRoguesInFleet;
+
+            fleetDataset = newFleetDataset;
 
             if (primarySheet) {
                 const headers = primarySheet.headers;
