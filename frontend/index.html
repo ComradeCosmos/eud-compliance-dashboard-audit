@@ -5222,11 +5222,26 @@
             return null; // unknown classification
         }
 
+        function isMultiComplianceSheet(sheet) {
+            if (!sheet || !sheet.headers) return false;
+            let matchCount = 0;
+            const swKeys = ["sentinelone", "bitlocker", "zscaler", "nessus", "sccm"];
+            for (const k of swKeys) {
+                if (sheet.headers.some(h => matchSoftwareKey(h, k))) {
+                    matchCount++;
+                }
+            }
+            return matchCount > 1;
+        }
+
         function isSheetUploadedForSoftware(swKey) {
             if (!swKey) return false;
             const k = swKey.toLowerCase();
             return reconcilerSheets.some(sheet => {
-                return getSheetSoftwareKey(sheet) === k || (sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k)));
+                if (sheet.role !== "primary" && !isMultiComplianceSheet(sheet)) {
+                    return getSheetSoftwareKey(sheet) === k;
+                }
+                return sheet.headers && sheet.headers.some(h => matchSoftwareKey(h, k));
             });
         }
 
@@ -6962,6 +6977,10 @@
                             if (p.sheetRole === "Primary") return false;
                             const propSwKey = getSheetSoftwareKey({ filename: p.source });
                             if (propSwKey && propSwKey !== sw.key) {
+                                const fullSheet = typeof reconcilerSheets !== "undefined" ? reconcilerSheets.find(s => s.filename === p.source) : null;
+                                if (fullSheet && fullSheet.role !== "primary" && !isMultiComplianceSheet(fullSheet)) {
+                                    return false;
+                                }
                                 const matchesHeader = matchSoftwareKey(p.property, sw.key);
                                 if (!matchesHeader) {
                                     return false;
@@ -7069,8 +7088,13 @@
                         const statusObj = getMergedAgentStatus(item, sw.key);
                         const isUploaded = isSheetUploadedForSoftware(sw.key);
                         const hasProp = item.mergedProperties && item.mergedProperties.some(p => {
+                            if (p.sheetRole === "Primary") return false;
                             const propSwKey = getSheetSoftwareKey({ filename: p.source });
                             if (propSwKey && propSwKey !== sw.key) {
+                                const fullSheet = typeof reconcilerSheets !== "undefined" ? reconcilerSheets.find(s => s.filename === p.source) : null;
+                                if (fullSheet && fullSheet.role !== "primary" && !isMultiComplianceSheet(fullSheet)) {
+                                    return false;
+                                }
                                 const matchesHeader = matchSoftwareKey(p.property, sw.key);
                                 if (!matchesHeader) {
                                     return false;
