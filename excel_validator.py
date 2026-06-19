@@ -395,45 +395,12 @@ def get_col_indices(headers, filename=None):
 
 def row_matches(prim_row, prim_meta, sec_row, sec_meta):
     """
-    Returns True if a primary corporate row matches a secondary agent row on
-    (a) unique key value, (b) hostname, (c) serial number, or (d) MAC address.
+    Returns True if a primary corporate row matches a secondary agent row
+    strictly on the values of the selected column keys.
     """
     prim_key_val = normalize_value(prim_row[prim_meta['key_idx']]) if prim_meta['key_idx'] < len(prim_row) else ""
     sec_key_val = normalize_value(sec_row[sec_meta['key_idx']]) if sec_meta['key_idx'] < len(sec_row) else ""
-    if prim_key_val and prim_key_val == sec_key_val:
-        return True
-        
-    # Check matching hostnames
-    for p_idx in prim_meta.get('name_indices', []):
-        for s_idx in sec_meta.get('name_indices', []):
-            if p_idx < len(prim_row) and s_idx < len(sec_row):
-                p_name = normalize_value(prim_row[p_idx])
-                s_name = normalize_value(sec_row[s_idx])
-                if p_name and p_name == s_name:
-                    return True
-                    
-    # Check matching serials
-    for p_idx in prim_meta.get('serial_indices', []):
-        for s_idx in sec_meta.get('serial_indices', []):
-            if p_idx < len(prim_row) and s_idx < len(sec_row):
-                p_serial = normalize_value(prim_row[p_idx])
-                s_serial = normalize_value(sec_row[s_idx])
-                if p_serial and p_serial == s_serial:
-                    return True
-                    
-    # Check matching MAC addresses
-    for p_idx in prim_meta.get('mac_indices', []):
-        for s_idx in sec_meta.get('mac_indices', []):
-            if p_idx < len(prim_row) and s_idx < len(sec_row):
-                p_mac_val = prim_row[p_idx]
-                s_mac_val = sec_row[s_idx]
-                p_macs = norm_mac_list(p_mac_val)
-                s_macs = norm_mac_list(s_mac_val)
-                if p_macs and s_macs:
-                    if set(p_macs) & set(s_macs):
-                        return True
-                        
-    return False
+    return bool(prim_key_val and prim_key_val == sec_key_val)
 
 def reconcile_sheets_data(primary_sheet, secondary_sheets):
     """
@@ -560,49 +527,12 @@ def reconcile_sheets_data(primary_sheet, secondary_sheets):
             matched_row = None
             matched_r_idx = -1
             
-            # (a) Match unique key
+            # Match strictly on the selected unique keys (no fallbacks)
             prim_key_val = normalize_value(p_row[primary_key_idx]) if primary_key_idx < len(p_row) else ""
             if prim_key_val and prim_key_val in sec["key_map"]:
                 candidates = sec["key_map"][prim_key_val]
                 if candidates:
                     matched_r_idx = candidates[0]
-                    
-            # (b) Match hostname
-            if matched_r_idx == -1 and prim_name_indices:
-                for p_idx in prim_name_indices:
-                    if p_idx < len(p_row):
-                        p_name = normalize_value(p_row[p_idx])
-                        if p_name and p_name in sec["name_map"]:
-                            candidates = sec["name_map"][p_name]
-                            if candidates:
-                                matched_r_idx = candidates[0]
-                                break
-                                
-            # (c) Match Serial Number
-            if matched_r_idx == -1 and prim_serial_indices:
-                for p_idx in prim_serial_indices:
-                    if p_idx < len(p_row):
-                        p_serial = normalize_value(p_row[p_idx])
-                        if p_serial and p_serial in sec["serial_map"]:
-                            candidates = sec["serial_map"][p_serial]
-                            if candidates:
-                                matched_r_idx = candidates[0]
-                                break
-                                
-            # (d) Match MAC address
-            if matched_r_idx == -1 and prim_mac_indices:
-                for p_idx in prim_mac_indices:
-                    if p_idx < len(p_row):
-                        p_mac_val = p_row[p_idx]
-                        p_macs = norm_mac_list(p_mac_val)
-                        for pm in p_macs:
-                            if pm and pm in sec["mac_map"]:
-                                candidates = sec["mac_map"][pm]
-                                if candidates:
-                                    matched_r_idx = candidates[0]
-                                    break
-                    if matched_r_idx != -1:
-                        break
                         
             if matched_r_idx != -1:
                 matched_row = sec["rows"][matched_r_idx]

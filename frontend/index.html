@@ -1987,7 +1987,7 @@
             let customSectionHtml = '';
             if (customCheckboxes) {
                 customSectionHtml = `
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;" class="export-section">
                         <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                             Custom Telemetry Columns
                         </h4>
@@ -2009,9 +2009,15 @@
                         </p>
                     </div>
 
+                    <!-- Search Bar -->
+                    <div>
+                        <input type="text" id="fleet-export-col-search" placeholder="Search columns..."
+                            style="width: 100%; border: 1px solid var(--border-clean); padding: 0.6rem; font-size: 0.85rem; outline: none; box-sizing: border-box; background: var(--bg-secondary); color: var(--text-primary);">
+                    </div>
+
                     <div style="flex-grow: 1; overflow-y: auto; padding-right: 0.5rem;">
                         <!-- Core Attributes Section -->
-                        <div style="margin-bottom: 1.5rem;">
+                        <div style="margin-bottom: 1.5rem;" class="export-section">
                             <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                                 Core Attributes
                             </h4>
@@ -2021,7 +2027,7 @@
                         </div>
 
                         <!-- Core Policies Section -->
-                        <div style="margin-bottom: 1.5rem;">
+                        <div style="margin-bottom: 1.5rem;" class="export-section">
                             <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                                 Core Security Policies
                             </h4>
@@ -2043,6 +2049,33 @@
             `;
 
             document.body.appendChild(modal);
+
+            // Add search event listener
+            const searchInput = modal.querySelector("#fleet-export-col-search");
+            if (searchInput) {
+                searchInput.addEventListener("input", (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    const sections = modal.querySelectorAll(".export-section");
+                    sections.forEach(sec => {
+                        const labels = sec.querySelectorAll("label");
+                        let visibleCount = 0;
+                        labels.forEach(lbl => {
+                            const txt = lbl.textContent.toLowerCase();
+                            if (txt.includes(query)) {
+                                lbl.style.display = "flex";
+                                visibleCount++;
+                            } else {
+                                lbl.style.display = "none";
+                            }
+                        });
+                        if (visibleCount > 0) {
+                            sec.style.display = "block";
+                        } else {
+                            sec.style.display = "none";
+                        }
+                    });
+                });
+            }
 
             // Add event listeners (safely guarded)
             const cancelBtn = document.getElementById("btn-fleet-export-cancel");
@@ -5867,53 +5900,7 @@
         function rowMatches(primRow, primMeta, secRow, secMeta) {
             const primKeyVal = normalizeValue(primRow[primMeta.key_idx]);
             const secKeyVal = normalizeValue(secRow[secMeta.key_idx]);
-            if (primKeyVal && primKeyVal === secKeyVal) {
-                return true;
-            }
-
-            if (primMeta.name_indices && secMeta.name_indices) {
-                for (let pIdx of primMeta.name_indices) {
-                    for (let sIdx of secMeta.name_indices) {
-                        if (pIdx < primRow.length && sIdx < secRow.length) {
-                            const pName = normalizeValue(primRow[pIdx]);
-                            const sName = normalizeValue(secRow[sIdx]);
-                            if (pName && pName === sName) return true;
-                        }
-                    }
-                }
-            }
-
-            if (primMeta.serial_indices && secMeta.serial_indices) {
-                for (let pIdx of primMeta.serial_indices) {
-                    for (let sIdx of secMeta.serial_indices) {
-                        if (pIdx < primRow.length && sIdx < secRow.length) {
-                            const pSerial = normalizeValue(primRow[pIdx]);
-                            const sSerial = normalizeValue(secRow[sIdx]);
-                            if (pSerial && pSerial === sSerial) return true;
-                        }
-                    }
-                }
-            }
-
-            if (primMeta.mac_indices && secMeta.mac_indices) {
-                for (let pIdx of primMeta.mac_indices) {
-                    for (let sIdx of secMeta.mac_indices) {
-                        if (pIdx < primRow.length && sIdx < secRow.length) {
-                            const pMacVal = primRow[pIdx];
-                            const sMacVal = secRow[sIdx];
-                            const pMacs = normMacList(pMacVal);
-                            const sMacs = normMacList(sMacVal);
-                            if (pMacs.length > 0 && sMacs.length > 0) {
-                                for (let pm of pMacs) {
-                                    if (sMacs.includes(pm)) return true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return false;
+            return Boolean(primKeyVal && primKeyVal === secKeyVal);
         }
 
         function runLocalReconciliation() {
@@ -6040,66 +6027,12 @@
                     let matchedRow = null;
                     let matchedRIdx = -1;
 
-                    // Try to find match via O(1) lookups
-
-                    // 1. Check key match
+                    // Match strictly on the selected unique keys (no fallbacks)
                     const primKeyVal = normalizeValue(pRow[primaryKeyIdx]);
                     if (primKeyVal && sec.keyMap.has(primKeyVal)) {
                         const candidates = sec.keyMap.get(primKeyVal);
                         if (candidates.length > 0) {
                             matchedRIdx = candidates[0];
-                        }
-                    }
-
-                    // 2. Check name match
-                    if (matchedRIdx === -1 && primMeta.name_indices) {
-                        for (let pIdx of primMeta.name_indices) {
-                            if (pIdx < pRow.length) {
-                                const pName = normalizeValue(pRow[pIdx]);
-                                if (pName && sec.nameMap.has(pName)) {
-                                    const candidates = sec.nameMap.get(pName);
-                                    if (candidates.length > 0) {
-                                        matchedRIdx = candidates[0];
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 3. Check serial match
-                    if (matchedRIdx === -1 && primMeta.serial_indices) {
-                        for (let pIdx of primMeta.serial_indices) {
-                            if (pIdx < pRow.length) {
-                                const pSerial = normalizeValue(pRow[pIdx]);
-                                if (pSerial && sec.serialMap.has(pSerial)) {
-                                    const candidates = sec.serialMap.get(pSerial);
-                                    if (candidates.length > 0) {
-                                        matchedRIdx = candidates[0];
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 4. Check MAC match
-                    if (matchedRIdx === -1 && primMeta.mac_indices) {
-                        for (let pIdx of primMeta.mac_indices) {
-                            if (pIdx < pRow.length) {
-                                const pMacVal = pRow[pIdx];
-                                const pMacs = normMacList(pMacVal);
-                                for (let pm of pMacs) {
-                                    if (pm && sec.macMap.has(pm)) {
-                                        const candidates = sec.macMap.get(pm);
-                                        if (candidates.length > 0) {
-                                            matchedRIdx = candidates[0];
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            if (matchedRIdx !== -1) break;
                         }
                     }
 
@@ -7322,7 +7255,7 @@
             let primaryCheckboxes = '';
             if (primarySheet) {
                 primaryCheckboxes = `
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;" class="export-section">
                         <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                             Primary Directory (${primarySheet.filename})
                         </h4>
@@ -7341,7 +7274,7 @@
             let secondaryCheckboxes = '';
             secondarySheets.forEach(sheet => {
                 secondaryCheckboxes += `
-                    <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 1.5rem;" class="export-section">
                         <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                             Secondary Telemetry (${sheet.filename})
                         </h4>
@@ -7368,9 +7301,15 @@
                         </p>
                     </div>
 
+                    <!-- Search Bar -->
+                    <div>
+                        <input type="text" id="recon-export-col-search" placeholder="Search columns..."
+                            style="width: 100%; border: 1px solid var(--border-clean); padding: 0.6rem; font-size: 0.85rem; outline: none; box-sizing: border-box; background: var(--bg-secondary); color: var(--text-primary);">
+                    </div>
+
                     <div style="flex-grow: 1; overflow-y: auto; padding-right: 0.5rem;">
                         <!-- Standard Columns Section -->
-                        <div style="margin-bottom: 1.5rem;">
+                        <div style="margin-bottom: 1.5rem;" class="export-section">
                             <h4 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem; margin-bottom: 0.75rem;">
                                 Standard Attributes
                             </h4>
@@ -7406,6 +7345,33 @@
             `;
 
             document.body.appendChild(modal);
+
+            // Add search event listener
+            const searchInput = modal.querySelector("#recon-export-col-search");
+            if (searchInput) {
+                searchInput.addEventListener("input", (e) => {
+                    const query = e.target.value.toLowerCase().trim();
+                    const sections = modal.querySelectorAll(".export-section");
+                    sections.forEach(sec => {
+                        const labels = sec.querySelectorAll("label");
+                        let visibleCount = 0;
+                        labels.forEach(lbl => {
+                            const txt = lbl.textContent.toLowerCase();
+                            if (txt.includes(query)) {
+                                lbl.style.display = "flex";
+                                visibleCount++;
+                            } else {
+                                lbl.style.display = "none";
+                            }
+                        });
+                        if (visibleCount > 0) {
+                            sec.style.display = "block";
+                        } else {
+                            sec.style.display = "none";
+                        }
+                    });
+                });
+            }
 
             // Add event listeners (safely guarded)
             const cancelBtn = document.getElementById("btn-export-cancel");
