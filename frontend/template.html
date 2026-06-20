@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AM/NS Security Dashboard - Executive Console</title>
+    <meta name="description" content="EUD Compliance Dashboard - Enterprise-grade End-User Device compliance analytics, cryptographic verification, and multi-sheet reconciliation.">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Dark Sidebar Overrides for high fidelity styling matching 2nd image */
+        .sidebar {
+            background-color: #090e17 !important;
+            /* Elegant slate-950 tone */
+            border-right: 1px solid #1e293b !important;
+            box-shadow: inset -1px 0 0 0 #1e293b !important;
+        }
+
+        .sidebar-menu .menu-item {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.01em !important;
+            border-radius: 4px !important;
+            margin-bottom: 0.25rem !important;
+            transition: all 0.2s ease !important;
+        }
+
+        .sidebar-menu .menu-item:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+
+        .sidebar-menu .menu-item.active {
+            color: #ffffff !important;
+            background-color: #2e080c !important;
+            /* Softer, highly professional burgundy */
+            border-left: 3px solid #ef4444 !important;
+            /* Vibrant brand red */
+            border-radius: 0 4px 4px 0 !important;
+        }
+
+        /* Dark Theme Gateway Hub Layout matching 1st image */
+        .gateway-container {
+            width: 100%;
+            min-height: 100vh;
+            padding: 5rem 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            /* Sophisticated dark slate gradient */
+        }
+
+        .gateway-title {
+            font-size: 2.5rem !important;
+            font-weight: 900 !important;
+            text-transform: uppercase !important;
+            letter-spacing: -0.05em !important;
+            color: #ffffff !important;
+            margin-bottom: 0.5rem !important;
+            font-family: var(--font-display) !important;
+            text-align: center;
+            border: none !important;
+            padding: 0 !important;
+        }
+
+        .gateway-subtitle {
+            color: #94a3b8 !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.1em !important;
+            text-align: center;
+            margin-bottom: 3.5rem !important;
+        }
+
+        .gateway-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+            max-width: 1100px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .gateway-card {
+            background: #1e293b !important;
+            /* Premium Slate-800 Card Background */
+            border: 1px solid #334155 !important;
+            /* Slate-700 Border */
+            border-radius: 6px !important;
+            padding: 2.5rem !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 270px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+            box-sizing: border-box;
+        }
+
+        .gateway-card:hover {
+            transform: translateY(-5px) !important;
+            border-color: #ef4444 !important;
+            /* Hover highlight to vibrant red */
+            box-shadow: 0 15px 35px rgba(239, 68, 68, 0.12) !important;
+        }
+
+        .gateway-card-btn {
+            border: 1px solid #475569 !important;
+            background: transparent !important;
+            color: #cbd5e1 !important;
+            padding: 0.85rem !important;
+            font-weight: 700 !important;
+            font-size: 0.8rem !important;
+            letter-spacing: 0.05em !important;
+            text-transform: uppercase !important;
+            border-radius: 4px !important;
+            transition: all 0.3s ease !important;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        .gateway-card:hover .gateway-card-btn {
+            background: #ef4444 !important;
+            border-color: #ef4444 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+        }
+
+        .gateway-badge {
+            background: #334155 !important;
+            /* Slate badge bg */
+            color: #f87171 !important;
+            /* Professional light red text */
+            border: 1px solid #475569 !important;
+            font-family: var(--font-mono) !important;
+            font-size: 0.65rem !important;
+            padding: 0.2rem 0.5rem !important;
+            font-weight: 800 !important;
+            border-radius: 3px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+        }
+
+        /* Interactive SIEM Controls styling */
+        .siem-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr;
+            gap: 2rem;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .siem-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Collapsible Sidebar Groups */
+        .sidebar-group-header {
+            color: #94a3b8 !important;
+            font-size: 0.82rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em !important;
+            border-radius: 4px !important;
+            margin-top: 0.75rem !important;
+            margin-bottom: 0.15rem !important;
+            padding: 0.55rem 0.75rem !important;
+            cursor: pointer;
+            transition: all 0.2s ease !important;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-group-header:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+
+        .sidebar-group-header.active {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+
+        .sidebar-submenu {
+            list-style: none !important;
+            padding-left: 1.25rem !important;
+            margin: 0 !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .sidebar-submenu .menu-item {
+            font-size: 0.78rem !important;
+            font-weight: 500 !important;
+            padding: 0.45rem 0.75rem !important;
+            margin-bottom: 0.15rem !important;
+            border-radius: 3px !important;
+            color: #64748b !important;
+            background: transparent !important;
+            border-left: none !important;
+        }
+
+        .sidebar-submenu .menu-item:hover {
+            color: #ffffff !important;
+            background-color: #1e293b !important;
+        }
+
+        .sidebar-submenu .menu-item.active {
+            color: #ffffff !important;
+            background-color: #2e080c !important;
+            /* Burgundy highlight */
+            border-left: 2px solid #ef4444 !important;
+            /* Brand red accent line */
+            border-radius: 0 3px 3px 0 !important;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <!-- Global background floating decorative spheres for investor appeal -->
+    <div class="global-bg-spheres"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; z-index: -1; pointer-events: none;">
+        <div
+            style="position: absolute; width: 500px; height: 500px; background: radial-gradient(circle, rgba(185, 28, 28, 0.08) 0%, rgba(185, 28, 28, 0) 70%); border-radius: 50%; top: -100px; left: -100px; filter: blur(40px); animation: drift1 25s infinite alternate ease-in-out;">
+        </div>
+        <div
+            style="position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0) 70%); border-radius: 50%; bottom: -150px; right: -150px; filter: blur(50px); animation: drift2 30s infinite alternate ease-in-out;">
+        </div>
+    </div>
+
+    <!-- Full-Screen Dedicated portal login gateway -->
+    <div id="login-screen-canvas"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: linear-gradient(135deg, rgba(51, 65, 85, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 99999;">
+        <div class="card"
+            style="width: 460px; padding: 2.5rem; border: 1px solid var(--border-clean); background: var(--bg-card); display: flex; flex-direction: column; gap: 1.25rem; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border-radius: 4px; position: relative;">
+
+            <!-- Close Button -->
+            <button onclick="document.getElementById('login-screen-canvas').style.display = 'none';"
+                style="position: absolute; top: 1rem; right: 1rem; background: transparent; border: none; font-size: 1.25rem; cursor: pointer; color: var(--text-muted); font-weight: 700;">✕</button>
+
+            <div
+                style="text-align: center; margin-bottom: 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;">
+                <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 54px;">
+                <div>
+                    <div
+                        style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; color: var(--text-primary);">
+                        AM/NS <span style="color: var(--color-accent);">Dashboard</span>
+                    </div>
+                    <p
+                        style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-top: 0.25rem;">
+                        Security & Ingest Portal Gateway</p>
+                </div>
+            </div>
+
+            <!-- Tab Selectors -->
+            <div style="display: flex; border-bottom: 1px solid var(--border-clean); margin-bottom: 0.5rem;">
+                <button id="auth-tab-login" onclick="showAuthModal('login')" class="tab-btn active"
+                    style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Log In</button>
+                <button id="auth-tab-signup" onclick="showAuthModal('signup')" class="tab-btn"
+                    style="flex: 1; font-size: 0.8rem; font-weight: 700; text-align: center;">Sign Up</button>
+            </div>
+
+            <div id="portal-login-error-msg"
+                style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); color: var(--status-critical); padding: 0.75rem; font-size: 0.85rem; font-weight: 700; text-align: center; border-radius: 4px;">
+            </div>
+            <div id="portal-signup-error-msg"
+                style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); color: var(--status-critical); padding: 0.75rem; font-size: 0.85rem; font-weight: 700; text-align: center; border-radius: 4px;">
+            </div>
+
+            <!-- Log In Form -->
+            <div id="login-form-wrapper">
+                <form onsubmit="event.preventDefault(); simulateLogin();"
+                    style="margin: 0; padding: 0; display: flex; flex-direction: column; width: 100%;">
+                    <div class="input-group" style="margin-bottom: 0.25rem;">
+                        <label for="portal-login-user" style="color: var(--text-secondary);">LDAP Username</label>
+                        <input type="text" id="portal-login-user" placeholder="e.g. analyst"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0.5rem;">
+                        <label for="portal-login-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
+                            PIN</label>
+                        <input type="password" id="portal-login-passcode" placeholder="••••••••"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                    </div>
+
+                    <button type="submit" class="btn"
+                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Authenticate
+                        Session Lease</button>
+                </form>
+            </div>
+
+            <!-- Sign Up Form (hidden by default) -->
+            <div id="signup-form-wrapper" style="display: none;">
+                <form onsubmit="event.preventDefault(); simulateSignup();"
+                    style="margin: 0; padding: 0; display: flex; flex-direction: column; width: 100%;">
+                    <div class="input-group" style="margin-bottom: 0.25rem;">
+                        <label for="portal-signup-user" style="color: var(--text-secondary);">New Username</label>
+                        <input type="text" id="portal-signup-user" placeholder="e.g. dev_user"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0.25rem;">
+                        <label for="portal-signup-passcode" style="color: var(--text-secondary);">Multi-Factor Vault
+                            PIN</label>
+                        <input type="password" id="portal-signup-passcode" placeholder="••••••••"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                    </div>
+                    <div class="input-group" style="margin-bottom: 0.5rem;">
+                        <label for="portal-signup-role" style="color: var(--text-secondary);">Access Role</label>
+                        <select id="portal-signup-role"
+                            style="border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border-clean); color: var(--text-primary); padding: 0.75rem 1rem;">
+                            <option value="analyst">Analyst</option>
+                            <option value="operator">Operator</option>
+                            <option value="auditor">Auditor</option>
+                            <option value="developer">Developer</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn"
+                        style="width: 100%; border-radius: 4px; padding: 0.75rem; background: var(--text-primary); border: 1px solid var(--text-primary); color: var(--bg-main); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;">Create
+                        Account</button>
+                </form>
+            </div>
+
+            <!-- Corporate SSO Gateways -->
+            <div style="border-top: 1px solid var(--border-clean); margin-top: 0.5rem; padding-top: 0.75rem;">
+                <div
+                    style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); text-align: center; margin-bottom: 0.5rem;">
+                    Corporate SSO Gateways</div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary" onclick="triggerOAuth('google')"
+                        style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                        Google SSO
+                    </button>
+                    <button class="btn btn-secondary" onclick="triggerOAuth('github')"
+                        style="flex: 1; font-size: 0.7rem; padding: 0.5rem 0; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                        GitHub SSO
+                    </button>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Beautiful Landing Page -->
+    <div id="section-landing"
+        style="display: none; min-height: 100vh; background-color: transparent; font-family: var(--font-sans); color: var(--text-primary); position: relative; overflow: hidden;">
+
+        <!-- Top Navigation -->
+        <header
+            style="background: var(--bg-card); border-bottom: 1px solid var(--border-clean); padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <img src="logo.png" alt="AM/NS India EUD Logo" style="height: 40px;">
+                <div>
+                    <span
+                        style="font-size: 1.3rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary); letter-spacing: -0.04em;">AM/NS
+                        <span style="color: var(--color-accent);">Compliance</span></span>
+                    <div
+                        style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: -0.1rem;">
+                        Endpoint Security Gateway</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button class="btn btn-secondary" onclick="showAuthModal('login')"
+                    style="font-size: 0.8rem; padding: 0.5rem 1.25rem;">Log In</button>
+                <button class="btn" onclick="showAuthModal('signup')"
+                    style="font-size: 0.8rem; padding: 0.5rem 1.25rem; background: var(--color-accent); border-color: var(--color-accent);">Sign
+                    Up</button>
+            </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section
+            style="max-width: 1200px; margin: 4rem auto; padding: 0 2rem; display: grid; grid-template-columns: 1.2fr 1fr; gap: 4rem; align-items: center; position: relative; z-index: 1;">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <span
+                    style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: var(--color-accent); letter-spacing: 0.1em; border: 1px solid var(--color-accent-border); background: var(--color-accent-light); padding: 0.35rem 0.75rem; border-radius: 4px; align-self: flex-start;">NIST
+                    CSF 2.0 Compliant</span>
+                <h1
+                    style="font-size: 3rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.04em; text-transform: uppercase;">
+                    Zero-Trust Fleet <span style="color: var(--color-accent);">Compliance</span> & Security</h1>
+                <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6;">
+                    ArcelorMittal Nippon Steel India's unified compliance and risk governance dashboard. Reconcile
+                    enterprise inventory systems, run deep policy audits, and remediate endpoint anomalies in real-time.
+                </p>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn" onclick="showAuthModal('login')"
+                        style="padding: 0.85rem 2rem; font-size: 0.9rem; background: var(--text-primary); border-color: var(--text-primary); color: var(--bg-main);">Launch
+                        EUD Console</button>
+                    <button class="btn btn-secondary"
+                        onclick="document.getElementById('features-target').scrollIntoView({ behavior: 'smooth' })"
+                        style="padding: 0.85rem 2rem; font-size: 0.9rem;">Explore Features</button>
+                </div>
+            </div>
+
+            <!-- Quick Features Visual Card Slider -->
+            <div class="card" id="hero-interactive-card"
+                style="border: 1px solid var(--border-clean); border-radius: 6px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); background: var(--bg-card); display: flex; flex-direction: column; gap: 1rem; overflow: hidden; position: relative; width: 480px; height: 380px; user-select: none; padding: 0 !important;">
+                <!-- Slider Wrapper -->
+                <div id="hero-slider-wrapper"
+                    style="display: flex; width: 300%; height: 100%; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);">
+                    <!-- Slide 1: Fleet Coverage Ledger -->
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    Corporate Directory Status</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Operational Security Ledger</p>
+                            </div>
+                            <span class="badge risk-low">ACTIVE</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Fleet
+                                    Scale</span>
+                                <div id="hero-fleet-scale"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    10,029</div>
+                            </div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Avg
+                                    Compliance</span>
+                                <div id="hero-avg-compliance"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">
+                                    94.2%</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>AD Directory Enrollment</span>
+                                    <strong id="hero-ad-val" style="color: var(--status-low);">98.4% Compliant</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-ad-bar"
+                                        style="width: 98.4%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>BitLocker Full-Disk Encryption</span>
+                                    <strong id="hero-bitlocker-val" style="color: var(--status-medium);">91.2%
+                                        Audited</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-bitlocker-bar"
+                                        style="width: 91.2%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>SentinelOne EDR Agent Status</span>
+                                    <strong id="hero-s1-val" style="color: var(--status-low);">97.1% Active</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-s1-bar"
+                                        style="width: 97.1%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 2: Real-time Compliance Metrics -->
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 1.25rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    Risk Engine Monitor</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Live Compliance Metrics</p>
+                            </div>
+                            <span class="badge"
+                                style="background: #eff6ff; color: #1e40af; border-color: #bfdbfe;">SECURE</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Risk
+                                    Classification</span>
+                                <div id="hero-risk-class"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--status-low); margin-top: 0.15rem;">
+                                    LOW</div>
+                            </div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.75rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Mandates
+                                    Tracked</span>
+                                <div id="hero-mandates-val"
+                                    style="font-family: var(--font-mono); font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    6 / 6</div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.75rem;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>Zscaler Network Access</span>
+                                    <strong id="hero-zscaler-val" style="color: var(--status-medium);">88.5%
+                                        Encrypted</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-zscaler-bar"
+                                        style="width: 88.5%; height: 100%; background: var(--status-medium); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>Nessus Vulnerability Scan</span>
+                                    <strong id="hero-nessus-val" style="color: var(--status-low);">94.0%
+                                        Inspected</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-nessus-bar"
+                                        style="width: 94.0%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                    <span>SCCM Config Agent</span>
+                                    <strong id="hero-sccm-val" style="color: var(--status-low);">95.6% Active</strong>
+                                </div>
+                                <div
+                                    style="width: 100%; height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                                    <div id="hero-sccm-bar"
+                                        style="width: 95.6%; height: 100%; background: var(--status-low); border-radius: 3px; transition: width 0.8s ease;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Slide 3: SIEM Ingestion Logs Simulator -->
+                    <div class="hero-slide"
+                        style="width: 33.333%; padding: 2.25rem 2.5rem 2.25rem 2.5rem; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.75rem; background: #ffffff;">
+                        <div
+                            style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                            <div>
+                                <h3
+                                    style="font-size: 0.9rem; font-weight: 800; text-transform: uppercase; color: var(--text-primary);">
+                                    SIEM Ingest Stream</h3>
+                                <p
+                                    style="font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; margin-top: 0.15rem;">
+                                    Live Logging Pipeline</p>
+                            </div>
+                            <span class="badge risk-critical"
+                                style="animation: pulse-glow 1.5s infinite alternate;">INGESTING</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Active
+                                    Developer Keys</span>
+                                <div id="hero-active-keys"
+                                    style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin-top: 0.15rem;">
+                                    24</div>
+                            </div>
+                            <div
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 0.5rem; border-radius: 4px; text-align: center;">
+                                <span
+                                    style="font-size: 0.65rem; text-transform: uppercase; font-weight: 700; color: var(--text-secondary);">Throughput
+                                    rate</span>
+                                <div id="hero-throughput"
+                                    style="font-family: var(--font-mono); font-size: 1.15rem; font-weight: 800; color: var(--color-accent); margin-top: 0.15rem;">
+                                    1,280 ev/s</div>
+                            </div>
+                        </div>
+
+                        <!-- Mini terminal console -->
+                        <div id="hero-mini-terminal"
+                            style="flex-grow: 1; background: var(--text-primary); border-radius: 4px; padding: 0.5rem 0.75rem; font-family: var(--font-mono); font-size: 0.65rem; color: #38bdf8; overflow-y: hidden; display: flex; flex-direction: column; gap: 0.25rem; border: 1px solid var(--border-focus); height: 130px;">
+                            <div style="color: var(--text-muted);">[21:18:01] SEC: Leased vault secrets credentials...
+                            </div>
+                            <div style="color: #4ade80;">[21:18:03] INGEST: corporate_directory.csv uploaded (10,029
+                                devices)</div>
+                            <div style="color: #fb7185;">[21:18:05] ALERT: Nessus audit gap detected for host "dev-9883"
+                            </div>
+                            <div style="color: #38bdf8;">[21:18:06] INGEST: zscaler.csv merged successfully (2 new
+                                items)</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Navigation Dot Indicators -->
+                <div
+                    style="position: absolute; bottom: 0.75rem; left: 0; right: 0; display: flex; justify-content: center; gap: 0.5rem; z-index: 10;">
+                    <span class="slide-dot active" onclick="gotoHeroSlide(0)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); cursor: pointer; transition: background 0.3s;"></span>
+                    <span class="slide-dot" onclick="gotoHeroSlide(1)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
+                    <span class="slide-dot" onclick="gotoHeroSlide(2)"
+                        style="width: 8px; height: 8px; border-radius: 50%; background: var(--border-clean); cursor: pointer; transition: background 0.3s;"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Features Section -->
+        <section id="features-target" style="max-width: 1200px; margin: 6rem auto; padding: 0 2rem;">
+            <div style="text-align: center; margin-bottom: 4rem;">
+                <h2 style="font-size: 2rem; font-weight: 800; text-transform: uppercase; letter-spacing: -0.02em;">Key
+                    System Capabilities</h2>
+                <p
+                    style="color: var(--text-secondary); max-width: 600px; margin: 0.5rem auto 0 auto; font-size: 0.95rem;">
+                    Explore the critical security controls and asset integrity subsystems powering the AM/NS compliance
+                    platform.
+                </p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Multi-Sheet Reconciler</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        Seamlessly import telemetry datasets from Active Directory, SCCM, Nessus, and Zscaler. Align
+                        reports automatically by Device ID/Hostname to identify coverage gaps and unmanaged assets.
+                    </p>
+                </div>
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Risk Engine & Controls</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        Customize compliance mandate policies. Enable/disable specific checks like BitLocker or Zscaler
+                        dynamically and recalculate compliance indices and risk classifications at run-time.
+                    </p>
+                </div>
+                <div class="card"
+                    style="border: 1px solid var(--border-clean); border-radius: 4px; padding: 2rem; background: #ffffff;">
+                    <h3
+                        style="font-size: 1rem; font-weight: 800; text-transform: uppercase; margin-bottom: 0.75rem; color: var(--text-primary); border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                        Audit & Developer APIs</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                        Export detailed audit logs as Excel-compatible CSVs. Leverage the Developer Console to manage
+                        users, configure roles, issue API Keys, and track programmatic query volume.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer
+            style="border-top: 1px solid var(--border-clean); padding: 3rem 2rem; background: var(--bg-card); text-align: center;">
+            <p
+                style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                ArcelorMittal Nippon Steel India © 2026. All Rights Reserved.
+            </p>
+            <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
+                Authorized Personnel Only. Security Auditing and User Activity Logging Active.
+            </p>
+        </footer>
+    </div>
+
+    <div class="app-container" id="main-app-container" style="display: flex;">
+        <!-- Sidebar Navigation matching Aethelred Corp style -->
+        <aside class="sidebar">
+            <div class="brand-section"
+                style="display: flex; flex-direction: row; align-items: center; gap: 0.75rem; cursor: pointer;"
+                onclick="switchNavSection('hub')">
+                <div style="display: flex; flex-direction: column; line-height: 1.1; white-space: nowrap;">
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; white-space: nowrap;">
+                        AM/NS
+                    </div>
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.25rem; font-weight: 900; color: #ff3b30; letter-spacing: -0.05em; text-transform: uppercase; margin-top: -0.25rem; white-space: nowrap;">
+                        INDIA
+                    </div>
+                </div>
+                <div
+                    style="border-left: 2px solid #374151; height: 36px; padding-left: 0.5rem; display: flex; flex-direction: column; justify-content: center; line-height: 1.1; white-space: nowrap;">
+                    <div
+                        style="font-family: var(--font-display) !important; font-size: 1.05rem; font-weight: 800; color: #ffffff; letter-spacing: -0.03em; white-space: nowrap;">
+                        Dashboard</div>
+                    <p
+                        style="font-size: 0.55rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin: 0; white-space: nowrap;">
+                        Security & Compliance</p>
+                </div>
+            </div>
+
+            <!-- Top navigation menu -->
+            <nav style="padding: 0.5rem 0.25rem;">
+                <ul class="sidebar-menu">
+                    <!-- Root Gateway Link -->
+                    <li class="menu-item active" id="menu-hub" onclick="switchNavSection('hub')">
+                        Gateway Portal
+                    </li>
+
+                    <!-- Group: SIEM Ingest Module -->
+                    <li class="sidebar-group-header" id="group-header-siem" onclick="toggleSidebarGroup('siem')">
+                        SIEM Ingest Stream
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-siem" style="display: none;">
+                        <li class="menu-item" id="menu-siem" onclick="switchNavSection('siem')">
+                            Ingest Console
+                        </li>
+                    </ul>
+
+                    <!-- Group: Centralized Risk Engine -->
+                    <li class="sidebar-group-header" id="group-header-risk" onclick="toggleSidebarGroup('risk')">
+                        Centralized Risk Engine
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-risk" style="display: none;">
+                        <li class="menu-item" id="menu-risk-engine" onclick="switchNavSection('risk-engine')">
+                            Risk Calculator
+                        </li>
+                    </ul>
+
+                    <!-- Group: SAMP Auditor -->
+                    <li class="sidebar-group-header" id="group-header-samp" onclick="toggleSidebarGroup('samp')">
+                        SAMP Auditor
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-samp" style="display: none;">
+                        <li class="menu-item" id="menu-samp-auditor" onclick="switchNavSection('samp-auditor')">
+                            Manual Audit Checklist
+                        </li>
+                    </ul>
+
+                    <!-- Group: EUD Asset Reconciler -->
+                    <li class="sidebar-group-header" id="group-header-reconciler"
+                        onclick="toggleSidebarGroup('reconciler')">
+                        EUD Asset Reconciler
+                    </li>
+                    <ul class="sidebar-submenu" id="submenu-reconciler" style="display: none;">
+                        <li class="menu-item" id="menu-compliance" onclick="switchNavSection('compliance')">
+                            Compliance Ledger
+                        </li>
+                        <li class="menu-item" id="menu-risk" onclick="switchNavSection('risk')">
+                            Scoring & Controls
+                        </li>
+                        <li class="menu-item" id="menu-reporting" onclick="switchNavSection('reporting')">
+                            Reporting Center
+                        </li>
+                        <li class="menu-item" id="menu-reconciler" onclick="switchNavSection('reconciler')">
+                            Asset Reconciliation
+                        </li>
+                    </ul>
+
+                    <li class="menu-item" id="menu-dev-db" onclick="switchNavSection('dev-db')" style="display: none;">
+                        Developer Console
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Spacer to push bottom section all the way down -->
+            <div style="flex-grow: 1;"></div>
+
+            <!-- Bottom navigation footer container for balanced alignment -->
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <div style="border-top: 1px solid var(--border-clean); margin: 0 0.5rem;"></div>
+                <nav>
+                    <ul class="sidebar-menu">
+                        <li class="menu-item" id="menu-profile" onclick="switchNavSection('profile')">User Profile</li>
+                        <li class="menu-item" id="menu-settings" onclick="switchNavSection('settings')">Settings</li>
+                        <li class="menu-item" id="menu-logout" onclick="terminateSessionLease()"
+                            style="color: var(--status-critical);">Log Out</li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="main-content">
+            <!-- Executive Header -->
+            <header>
+                <div>
+                    <h1 id="main-section-title">Executive Overview</h1>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem;"
+                        id="dashboard-date">Fleet Telemetry Report</p>
+                </div>
+
+            </header>
+
+            <!-- Non-blocking import progress indicator -->
+            <div id="import-progress-indicator"
+                style="display: none; position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9999; background: var(--bg-card); border: 1px solid var(--border-clean); border-radius: 6px; padding: 0.75rem 1.25rem; box-shadow: 0 4px 20px rgba(0,0,0,0.15); align-items: center; gap: 0.75rem;">
+                <div
+                    style="width: 18px; height: 18px; border: 2px solid var(--color-accent); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0;">
+                </div>
+                <span
+                    style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); font-family: var(--font-mono);">Recalculating
+                    scores...</span>
+            </div>
+
+            <!-- Section: Gateway Selection Hub -->
+            <div id="section-hub" class="section-view" style="display: block;">
+                <div class="gateway-container">
+                    <h2 class="gateway-title">Unified Gateway Portal</h2>
+                    <p class="gateway-subtitle">Select an Operational Module to Launch</p>
+
+                    <div class="gateway-grid">
+                        <!-- Card 1: SIEM Ingest Stream -->
+                        <div class="gateway-card" onclick="switchNavSection('siem')">
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 01</span>
+                                </div>
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    SIEM Ingest Stream
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Ingest, hash, and cryptographically verify live system event logs from Active
+                                    Directory, Nessus, EDR, and network gateways.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Launch Console</button>
+                        </div>
+
+                        <!-- Card 2: Centralized Risk Engine -->
+                        <div class="gateway-card" onclick="switchNavSection('risk-engine')">
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 02</span>
+                                </div>
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    Centralized Risk Engine
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Calculate and fine-tune environment-aware risk index ratings, configure scoring
+                                    policies, and simulate threat modifiers.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Open Controls</button>
+                        </div>
+
+                        <!-- Card 3: SAMP Core Auditing -->
+                        <div class="gateway-card" onclick="switchNavSection('samp-auditor')">
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 03</span>
+                                </div>
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    SAMP Core Auditing
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Audit enterprise device fleet metrics, log manual verification overrides, and
+                                    evaluate NIST compliance controls.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Start Audit</button>
+                        </div>
+
+                        <!-- Card 4: EUD Asset Reconciler -->
+                        <div class="gateway-card" onclick="switchNavSection('reconciler')">
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem;">
+                                    <span class="gateway-badge">Module 04</span>
+                                </div>
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.04em; color: #ffffff; margin-bottom: 0.75rem; font-family: var(--font-display) !important; border-bottom: 1px solid #1e293b; padding-bottom: 0.5rem; text-align: left;">
+                                    EUD Asset Reconciler
+                                </h3>
+                                <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.6; text-align: left;">
+                                    Reconcile multi-sheet telemetry from Active Directory, EDR agents, and vulnerability
+                                    scanners to identify coverage gaps.
+                                </p>
+                            </div>
+                            <button class="gateway-card-btn">Reconcile Sheets</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: SIEM Ingest Console -->
+            <div id="section-siem" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            SIEM Ingest Stream Console
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Real-time security auditing logging feed. Any raw log ingestions, database operations,
+                            compliance calculations, or cryptographic integrity assertions will log here dynamically.
+                        </p>
+                    </div>
+
+                    <div class="siem-grid">
+                        <!-- Left Panel: Ingest Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Log
+                                    Source Type</label>
+                                <select id="siem-source-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
+                                    onchange="handleSiemSourceChange()">
+                                    <option value="AD">Active Directory (AD)</option>
+                                    <option value="Nessus">Nessus Vulnerability Scanner</option>
+                                    <option value="EDR">EDR Security Agent</option>
+                                    <option value="Zscaler">Zscaler Network Gateway</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <label
+                                        style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin: 0;">Log
+                                        Payload (JSON / Text)</label>
+                                    <button class="btn"
+                                        style="font-size: 0.7rem; padding: 0.25rem 0.6rem; height: auto; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-secondary);"
+                                        onclick="loadSiemDefaultTemplate()">Load Default Template</button>
+                                </div>
+                                <textarea id="siem-payload-input" rows="8"
+                                    style="width: 100%; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.75rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                            </div>
+
+                            <div style="display: flex; gap: 1rem;">
+                                <button class="btn" id="btn-siem-ingest"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                    onclick="executeManualSiemIngest()">
+                                    Sign & Ingest Log
+                                </button>
+                                <button class="btn" id="btn-siem-verify"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="verifyAllSiemEvidence()">
+                                    Verify Hashes
+                                </button>
+                            </div>
+
+                            <div
+                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-siem-export"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="exportSiemLogs()">
+                                    Export Logs (JSON)
+                                </button>
+                                <label for="siem-import-file" class="btn"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                    Import Logs (JSON)
+                                </label>
+                                <input type="file" id="siem-import-file" accept=".json" style="display: none;"
+                                    onchange="importSiemLogs(event)">
+                            </div>
+
+                            <div
+                                style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.5rem; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h4
+                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary);">
+                                        Background Stream Simulation</h4>
+                                    <p style="margin: 0.1rem 0 0 0; font-size: 0.75rem; color: var(--text-secondary);">
+                                        Simulate dynamic log ingestion periodically</p>
+                                </div>
+                                <div>
+                                    <button class="btn" id="btn-siem-simulate"
+                                        style="font-size: 0.78rem; padding: 0.5rem 1rem; background: #15803d; border-color: #15803d; color: #ffffff;"
+                                        onclick="toggleSiemSimulation(event)">
+                                        Start Simulation
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Terminal logs -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
+                                Terminal Logs</label>
+                            <div id="audit-terminal" class="terminal-console"
+                                style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 430px; max-height: 430px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.78rem; padding: 1rem; box-sizing: border-box;">
+                                <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] SIEM Terminal Console
+                                    initialized. Standing by for ingestion streams...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Centralized Risk Engine -->
+            <div id="section-risk-engine" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Centralized Risk Engine
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Multi-dimensional compliance risk indexing and environment-aware severity rating engine.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                        <!-- Left Panel: Calculation Inputs -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Select
+                                    Audit Assessment</label>
+                                <select id="risk-assessment-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;"
+                                    onchange="handleRiskAssessmentChange()">
+                                    <!-- Dynamic options -->
+                                </select>
+                            </div>
+
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Audit
+                                    Environment Context</label>
+                                <select id="risk-env-select"
+                                    style="width: 100%; padding: 0.6rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">
+                                    <option value="Production">Production (Full Severity)</option>
+                                    <option value="UAT">UAT/QA (Downgrade Severity by 1 level)</option>
+                                    <option value="Development">Development (Downgrade Severity by 2 levels)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Core
+                                    Severity Weights</label>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">HIGH</span>
+                                        <input type="number" id="weight-high" value="10" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">MEDIUM</span>
+                                        <input type="number" id="weight-medium" value="5" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 0.7rem; color: var(--text-secondary);">LOW</span>
+                                        <input type="number" id="weight-low" value="2" min="1"
+                                            style="width: 100%; padding: 0.4rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-weight: 600; text-align: center;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn"
+                                style="width: 100%; padding: 0.65rem; background: var(--color-accent); border-color: var(--color-accent); font-size: 0.8rem; font-weight: 700;"
+                                onclick="triggerRiskCalculation()">
+                                Calculate Risk Score
+                            </button>
+
+                            <div
+                                style="display: flex; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 0.25rem;">
+                                <button class="btn" id="btn-risk-export"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                    onclick="exportRiskConfig()">
+                                    Export Config
+                                </button>
+                                <label for="risk-import-file" class="btn"
+                                    style="flex: 1; font-size: 0.78rem; padding: 0.6rem; text-align: center; background: transparent; border-color: var(--border-clean); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; box-sizing: border-box; margin: 0;">
+                                    Import Config
+                                </label>
+                                <input type="file" id="risk-import-file" accept=".json" style="display: none;"
+                                    onchange="importRiskConfig(event)">
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Results & Findings Breakdown -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Score Display Card -->
+                            <div class="card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h4
+                                        style="margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">
+                                        Composite Score</h4>
+                                    <div id="risk-rating-label"
+                                        style="font-size: 0.75rem; font-weight: 700; margin-top: 0.25rem; color: var(--status-low);">
+                                        LOW COMPLIANCE RISK</div>
+                                </div>
+                                <div id="risk-score-value"
+                                    style="font-size: 2.25rem; font-weight: 900; color: var(--text-primary); font-family: var(--font-display);">
+                                    --
+                                </div>
+                            </div>
+
+                            <!-- Findings Table -->
+                            <div>
+                                <h4
+                                    style="margin: 0 0 0.75rem 0; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">
+                                    Active Findings Severity Mappings</h4>
+                                <div class="fleet-table-container" style="max-height: 280px; overflow-y: auto;">
+                                    <table class="fleet-table" style="width: 100%; font-size: 0.8rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>Code</th>
+                                                <th>Title</th>
+                                                <th>Base Sev</th>
+                                                <th>Effective Sev</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="risk-findings-tbody">
+                                            <tr>
+                                                <td colspan="5"
+                                                    style="text-align: center; color: var(--text-secondary);">Select an
+                                                    assessment session.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: SAMP Core Auditing / SAMP Auditor -->
+            <div id="section-samp-auditor" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            SAMP Core Auditor Board
+                        </h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Audit governance dashboard to verify and override manual compliance checks and sign
+                            cryptographic evidence.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem;">
+                        <!-- Left Panel: Manual Checklist Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div
+                                style="display: flex; gap: 1.5rem; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem;">
+                                <div style="flex: 1.5; display: flex; gap: 0.75rem; align-items: flex-end;">
+                                    <div style="flex: 1;">
+                                        <label
+                                            style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Select
+                                            Audit Assessment</label>
+                                        <select id="samp-assessment-select"
+                                            style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;"
+                                            onchange="handleSampAssessmentChange()">
+                                            <!-- Dynamic options -->
+                                        </select>
+                                    </div>
+                                    <button class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampFindingsData()">
+                                        Export Data
+                                    </button>
+                                    <label for="samp-import-file" class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 0.75rem; height: 32px; min-width: auto; background: transparent; border-color: var(--border-clean); color: var(--text-primary); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; margin: 0; box-sizing: border-box;">
+                                        Import Data
+                                    </label>
+                                    <input type="file" id="samp-import-file" accept=".json" style="display: none;"
+                                        onchange="importSampFindingsData(event)">
+                                </div>
+                                <div style="text-align: right; flex: 0.8;">
+                                    <div
+                                        style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">
+                                        Auditing Progress</div>
+                                    <div id="samp-progress-label"
+                                        style="font-size: 1.15rem; font-weight: 800; color: var(--color-accent);">0 / 5
+                                        Controls</div>
+                                </div>
+                            </div>
+
+                            <!-- The active manual control form -->
+                            <div class="card" id="samp-control-card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span id="samp-ctrl-code"
+                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">CTRL-011</span>
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">MANUAL
+                                        CONTROL</span>
+                                </div>
+                                <h3 id="samp-ctrl-title"
+                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
+                                    Role-Based Access Control</h3>
+                                <p id="samp-ctrl-desc"
+                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                    Auditors verify RBAC authorization checks are enforced on endpoints.
+                                </p>
+
+                                <div
+                                    style="border-top: 1px solid var(--border-clean); padding-top: 1rem; margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                                    <div>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Evaluation
+                                            Status</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <button class="btn" id="btn-samp-pass"
+                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #16a34a; color: #16a34a;"
+                                                onclick="setSampControlStatus('PASS')">PASS</button>
+                                            <button class="btn" id="btn-samp-fail"
+                                                style="flex: 1; padding: 0.45rem; background: transparent; border-color: #dc2626; color: #dc2626;"
+                                                onclick="setSampControlStatus('FAIL')">FAIL</button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Audit
+                                            Findings & Evidence Notes</label>
+                                        <textarea id="samp-ctrl-notes" rows="3"
+                                            placeholder="Enter manual audit findings, LDAP queries verified, endpoint tests conducted, etc..."
+                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); resize: vertical; box-sizing: border-box;"></textarea>
+                                    </div>
+
+                                    <div style="display: flex; gap: 0.75rem;">
+                                        <button class="btn" id="btn-samp-save"
+                                            style="flex: 1.3; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                            onclick="saveSampControlOverride()">Save Finding Override</button>
+                                        <button class="btn" id="btn-samp-sign"
+                                            style="flex: 1; font-size: 0.78rem; padding: 0.55rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                            onclick="signSampControlEvidence()">Sign Evidence</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ZAP Vulnerability Scanner Card -->
+                            <div class="card" id="zap-scanner-card"
+                                style="background: var(--bg-secondary); border: 1px solid var(--border-clean); padding: 1.25rem; border-radius: 4px; margin-top: 0.5rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.8rem; font-weight: 800; color: var(--color-accent); background: rgba(185, 28, 28, 0.1); padding: 0.2rem 0.5rem; border-radius: 3px; border: 1px solid rgba(185, 28, 28, 0.2);">ZAP
+                                        SCANNER</span>
+                                    <span
+                                        style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 3px;">AUTOMATED
+                                        SECURITY SCAN</span>
+                                </div>
+                                <h3
+                                    style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); border: none; padding: 0;">
+                                    Automated Web Scans</h3>
+                                <p
+                                    style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
+                                    Run active OWASP ZAP and HTTP security header compliance audits on target URLs.
+                                </p>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <div>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Target
+                                            URL</label>
+                                        <input type="text" id="zap-target-url" value="http://127.0.0.1:8080"
+                                            style="width: 100%; font-size: 0.78rem; padding: 0.5rem; border: 1px solid var(--border-clean); border-radius: 4px; background: var(--bg-main); color: var(--text-primary); box-sizing: border-box;">
+                                    </div>
+                                    <button class="btn" id="btn-run-zap"
+                                        style="width: 100%; font-size: 0.78rem; padding: 0.55rem; background: var(--color-accent); border-color: var(--color-accent);"
+                                        onclick="runSampZapScan()">
+                                        Run Security Audit Scan
+                                    </button>
+                                    <div>
+                                        <label
+                                            style="display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.4rem;">Scan
+                                            Output Logs</label>
+                                        <div id="zap-terminal"
+                                            style="background: #020617; color: #38bdf8; border: 1px solid var(--border-clean); height: 180px; max-height: 180px; border-radius: 4px; overflow-y: auto; font-family: var(--font-mono); font-size: 0.75rem; padding: 0.75rem; box-sizing: border-box;">
+                                            <div class="terminal-line info" style="color: #38bdf8;">[SYSTEM] Scanner
+                                                ready. Standing by...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Checklist Selector List -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label
+                                style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Manual
+                                Controls Checklist</label>
+                            <div style="display: flex; flex-direction: column; gap: 0.75rem;"
+                                id="samp-checklist-items-container">
+                                <!-- Dynamic check items click to edit -->
+                            </div>
+
+                            <div
+                                style="margin-top: 1.5rem; border-top: 1px solid var(--border-clean); padding-top: 1rem;">
+                                <label
+                                    style="display: block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 0.5rem;">Export
+                                    Compliance Reports</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('html')">
+                                        Export HTML
+                                    </button>
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('pdf')">
+                                        Export PDF
+                                    </button>
+                                    <button class="btn"
+                                        style="flex: 1; font-size: 0.75rem; padding: 0.5rem; background: transparent; border-color: var(--border-clean); color: var(--text-primary);"
+                                        onclick="exportSampReport('json')">
+                                        Export JSON
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Scoring & Controls -->
+            <div id="section-risk" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Security Policies Governance Board</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Configure active compliance mandates for the fleet. Toggling a security policy to <strong
+                                style="color: var(--color-accent);">Optional</strong> will exclude it from the
+                            zero-tolerance compliance engine. The fleet's composite scores, status badges, donut charts,
+                            and reporting audits will instantly recalculate in real-time.
+                        </p>
+                    </div>
+
+                    <!-- Admin-Only Config Alert -->
+                    <div id="policy-admin-alert"
+                        style="display: none; background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); border-radius: 4px; padding: 0.75rem 1rem; color: var(--status-critical); font-size: 0.8rem; font-weight: 700; margin-bottom: 1.5rem;">
+                        ACCESS CONTROL WARNING: Read-only session lease active. Administrator (admin)
+                        privileges are required to override compliance requirements.
+                    </div>
+
+                    <!-- Policy Grid Filter Tabs -->
+                    <div
+                        style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.25rem;">
+                        <button id="policy-filter-btn-all" class="tab-btn active"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('all')">All Policies
+                            (<span id="policy-count-all">0</span>)</button>
+                        <button id="policy-filter-btn-core" class="tab-btn"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('core')">Core
+                            Mandates (<span id="policy-count-core">0</span>)</button>
+                        <button id="policy-filter-btn-excel" class="tab-btn"
+                            style="font-size: 0.78rem; font-weight: 700;" onclick="switchPolicyTab('excel')">Spreadsheet
+                            Telemetries (<span id="policy-count-excel">0</span>)</button>
+                    </div>
+
+                    <!-- Dynamic Policies Grid -->
+                    <div id="policies-governance-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                        <!-- Dynamic policy cards render here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Reporting -->
+            <div id="section-reporting" class="section-view" style="display: none;">
+                <div id="reporting-dashboard-content" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <!-- Dynamic Reporting Dashboard will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Section: Reconciliation -->
+            <div id="section-reconciler" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Multi-Sheet Asset Reconciliation Workspace</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Bulk import multiple device directories or agent telemetries (Active Directory, EDR, SCCM,
+                            Zscaler, etc.). The engine will align them by <strong>Device Name / Hostname</strong> as the
+                            matching key and evaluate compliance parameters across all datasets.
+                        </p>
+                    </div>
+
+                    <!-- Multi-upload zone -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <div class="card"
+                            style="border: 2px dashed var(--border-clean); padding: 2.5rem 1.5rem; text-align: center; background: var(--bg-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.75rem; border-radius: 4px;">
+                            <span style="font-size: 2.5rem;"></span>
+                            <h3 style="margin: 0; font-size: 1rem; font-weight: 700; color: var(--text-primary);">Bulk
+                                Upload Compliance Sheets</h3>
+                            <p
+                                style="font-size: 0.75rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto;">
+                                Select multiple CSV or Excel files (.xlsx, .xls) representing different asset
+                                inventories or agent check-ins.</p>
+
+                            <label for="reconciler-multi-files" class="btn"
+                                style="font-size: 0.8rem; padding: 0.55rem 1.5rem; cursor: pointer; margin-top: 0.5rem; background: var(--color-accent); border-color: var(--color-accent);">Select
+                                Sheets to Add</label>
+                            <input type="file" id="reconciler-multi-files" accept=".csv, .xlsx, .xls"
+                                style="display: none;" multiple onchange="handleMultiSheetUpload(event)">
+                        </div>
+
+                        <!-- Queue Table Card -->
+                        <div id="reconciler-queue-card" class="card"
+                            style="border: 1px solid var(--border-clean); background: var(--bg-secondary); padding: 1.5rem; border-radius: 4px; display: none;">
+                            <h4
+                                style="margin: 0 0 1rem 0; font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em;">
+                                Uploaded Compliance Sheets Queue</h4>
+
+                            <div class="fleet-table-container">
+                                <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: left;">Sheet Name / Source File</th>
+                                            <th style="text-align: left; width: 120px;">Record Count</th>
+                                            <th style="text-align: left; width: 220px;">Role / Classification</th>
+                                            <th style="text-align: left; width: 220px;">Device Name Column Key</th>
+                                            <th style="text-align: left;">Compliance Controls Identified</th>
+                                            <th style="text-align: right; width: 80px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reconciler-queue-tbody">
+                                        <!-- Dynamic queue rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Action Center -->
+                    <div
+                        style="display: flex; justify-content: center; margin-top: 2rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
+                        <button id="btn-execute-reconciliation" class="btn"
+                            style="font-size: 0.85rem; padding: 0.75rem 2.5rem; background: var(--color-accent); border-color: var(--color-accent); font-weight: 700; display: flex; gap: 0.5rem; align-items: center; opacity: 0.6; cursor: not-allowed;"
+                            onclick="executeDeepReconciliation()" disabled>
+                            <span> Execute Multi-Sheet Reconciliation</span>
+                        </button>
+                    </div>
+
+                    <!-- Reconciliation Results Area (Initially Hidden) -->
+                    <div id="reconciler-results-wrapper"
+                        style="display: none; margin-top: 2.5rem; flex-direction: column; gap: 2rem;">
+                        <div style="border-top: 1px solid var(--border-clean); padding-top: 1.5rem;">
+                            <h3
+                                style="margin: 0; font-size: 1.1rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                                Audit Reconciliation Metrics</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem;">Real-time
+                                analysis of the alignment and audits across all compliance sheets.</p>
+                        </div>
+
+                        <!-- KPI widgets row -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem;">
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Reconciled
+                                    Matches</span>
+                                <div id="recon-stat-matches"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--text-primary); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Found across
+                                    required sheets</p>
+                            </div>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-critical); text-transform: uppercase; font-weight: 700;">Coverage
+                                    Gaps (Non-Compliant)</span>
+                                <div id="recon-stat-gaps"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-critical); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--status-critical); margin-top: 0.2rem;">Missing
+                                    from one or more sheets</p>
+                            </div>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-medium); text-transform: uppercase; font-weight: 700;">Rogue
+                                    / Unmanaged Assets</span>
+                                <div id="recon-stat-rogues"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-medium); margin-top: 0.4rem;">
+                                    0</div>
+                                <p style="font-size: 0.7rem; color: var(--status-medium); margin-top: 0.2rem;">Missing
+                                    from Corporate Directory</p>
+                            </div>
+                            <div class="metric-widget"
+                                style="border: 1px solid var(--border-clean); padding: 1.25rem; background: var(--bg-secondary); border-radius: 4px;">
+                                <span
+                                    style="font-size: 0.7rem; color: var(--status-low); text-transform: uppercase; font-weight: 700;">Reconciliation
+                                    Match Rate</span>
+                                <div id="recon-stat-match-rate"
+                                    style="font-size: 1.75rem; font-family: var(--font-mono); font-weight: 800; color: var(--status-low); margin-top: 0.4rem;">
+                                    0.0%</div>
+                                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">Goal SLA:
+                                    100% directory alignment</p>
+                            </div>
+                        </div>
+
+                        <!-- Reconciled Anomalies Table Panel -->
+                        <div class="card"
+                            style="padding: 1.5rem; border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                                <div
+                                    style="display: flex; gap: 0.5rem; border: 1px solid var(--border-clean); padding: 0.25rem; border-radius: 4px; background: var(--bg-secondary);">
+                                    <button id="btn-recon-tab-gaps" class="tab-btn active"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('gaps')">Coverage Gaps (<span
+                                            id="recon-tab-count-gaps">0</span>)</button>
+                                    <button id="btn-recon-tab-rogues" class="tab-btn"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('rogues')">Rogue Assets (<span
+                                            id="recon-tab-count-rogues">0</span>)</button>
+                                    <button id="btn-recon-tab-matches" class="tab-btn"
+                                        style="font-size: 0.75rem; padding: 0.4rem 1rem; font-weight: 700;"
+                                        onclick="switchReconTab('matches')">Reconciled Matches (<span
+                                            id="recon-tab-count-matches">0</span>)</button>
+                                </div>
+                                <div style="display: flex; gap: 1rem;">
+                                    <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                        onclick="exportReconciliationReport()">Export Recon CSV</button>
+                                    <button class="btn"
+                                        style="font-size: 0.75rem; padding: 0.5rem 1rem; background: var(--status-low); border-color: var(--status-low); color: var(--bg-main);"
+                                        onclick="mergeReconciliationIntoFleet()">Merge Reconciled to Fleet</button>
+                                </div>
+                            </div>
+
+                            <div class="fleet-table-container">
+                                <table class="fleet-table" style="font-size: 0.85rem; width: 100%;">
+                                    <thead id="recon-table-head">
+                                        <!-- Dynamic headers -->
+                                    </thead>
+                                    <tbody id="recon-table-body">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Reconciler Pagination -->
+                            <div id="recon-pagination-container"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-clean);">
+                                <div style="font-size: 0.82rem; color: var(--text-secondary);">
+                                    Showing <span id="recon-pag-start"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span>
+                                    to <span id="recon-pag-end"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span> of
+                                    <span id="recon-pag-total"
+                                        style="font-weight: 700; color: var(--text-primary);">0</span>
+                                    records
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.4rem 1rem;"
+                                        onclick="changeReconPage(-1)" id="btn-recon-pag-prev">Previous</button>
+                                    <button class="btn btn-secondary" style="font-size: 0.72rem; padding: 0.4rem 1rem;"
+                                        onclick="changeReconPage(1)" id="btn-recon-pag-next">Next</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Compliance -->
+            <div id="section-compliance" class="section-view" style="display: none;">
+                <!-- Dynamic Asset details sub-panel (Software, User, Location, Condition audit) -->
+                <div class="card" id="audit-details-panel">
+                    <h2>Detailed Asset, User & Location Audit</h2>
+                    <div id="details-default-msg"
+                        style="color: var(--text-secondary); font-style: italic; text-align: center; padding: 2rem;">
+                        Select any device row in the fleet table below to audit installed software compliance, user
+                        assignments, physical conditions, and secure location groups.
+                    </div>
+                    <div id="details-content-box">
+                        <!-- Column 1: Details & Software compliance -->
+                        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                            <!-- Dynamic isolation alert banner -->
+                            <div id="det-isolation-banner"
+                                style="display: none; background: var(--color-accent-light); border: 1px solid var(--color-accent-border); padding: 0.75rem 1rem; color: var(--status-critical); font-weight: 700; font-size: 0.85rem; border-radius: 4px;">
+                                EDR ALERT: THIS HOST HAS BEEN ISOLATED FROM THE CORPORATE NETWORK. ALL SUBNET
+                                INGRESS/EGRESS CONSTRAINED.
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
+                                <div>
+                                    <h3 id="det-name"
+                                        style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">-</h3>
+                                    <p style="font-size: 0.85rem; color: var(--text-secondary);">ID: <span id="det-id"
+                                            style="font-family: var(--font-mono);">-</span> | Serial: <span
+                                            id="det-serial" style="font-family: var(--font-mono);">-</span></p>
+                                </div>
+                                <div style="display: flex; gap: 0.75rem;">
+                                    <span id="det-condition-badge" class="badge">-</span>
+                                    <span id="det-level-badge" class="badge">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Detailed Corporate Metadata Grid -->
+                            <div class="det-metadata-grid">
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">User
+                                        Assigned</span>
+                                    <strong id="det-user"
+                                        style="font-size: 0.95rem; color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Last
+                                        Login Session</span>
+                                    <strong id="det-login"
+                                        style="font-size: 0.95rem; font-family: var(--font-mono); color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Corporate
+                                        Location</span>
+                                    <strong id="det-location"
+                                        style="font-size: 0.95rem; color: var(--text-primary);">-</strong>
+                                </div>
+                                <div>
+                                    <span
+                                        style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;">Location
+                                        Group</span>
+                                    <span id="det-loc-group" class="badge">-</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                    Monitored Software compliance status (SCCM/MECM Audit)</h4>
+                                <div class="fleet-table-container">
+                                    <table class="fleet-table" style="font-size: 0.85rem;">
+                                        <thead>
+                                            <tr>
+                                                <th>Compliance Control Name</th>
+                                                <th>Control Status</th>
+                                                <th>Audit Requirement</th>
+                                                <th>Audit Result</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="det-software-tbody">
+                                            <!-- Dynamic -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Custom Metadata Panel -->
+                            <div id="det-custom-params-section" style="display: none; margin-top: 1.25rem;">
+                                <h4
+                                    style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                    Custom Telemetry & Asset Properties</h4>
+                                <div class="fleet-table-container"
+                                    style="max-height: 320px; overflow-y: auto; border: 1px solid var(--border-clean); border-radius: 4px; margin-top: 0.75rem;">
+                                    <table class="fleet-table" style="font-size: 0.85rem; margin: 0;">
+                                        <thead>
+                                            <tr>
+                                                <th>Telemetry Property</th>
+                                                <th>Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="det-custom-params-tbody">
+                                            <!-- Dynamic elements go here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Core Policies Comparison Section -->
+                <div class="card" id="core-policies-comparison-card" style="margin-top: 1.5rem; padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Core Policies Compliance Comparison</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Live auditing and comparative metrics for the 6 core endpoint protection agents across all
+                            active assets.
+                        </p>
+                    </div>
+
+                    <div id="core-policies-comparison-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                        <!-- Dynamic policy comparison widgets render here -->
+                    </div>
+                </div>
+
+                <!-- Fleet Table Card -->
+                <div class="card" style="margin-top: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem;">
+                        <h2>Active Reconciled Fleet</h2>
+
+                        <!-- Import / Export / Clear Controls -->
+                        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="triggerCsvExport()">Export CSV</button>
+                            <label for="csv-import-file" class="btn"
+                                style="font-size: 0.75rem; padding: 0.5rem 1rem; margin: 0; display: inline-block; cursor: pointer;">
+                                Import Sheet</label>
+                            <input type="file" id="csv-import-file" accept=".csv, .xlsx, .xls" style="display: none;"
+                                onchange="handleCsvImport(event)">
+                            <button class="btn"
+                                style="font-size: 0.75rem; padding: 0.5rem 1rem; background: rgba(220, 53, 69, 0.15); border: 1px solid rgba(220, 53, 69, 0.4); color: #ff6b6b; font-weight: 600;"
+                                onclick="triggerClearFleetData()">Clear Fleet</button>
+                        </div>
+                    </div>
+
+                    <!-- Client Filter & Search Box -->
+                    <div
+                        style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; width: 100%; box-sizing: border-box; overflow: hidden;">
+                        <input type="text" id="fleet-search-input" placeholder="Search by Device, User, Serial, OS..."
+                            oninput="handleFleetQueryChange()"
+                            style="flex: 1 1 180px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+
+                        <select id="fleet-filter-condition" onchange="handleFleetQueryChange()"
+                            style="flex: 0 1 160px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                            <option value="ALL">All Conditions</option>
+                            <option value="DISPOSED">Disposed</option>
+                            <option value="DONATED_UNDER_CSR">Donated Under CSR</option>
+                            <option value="EXPIRED">Expired</option>
+                            <option value="IN_REPAIR">In Repair</option>
+                            <option value="IN_STORE">In Store</option>
+                            <option value="IN_USE" selected>In Use</option>
+                            <option value="LOANABLE_RESERVED">Loanable Reserved</option>
+                            <option value="NOT_TRACEABLE">Not Traceable</option>
+                            <option value="RESERVED">Reserved</option>
+                            <option value="UNKNOWN">Unknown</option>
+                        </select>
+
+                        <select id="fleet-filter-loc-group" onchange="handleFleetQueryChange()"
+                            style="flex: 0 1 160px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                            <option value="ALL">All Location Groups</option>
+                            <option value="Sift">Sift</option>
+                            <option value="Non-Sift">Non-Sift</option>
+                        </select>
+
+                        <select id="fleet-filter-policy" onchange="handleFleetQueryChange()"
+                            style="flex: 1 1 180px; min-width: 0; border: 1px solid var(--border-clean); padding: 0.75rem; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+                            <option value="ALL">All Core Policies</option>
+                            <option value="ad:COMPLIANT">AD Enrollment: Compliant</option>
+                            <option value="ad:NON_COMPLIANT">AD Enrollment: Non-Compliant</option>
+                            <option value="bitlocker:COMPLIANT">BitLocker: Compliant</option>
+                            <option value="bitlocker:NON_COMPLIANT">BitLocker: Non-Compliant</option>
+                            <option value="zscaler:COMPLIANT">Zscaler: Compliant</option>
+                            <option value="zscaler:NON_COMPLIANT">Zscaler: Non-Compliant</option>
+                            <option value="nessus:COMPLIANT">Nessus: Compliant</option>
+                            <option value="nessus:NON_COMPLIANT">Nessus: Non-Compliant</option>
+                            <option value="sentinelone:COMPLIANT">SentinelOne EDR: Compliant</option>
+                            <option value="sentinelone:NON_COMPLIANT">SentinelOne EDR: Non-Compliant</option>
+                            <option value="sccm:COMPLIANT">SCCM Agent: Compliant</option>
+                            <option value="sccm:NON_COMPLIANT">SCCM Agent: Non-Compliant</option>
+                        </select>
+                    </div>
+
+                    <div class="fleet-table-container">
+                        <table class="fleet-table">
+                            <thead id="fleet-table-head">
+                                <tr>
+                                    <th>Device ID</th>
+                                    <th>Canonical Name</th>
+                                    <th>Assigned User</th>
+                                    <th>Last Login</th>
+                                    <th>Location</th>
+                                    <th>Loc Group</th>
+                                    <th>Condition</th>
+                                    <th>Score</th>
+                                    <th>Risk Level</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fleet-table-body">
+                                <!-- Dynamic populating -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Swiss Minimalist Pagination -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-clean);">
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Showing <span id="pag-start" style="font-weight: 700; color: var(--text-primary);">1</span>
+                            to <span id="pag-end" style="font-weight: 700; color: var(--text-primary);">10</span> of
+                            <span id="pag-total" style="font-weight: 700; color: var(--text-primary);">10,029</span>
+                            assets
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="changePage(-1)" id="btn-pag-prev">Previous</button>
+                            <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.5rem 1rem;"
+                                onclick="changePage(1)" id="btn-pag-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: User Profile -->
+            <div id="section-profile" class="section-view" style="display: none;">
+                <div class="card">
+                    <h2>Security Analyst Profile</h2>
+                    <div
+                        style="display: grid; grid-template-columns: 120px 1fr; gap: 2.5rem; margin-top: 1.5rem; align-items: center;">
+                        <div
+                            style="width: 120px; height: 120px; border: 2px solid var(--border-focus); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: 800; background: var(--bg-secondary); color: var(--text-primary);">
+                            SEC
+                        </div>
+                        <div>
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);"
+                                id="profile-analyst-name">Cosmos</h3>
+                            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">Role:
+                                <strong>Global Security & Compliance Administrator</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; border-top: 1px solid var(--border-clean); padding-top: 2rem; margin-top: 1rem;">
+                        <div>
+                            <h4
+                                style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                Access Credentials</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.4rem;">
+                                <strong>Auth Framework:</strong> NIST CSF 2.0 Identity Assertion
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.4rem;">
+                                <strong>Session Lease Exp:</strong> 2026-05-27 23:59 UTC
+                            </p>
+                            <p style="font-size: 0.85rem; color: var(--text-primary);"><strong>IP Bounds:</strong>
+                                10.240.12.0/24 (Corporate Subnet)</p>
+                        </div>
+                        <div>
+                            <h4
+                                style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                Platform Authorizations</h4>
+                            <div id="profile-authorizations-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                <span class="badge group-non-sift">Reconciliation Approval</span>
+                                <span class="badge group-non-sift">CSV Ingestion Authority</span>
+                                <span class="badge group-non-sift">Secret Key Leasing</span>
+                                <span class="badge group-sift">Sift Fleet Access</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Section: Settings -->
+            <div id="section-settings" class="section-view" style="display: none;">
+                <div class="card">
+                    <h2>System Configurations</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Manage real-time compliance ingestion topics, Vault gateway paths, and EDR scoring parameters.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                        <div>
+                            <h3
+                                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.4rem;">
+                                Ingestion Pipeline (Kafka)</h3>
+                            <div class="input-group">
+                                <label for="set-kafka-topic">Kafka Compliance Ingest Topic</label>
+                                <input type="text" id="set-kafka-topic" value="eud.telemetry.compliance.raw">
+                            </div>
+                            <div class="input-group">
+                                <label for="set-kafka-partitions">Partitions Count</label>
+                                <input type="number" id="set-kafka-partitions" value="12">
+                            </div>
+                        </div>
+                        <div>
+                            <h3
+                                style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.4rem;">
+                                Dynamic Key Provider (HashiCorp Vault)</h3>
+                            <div class="input-group">
+                                <label for="set-vault-addr">Vault Server Address</label>
+                                <input type="text" id="set-vault-addr"
+                                    value="https://vault.internal.aethelred.corp:8200">
+                            </div>
+                            <div class="input-group">
+                                <label for="set-vault-engine">Secret Engine Mount Path</label>
+                                <input type="text" id="set-vault-engine" value="secret/data/tenants">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: flex-end; gap: 1rem; border-top: 1px solid var(--border-clean); padding-top: 1.5rem; margin-top: 1rem;">
+                        <button class="btn btn-secondary"
+                            onclick="logToTerminal('Settings modifications discarded.')">Reset</button>
+                        <button class="btn" onclick="saveSettings()">Save Configurations</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Developer Console -->
+            <div id="section-dev-db" class="section-view" style="display: none;">
+                <div class="card" style="padding: 2rem;">
+                    <div
+                        style="border-bottom: 1px solid var(--border-clean); padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+                        <h2
+                            style="margin: 0; font-size: 1.25rem; border: none; padding: 0; font-weight: 700; color: var(--text-primary);">
+                            Developer Console & Database Management</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                            Direct read/write access to the compliance user directory and generated API credentials.
+                            Configure roles, revoke API keys, and track programmatic ingestion rates.
+                        </p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2.5rem; align-items: start;">
+                        <!-- Column 1: User Directory -->
+                        <div class="card"
+                            style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <h3
+                                style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem;">
+                                Compliance User Directory</h3>
+
+                            <div class="fleet-table-container" style="max-height: 400px; overflow-y: auto;">
+                                <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Role</th>
+                                            <th>Auth Provider</th>
+                                            <th>Created At</th>
+                                            <th style="text-align: right;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dev-users-tbody">
+                                        <!-- Dynamic user entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Column 2: API Keys Registry -->
+                        <div class="card"
+                            style="padding: 1.5rem; background: var(--bg-secondary); border: 1px solid var(--border-clean); border-radius: 4px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-clean); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+                                <h3
+                                    style="margin: 0; font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                                    API Key Credentials</h3>
+                                <button class="btn" onclick="triggerGenerateApiKeyModal()"
+                                    style="font-size: 0.75rem; padding: 0.4rem 0.85rem; background: var(--color-accent); border-color: var(--color-accent);">Issue
+                                    Key</button>
+                            </div>
+
+                            <div class="fleet-table-container" style="max-height: 400px; overflow-y: auto;">
+                                <table class="fleet-table" style="font-size: 0.82rem; width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th>Key ID</th>
+                                            <th>API Key</th>
+                                            <th>Owner</th>
+                                            <th>Requests</th>
+                                            <th style="text-align: right;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dev-keys-tbody">
+                                        <!-- Dynamic API key entries -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Global Process Loading Overlay -->
+    <div id="process-loading-overlay"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; z-index: 1000000; flex-direction: column; gap: 1.5rem; font-family: var(--font-sans); color: #ffffff; transition: all 0.3s ease;">
+        <div style="position: relative; width: 64px; height: 64px;">
+            <div
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid rgba(255, 255, 255, 0.1); border-radius: 50%;">
+            </div>
+            <div
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid transparent; border-top-color: var(--color-accent); border-radius: 50%; animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;">
+            </div>
+        </div>
+        <div id="process-loading-text"
+            style="font-size: 0.95rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; text-align: center; max-width: 380px; line-height: 1.5; color: #ffffff;">
+            Reconciling Assets...
+        </div>
+    </div>
+
+    <!-- Interactive JS logic -->
+    <script>
+        // @@INCLUDE:js/app.js
+        // @@INCLUDE:js/fleet.js
+        // @@INCLUDE:js/siem.js
+        // @@INCLUDE:js/risk.js
+        // @@INCLUDE:js/audit.js
+        // @@INCLUDE:js/reconciler.js
+    </script>
+</body>
+
+</html>
